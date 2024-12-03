@@ -14,8 +14,11 @@ class BotService:
     def update(self, message):
         if 'message' in message:
             chat_id = message["message"]["chat"]["id"]
-            text = message['message']['text']
-            self._telegram.send_message(chat_id, f"pong '{text}'")
+            if (self._database.get_is_chat_allowed(chat_id)):
+                text = message['message']['text']
+                self._telegram.send_message(chat_id, f"pong '{text}'")
+            else:
+                print(f'request from not allowed chat {chat_id}')
 
     def periodic_send(self):
         stations = self._database.get_stations()

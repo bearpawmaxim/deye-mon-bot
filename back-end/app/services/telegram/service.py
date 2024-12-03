@@ -19,8 +19,8 @@ class TelegramService:
             response = requests.post(url, headers=headers, json=data)
             response.raise_for_status()
 
-            data = response.json()
-            return data['ok'] == True and data['result'] == True
+            response_data = response.json()
+            return response_data['ok'] == True and response_data['result'] == True
         except requests.exceptions.HTTPError as err:
             print(f"HTTP error occurred: {err}")
             return None

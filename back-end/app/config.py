@@ -22,7 +22,6 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     sqlite_path = os.path.abspath(os.path.join(basedir, '../', 'db.sqlite3'))
-    print(f'sqlite_path={sqlite_path}')
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + sqlite_path 
 
     DEYE_BASE_URL = os.getenv('DEYE_BASE_URL')

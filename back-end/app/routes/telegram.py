@@ -11,6 +11,6 @@ def register(app, services: Services):
                 print(request.json)
                 services.bot.update(request.json)
         except Exception as e:
-            print(e)
+            print(f'Error processing request: {e}')
         finally:
             return { "ok": True }

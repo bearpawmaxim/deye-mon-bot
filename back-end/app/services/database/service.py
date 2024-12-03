@@ -23,18 +23,13 @@ class DatabaseService:
             print(f"Error fetching channels: {e}")
             return []
 
-    # def set_last_sent(self, channel_id: str, time: datetime):
-    #     try:
-    #         channel = self._session.query(Channel).filter_by(channel_id=channel_id).first()
-    #         if not channel:
-    #             print(f"No channel found with channel_id = {channel_id}")
-    #             return
-    #         print(f'last_sent_time: {channel.last_sent_time} => {time}')
-    #         channel.last_sent_time = time
-    #         self._session.commit()
-    #     except Exception as e:
-    #         self._session.rollback()
-    #         print(f"Error updating or inserting record: {e}")
+    def get_is_chat_allowed(self, chat_id: str) -> bool:
+        try:
+            first_chat = self._session.query(AllowedChat).filter_by(chat_id=chat_id).first()
+            return first_chat is not None
+        except Exception as e:
+            print(f'Error getting allowed chat for {chat_id}: {e}')
+            return False
 
     def get_allowed_chats(self):
         try:
