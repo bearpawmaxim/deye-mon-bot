@@ -37,7 +37,8 @@ class TelegramService:
         url = self._get_method_url('sendMessage')
         data = {
             'chat_id': chat_id,
-            'text': text
+            'text': text,
+            'parse_mode': 'markdown'
         }
         try:
             response = requests.post(url, data=data)

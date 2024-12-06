@@ -64,7 +64,10 @@ class BotService:
         channels = self._database.get_channels()
 
         for channel in channels:
-            template_data = {'stations': []}
+            template_data = {
+                'stations': [],
+                'datetime': datetime
+            }
             self._populate_stations_data(template_data, stations, channel)
             self._add_average_methods(template_data, channel.last_sent_time)
 
