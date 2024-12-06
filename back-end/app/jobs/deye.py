@@ -19,6 +19,15 @@ def register(app, services: Services):
         second='0',
         args=[services]
     )
+    scheduler.add_job(
+        'remove_old_data',
+        remove_old_data,
+        trigger='cron',
+        hour='0',
+        minute='10',
+        second='0',
+        args=[services]
+    )
 
 def check_deye_status(services: Services):
     with services.scheduler.app.app_context():
@@ -31,3 +40,12 @@ def check_deye_status(services: Services):
 
 def refresh_deye_token(services: Services):
     services.deye_api.refresh_token()
+
+def remove_old_data(services: Services):
+    with services.scheduler.app.app_context():
+        try:
+            services.scheduler.pause()
+            services.database.delete_old_station_data(3)
+            services.db.session.commit()
+        finally:
+            services.scheduler.resume()
