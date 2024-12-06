@@ -15,7 +15,7 @@ class Channel(Base):
     last_sent_time       = Column(DateTime)
     enabled              = Column(Boolean)
 
-    station        = relationship("Station")
+    station              = relationship("Station")
 
     def __str__(self):
         return (f"Channel(id={self.id}, channel_id='{self.channel_id}', "

@@ -8,7 +8,6 @@ from flask_migrate import Migrate
 from app.config import config_dict
 from app import create_app, setup_services
 
-# WARNING: Don't run with debug turned on in production!
 DEBUG = (os.getenv('DEBUG', 'False') == 'True')
 
 get_config_mode = 'Debug' if DEBUG else 'Production'
@@ -20,10 +19,8 @@ except KeyError:
 
 services = setup_services(app_config)
 app = create_app(app_config, services)
-Migrate(app, services.db)
-
-# if not DEBUG:
-#     Minify(app=app, html=True, js=False, cssless=False)
+migrate = Migrate(app, services.db)
+db = services.db
 
 if DEBUG:
     app.logger.info('DEBUG            = ' + str(DEBUG))

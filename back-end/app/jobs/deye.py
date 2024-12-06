@@ -25,7 +25,8 @@ def check_deye_status(services: Services):
         stations = services.deye_api.get_station_list()
         for station in stations.station_list:
             station_data = services.deye_api.get_station_data(station.id)
-            services.database.update_station(station.id, station, station_data)
+            services.database.add_station(station)
+            services.database.add_station_data(station.id, station_data)
         services.db.session.commit()
 
 def refresh_deye_token(services: Services):

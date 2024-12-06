@@ -1,6 +1,7 @@
-import datetime
+from datetime import datetime, timedelta, timezone
 from flask_sqlalchemy import SQLAlchemy
-from app.models import AllowedChat, Channel, Station, DeyeStationData, DeyeStation
+from sqlalchemy import Float, Integer, Numeric, func
+from app.models import AllowedChat, Channel, Station, StationData, DeyeStationData, DeyeStation
 
 class DatabaseService:
     def __init__(self, db: SQLAlchemy):
@@ -38,50 +39,76 @@ class DatabaseService:
             print(e)
             return []
 
-    def update_station(self, station_id: str, station: DeyeStation, station_data: DeyeStationData):
+    def _get_station(self, station_id: str):
+        return self._session.query(Station).filter_by(station_id=station_id).first()
+
+    def add_station(self, station: DeyeStation):
         try:
-            existing_record = self._session.query(Station).filter_by(station_id=station_id).first()
-            
-            if existing_record:
-                existing_record.battery_power = station_data.battery_power
-                existing_record.battery_soc = station_data.battery_soc
-                existing_record.charge_power = station_data.charge_power
-                existing_record.code = station_data.code
-                existing_record.station_name = station.name
-                existing_record.consumption_power = station_data.consumption_power
-                existing_record.discharge_power = station_data.discharge_power
-                existing_record.generation_power = station_data.generation_power
-                existing_record.grid_power = station_data.grid_power
-                existing_record.irradiate_intensity = station_data.irradiate_intensity
-                existing_record.last_update_time = station_data.last_update_time
-                existing_record.msg = station_data.msg
-                existing_record.purchase_power = station_data.purchase_power
-                existing_record.request_id = station_data.request_id
-                existing_record.wire_power = station_data.wire_power
-            else:
+            existing_station = self._get_station(station.id)
+            if existing_station == None:
                 new_record = Station(
-                    station_id=station_id,
-                    station_name=station.name,
-                    battery_power=station_data.battery_power,
-                    battery_soc=station_data.battery_soc,
-                    charge_power=station_data.charge_power,
-                    code=station_data.code,
-                    consumption_power=station_data.consumption_power,
-                    discharge_power=station_data.discharge_power,
-                    generation_power=station_data.generation_power,
-                    grid_power=station_data.grid_power,
-                    irradiate_intensity=station_data.irradiate_intensity,
-                    last_update_time=station_data.last_update_time,
-                    msg=station_data.msg,
-                    purchase_power=station_data.purchase_power,
-                    request_id=station_data.request_id,
-                    wire_power=station_data.wire_power
+                    station_id = station.id,
+                    station_name = station.name,
+                    connection_status = station.connection_status,
+                    contact_phone = station.contact_phone,
+                    created_date = datetime.fromtimestamp(station.created_date, timezone.utc),
+                    grid_interconnection_type = station.grid_interconnection_type,
+                    installed_capacity = station.installed_capacity,
+                    location_address = station.location_address,
+                    location_lat = station.location_lat,
+                    location_lng = station.location_lng,
+                    owner_name = station.owner_name,
+                    region_nation_id = station.region_nation_id,
+                    region_timezone = station.region_timezone,
+                    generation_power = station.generation_power,
+                    last_update_time = datetime.fromtimestamp(station.last_update_time, timezone.utc),
+                    start_operating_time = datetime.fromtimestamp(station.start_operating_time, timezone.utc)
                 )
-                self._session.add(new_record)            
-            self._session.commit()
+                self._session.add(new_record)
+            elif (
+                existing_station.connection_status != station.connection_status or
+                existing_station.grid_interconnection_type != station.grid_interconnection_type
+            ):
+                existing_station.connection_status = station.connection_status
+                existing_station.grid_interconnection_type = station.grid_interconnection_type
+
+        except Exception as e:
+            print(f"Error inserting station: {e}")
+
+    def add_station_data(self, station_id: str, station_data: DeyeStationData):
+        try:
+            station = self._get_station(station_id)
+            if station is None:
+                raise ValueError(f'station not found')
+
+            last_update_time = datetime.fromtimestamp(station_data.last_update_time, timezone.utc)
+            existing_record = self._session.query(StationData).filter_by(
+                station_id=station.id,
+                last_update_time=last_update_time
+            ).first()
+
+            if not existing_record:
+                new_record = StationData(
+                    station = station,
+                    battery_power = station_data.battery_power,
+                    battery_soc = station_data.battery_soc,
+                    charge_power = station_data.charge_power,
+                    code = station_data.code,
+                    consumption_power = station_data.consumption_power,
+                    discharge_power = station_data.discharge_power,
+                    generation_power = station_data.generation_power,
+                    grid_power = station_data.grid_power,
+                    irradiate_intensity = station_data.irradiate_intensity,
+                    last_update_time = last_update_time,
+                    msg = station_data.msg,
+                    purchase_power = station_data.purchase_power,
+                    request_id = station_data.request_id,
+                    wire_power = station_data.wire_power
+                )
+                self._session.add(new_record)
         except Exception as e:
             self._session.rollback()
-            print(f"Error updating or inserting record: {e}")
+            print(f"Error inserting station data: {e}")
 
     def get_stations(self):
         try:
@@ -90,3 +117,49 @@ class DatabaseService:
         except Exception as e:
             print(f"Error fetching stations: {e}")
             return []
+
+    def get_station_data(self, station_id: str):
+        try:
+            stations = (
+                self._session.query(StationData)
+                .join(Station, Station.id == StationData.station_id)
+                .filter(Station.station_id == station_id)
+                .order_by(StationData.last_update_time.desc())
+                .limit(2)
+            )
+            return {
+                'current': stations[0],
+                'previous': stations[1] if stations.count() == 2 else None
+            }
+        except Exception as e:
+            print(f"Error fetching stations: {e}")
+            return None
+
+    def get_station_data_average_column(
+            self,
+            start_date: datetime,
+            end_date: datetime,
+            station_id: int,
+            column_name: str
+            ):
+        column = getattr(StationData, column_name, None)
+
+        if column is None:
+            raise ValueError(f"Column '{column_name}' does not exist in the table.")
+        if not isinstance(column.type, (Integer, Float, Numeric)):
+            raise TypeError(f"Column '{column_name}' is not a numeric type (Integer, Float, or Numeric).")
+
+        query = (
+            self._session.query(func.avg(column))
+            .filter(StationData.station_id == station_id)
+            .filter(column.isnot(None))
+            .filter(column != 0)
+        )
+
+        if start_date is not None:
+            query = query.filter(StationData.last_update_time >= start_date)
+        if end_date is not None:
+            query = query.filter(StationData.last_update_time <= end_date)
+
+        avg_value = query.scalar()
+        return avg_value if avg_value is not None else 0.0

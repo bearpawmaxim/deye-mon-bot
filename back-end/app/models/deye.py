@@ -7,12 +7,12 @@ class DeyeStation:
     battery_soc: float
     connection_status: str
     contact_phone: str
-    created_date: str
+    created_date: float
     generation_power: str
     grid_interconnection_type: str
     id: str
     installed_capacity: float
-    last_update_time: str
+    last_update_time: float
     location_address: str
     location_lat: float
     location_lng: float
@@ -20,8 +20,7 @@ class DeyeStation:
     owner_name: str
     region_nation_id: int
     region_timezone: str
-    start_operating_time: str
-
+    start_operating_time: float
 
 @dataclass
 class DeyeStationList:
@@ -43,7 +42,7 @@ class DeyeStationData:
     generation_power: float
     grid_power: float
     irradiate_intensity: float
-    last_update_time: str
+    last_update_time: float
     msg: str
     purchase_power: float
     request_id: str
