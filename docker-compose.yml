@@ -17,7 +17,7 @@ services:
       env_file: .env
       volumes:
         - ./back-end/.env:/.env
-        - ./back-end/db.sqlite3:/deye-mon-bot-api/app/db.sqlite3
+        - ./back-end/db.sqlite3:/deye-mon-bot-api/db.sqlite3
       expose:
         - "5000"
       networks:
