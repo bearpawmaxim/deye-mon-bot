@@ -17,12 +17,12 @@ class Config:
 
     SECRET_KEY  = os.getenv('SECRET_KEY', None)
     if not SECRET_KEY:
-        SECRET_KEY = ''.join(random.choice(string.ascii_lowercase) for i in range(32))    
+        SECRET_KEY = ''.join(random.choice(string.ascii_lowercase) for i in range(32))
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     sqlite_path = os.path.abspath(os.path.join(basedir, '../', 'db.sqlite3'))
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + sqlite_path 
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + sqlite_path
 
     DEYE_BASE_URL = os.getenv('DEYE_BASE_URL')
     DEYE_APP_ID = os.getenv('DEYE_APP_ID')
@@ -32,6 +32,8 @@ class Config:
 
     TG_BOT_TOKEN = os.getenv('TG_BOT_TOKEN')
     TG_HOOK_BASE_URL = os.getenv('TG_HOOK_BASE_URL')
+
+    BOT_TIMEZONE = os.getenv('BOT_TIMEZONE', 'utc')
 
     HOST = '127.0.0.1'
 

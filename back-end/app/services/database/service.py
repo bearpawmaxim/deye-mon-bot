@@ -165,5 +165,5 @@ class DatabaseService:
         return avg_value if avg_value is not None else 0.0
 
     def delete_old_station_data(self, timeout_days: int):
-        timeout = datetime.now() - timedelta(days=timeout_days)
+        timeout = datetime.now(timezone.utc) - timedelta(days=timeout_days)
         self._session.query(StationData).filter(StationData.last_update_time < timeout).delete(synchronize_session=False)

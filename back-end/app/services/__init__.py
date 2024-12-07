@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_apscheduler import APScheduler
 
 from app.config import Config
-from .bot import BotService
+from .bot import BotConfig, BotService
 from .database import DatabaseService
 from .deye_api import DeyeConfig, DeyeApiService
 from .telegram import TelegramConfig, TelegramService
@@ -60,7 +60,10 @@ def initialize_services(config: Config):
     telegram = TelegramService(telegram_config)
 
     database = DatabaseService(db)
-    bot = BotService(deye_api, telegram, database)
+
+    bot_config = BotConfig(config.BOT_TIMEZONE)
+    print(bot_config)
+    bot = BotService(bot_config, deye_api, telegram, database)
 
     return Services.full(
         db = db,

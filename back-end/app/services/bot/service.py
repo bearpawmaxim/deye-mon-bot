@@ -1,13 +1,22 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import partial
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from app.services.database.service import DatabaseService
 from app.services.deye_api.service import DeyeApiService
 from app.services.telegram.service import TelegramService
 from app.utils import generate_message, get_send_timeout, get_should_send
-
+from .models import BotConfig
 
 class BotService:
-    def __init__(self, deye_api: DeyeApiService, telegram: TelegramService, database: DatabaseService):
+    def _try_get_timezone(self, timezone: str):
+        try:
+            return ZoneInfo(timezone)
+        except ZoneInfoNotFoundError:
+            print(f'Cannot get timezone {timezone}, falling back to UTC')
+            return ZoneInfo('utc')
+
+    def __init__(self, config: BotConfig, deye_api: DeyeApiService, telegram: TelegramService, database: DatabaseService):
+        self._message_timezone = self._try_get_timezone(config.timezone)
         self._deye_api = deye_api
         self._telegram = telegram
         self._database = database
@@ -40,14 +49,14 @@ class BotService:
             station_data['get_average'] = partial(
                 self._database.get_station_data_average_column,
                 last_sent_time,
-                datetime.now(),
+                datetime.now(timezone.utc),
                 station_data['current'].station_id
             )
         if 'station' in template_data and template_data['station'] is not None:
             template_data['station']['get_average'] = partial(
                 self._database.get_station_data_average_column,
                 last_sent_time,
-                datetime.now(),
+                datetime.now(timezone.utc),
                 template_data['station']['current'].station_id
             )
 
@@ -55,7 +64,7 @@ class BotService:
         try:
             message = generate_message(channel.message_template, template_data)
             self._telegram.send_message(channel.channel_id, message)
-            channel.last_sent_time = datetime.now()
+            channel.last_sent_time = datetime.now(timezone.utc)
         except Exception as e:
             print(f"Error sending message: {e}")
 
@@ -66,7 +75,7 @@ class BotService:
         for channel in channels:
             template_data = {
                 'stations': [],
-                'datetime': datetime
+                'strftime': datetime.now(self._message_timezone).strftime
             }
             self._populate_stations_data(template_data, stations, channel)
             self._add_average_methods(template_data, channel.last_sent_time)
@@ -74,7 +83,9 @@ class BotService:
             timeout = get_send_timeout(channel.timeout_template, template_data)
             template_data['timeout'] = timeout
             should_send = get_should_send(channel.should_send_template, template_data)
-            next_send_time = (channel.last_sent_time or datetime.min) + timedelta(seconds=timeout)
+            next_send_time = (
+                (channel.last_sent_time or datetime.min) + timedelta(seconds=timeout)
+            ).replace(tzinfo=timezone.utc)
 
-            if should_send and next_send_time <= datetime.now():
+            if should_send and next_send_time <= datetime.now(timezone.utc):
                 self._send_message(channel, template_data)
