@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Float, Integer, Numeric, func
-from app.models import AllowedChat, Channel, Station, StationData, DeyeStationData, DeyeStation
+from app.models import AllowedChat, Channel, Station, StationData, DeyeStationData, DeyeStation, User
 
 class DatabaseService:
     def __init__(self, db: SQLAlchemy):
@@ -167,3 +167,15 @@ class DatabaseService:
     def delete_old_station_data(self, timeout_days: int):
         timeout = datetime.now(timezone.utc) - timedelta(days=timeout_days)
         self._session.query(StationData).filter(StationData.last_update_time < timeout).delete(synchronize_session=False)
+
+    def get_user(self, user_name: str):
+        return self._session.query(User).filter_by(is_active=True, name=user_name).first()
+    
+    def create_user(self, user_name: str, password: str):
+        existing_user = self.get_user(user_name)
+        if not existing_user:
+            user = User(
+                name = user_name,
+                password = password
+            )
+            self._session.add(user)

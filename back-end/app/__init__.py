@@ -12,9 +12,15 @@ def register_extensions(app, services: Services):
     with app.app_context():
         services.db.init_app(app)
         Base.metadata.create_all(bind=services.db.engine)
+    services.authorization.init_app(app)
     if services.scheduler is not None:
         services.scheduler.init_app(app)
         services.scheduler.start()
+
+def create_user(app, config, services: Services):
+    with app.app_context():
+        services.authorization.add_user(config.ADMIN_USER, config.ADMIN_PASSWORD)
+        services.db.session.commit()
 
 def create_app(config, services: Services):
     app = Flask(__name__)
@@ -23,4 +29,5 @@ def create_app(config, services: Services):
     if services.scheduler is not None:
         register_routes(app, services)
         register_jobs(app, services)
+    create_user(app, config, services)
     return app

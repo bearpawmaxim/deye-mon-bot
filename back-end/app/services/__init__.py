@@ -1,5 +1,4 @@
-from dataclasses import dataclass
-
+from flask_jwt_extended import JWTManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_apscheduler import APScheduler
 
@@ -8,6 +7,7 @@ from .bot import BotConfig, BotService
 from .database import DatabaseService
 from .deye_api import DeyeConfig, DeyeApiService
 from .telegram import TelegramConfig, TelegramService
+from .authorization import AuthorizationService
 
 class Services:
     db: SQLAlchemy
@@ -16,22 +16,42 @@ class Services:
     scheduler: APScheduler
     database: DatabaseService
     bot: BotService
+    authorization: AuthorizationService
 
-    def __init__(self, db: SQLAlchemy, deye_api: DeyeApiService = None, telegram: TelegramService = None, scheduler: APScheduler = None, database: DatabaseService = None, bot: BotService = None):
+    def __init__(
+        self,
+        db: SQLAlchemy,
+        deye_api: DeyeApiService = None,
+        telegram: TelegramService = None,
+        scheduler: APScheduler = None,
+        database: DatabaseService = None,
+        bot: BotService = None,
+        authorization: AuthorizationService = None
+    ):
         self.db = db
         self.deye_api = deye_api
         self.telegram = telegram
         self.scheduler = scheduler
         self.database = database
         self.bot = bot
+        self.authorization = authorization
 
     @classmethod
     def minimal(cls, db: SQLAlchemy):
         return cls(db)
 
     @classmethod
-    def full(cls, db: SQLAlchemy, deye_api: DeyeApiService, telegram: TelegramService, scheduler: APScheduler, database: DatabaseService, bot: BotService):
-        return cls(db, deye_api, telegram, scheduler, database, bot)
+    def full(
+        cls,
+        db: SQLAlchemy,
+        deye_api: DeyeApiService,
+        telegram: TelegramService,
+        scheduler: APScheduler,
+        database: DatabaseService,
+        bot: BotService,
+        authorization: AuthorizationService
+    ):
+        return cls(db, deye_api, telegram, scheduler, database, bot, authorization)
 
 def initialize_services(config: Config):
     db = SQLAlchemy()
@@ -65,14 +85,17 @@ def initialize_services(config: Config):
     print(bot_config)
     bot = BotService(bot_config, deye_api, telegram, database)
 
+    authorization = AuthorizationService(database)
+
     return Services.full(
         db = db,
         deye_api = deye_api,
         telegram = telegram,
         scheduler = scheduler,
         database = database,
-        bot = bot
+        bot = bot,
+        authorization = authorization
     )
 
-__all__ = [Services, DatabaseService, BotService, DeyeConfig,
+__all__ = [Services, AuthorizationService, DatabaseService, BotService, DeyeConfig,
            DeyeApiService, TelegramConfig, TelegramService]
