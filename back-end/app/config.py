@@ -1,6 +1,5 @@
 from datetime import timedelta
 import os
-import sys
 from dotenv import load_dotenv
 from app.utils import generate_secret_key
 
@@ -9,10 +8,7 @@ base_path = os.path.dirname(__file__)
 env_path = os.path.abspath(os.path.join(base_path, '../../.env'))
 load_dotenv(dotenv_path=env_path)
 
-DB_COMMANDS = {'init', 'migrate', 'upgrade'}
-
 class Config:
-    IS_FLASK_MIGRATION_RUN = len(sys.argv) > 2 and sys.argv[1] == 'db' and sys.argv[2] in DB_COMMANDS
     SCHEDULER_API_ENABLED = True
     basedir = os.path.abspath(os.path.dirname(__file__))
 

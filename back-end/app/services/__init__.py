@@ -21,12 +21,12 @@ class Services:
     def __init__(
         self,
         db: SQLAlchemy,
-        deye_api: DeyeApiService = None,
-        telegram: TelegramService = None,
-        scheduler: APScheduler = None,
-        database: DatabaseService = None,
-        bot: BotService = None,
-        authorization: AuthorizationService = None
+        deye_api: DeyeApiService,
+        telegram: TelegramService,
+        scheduler: APScheduler,
+        database: DatabaseService,
+        bot: BotService,
+        authorization: AuthorizationService
     ):
         self.db = db
         self.deye_api = deye_api
@@ -36,29 +36,9 @@ class Services:
         self.bot = bot
         self.authorization = authorization
 
-    @classmethod
-    def minimal(cls, db: SQLAlchemy):
-        return cls(db)
-
-    @classmethod
-    def full(
-        cls,
-        db: SQLAlchemy,
-        deye_api: DeyeApiService,
-        telegram: TelegramService,
-        scheduler: APScheduler,
-        database: DatabaseService,
-        bot: BotService,
-        authorization: AuthorizationService
-    ):
-        return cls(db, deye_api, telegram, scheduler, database, bot, authorization)
 
 def initialize_services(config: Config):
     db = SQLAlchemy()
-
-    if config.IS_FLASK_MIGRATION_RUN:
-        print('not initializing services')
-        return Services.minimal(db = db)
 
     scheduler = APScheduler()
 
@@ -87,7 +67,7 @@ def initialize_services(config: Config):
 
     authorization = AuthorizationService(database)
 
-    return Services.full(
+    return Services(
         db = db,
         deye_api = deye_api,
         telegram = telegram,

@@ -3,8 +3,6 @@
 import os
 from sys import exit
 
-from flask_migrate import Migrate
-
 from app.config import config_dict
 from app import create_app, setup_services
 
@@ -19,8 +17,6 @@ except KeyError:
 
 services = setup_services(app_config)
 app = create_app(app_config, services)
-migrate = Migrate(app, services.db)
-db = services.db
 
 if DEBUG:
     app.logger.info('DEBUG            = ' + str(DEBUG))

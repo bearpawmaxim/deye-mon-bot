@@ -16,9 +16,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /deye-mon-bot-api/
 
-RUN flask db init
-RUN flask db migrate
-RUN flask db upgrade
-
 # gunicorn
 CMD ["gunicorn", "--config", "gunicorn-cfg.py", "run:app"]
