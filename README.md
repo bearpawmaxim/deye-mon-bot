@@ -8,7 +8,9 @@
 6. in `.env` file, fill in the `TG_HOOK_BASE_URL` setting with the url accessible from the internet
 
 ## To start locally ##
-execute `cd front-end`, `pip install -r requirements.txt` and `python run.py`
+1. execute `cd front-end`, `pip install -r requirements.txt` and `python run.py`
+2. execute `cd back-end`, `npm i` and `npm run dev`
+3. open `http://localhost:5127` in your web-browser
 
 ## To deploy in docker ##
 0. if there is no `db.sqlite3` file in `back-end` folder, create an empty file
