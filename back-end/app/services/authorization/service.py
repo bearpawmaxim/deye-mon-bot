@@ -17,9 +17,9 @@ class AuthorizationService():
     def login(self, username: str, password: str):
         user = self._database.get_user(username)
         if not user:
-            raise ValueError(f"user '{username}' not found or inactive")
+            raise ValueError(f"User '{username}' not found or inactive")
         if not self._bcrypt.check_password_hash(user.password, password):
-            raise ValueError(f"wrong password")
+            raise ValueError(f"Invalid password")
 
         return create_access_token(identity=user.name)
 

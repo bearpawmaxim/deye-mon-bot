@@ -1,10 +1,8 @@
 services:
    nginx:
-      image: nginx
+      build: front-end/.
+      image: deye-mon-bot-ui
       restart: always
-      volumes:
-        - ./nginx:/etc/nginx/conf.d
-        - ./front-end:/var/www/front-end
       ports:
         - "5005:80"
       networks:

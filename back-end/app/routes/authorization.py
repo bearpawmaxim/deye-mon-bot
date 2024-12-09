@@ -1,12 +1,12 @@
 from datetime import datetime, timedelta, timezone
-from flask import json, request
+from flask import json, jsonify, request
 from flask_jwt_extended import create_access_token, get_jwt, get_jwt_identity, jwt_required, unset_jwt_cookies
 from app.services import Services
 
 
 def register(app, services: Services):
 
-    @app.route('/api/login', methods=['POST'])
+    @app.route('/api/auth/login', methods=['POST'])
     def login():
         username = request.json.get("username", None)
         password = request.json.get("password", None)
@@ -16,16 +16,16 @@ def register(app, services: Services):
         except ValueError as e:
             return { "success": False, "error": str(e) }, 401
 
-    @app.route('/api/profile', methods=['GET'])
+    @app.route('/api/auth/profile', methods=['GET'])
     @jwt_required()
     def profile():
         current_user = get_jwt_identity()
 
         return { "success": True, "name": current_user }
 
-    @app.route("/logout", methods=["POST"])
+    @app.route("/api/auth/logout", methods=["POST"])
     def logout():
-        response = { "success": True }
+        response = jsonify({ "success": True })
         unset_jwt_cookies(response)
         return response
 
