@@ -10,6 +10,7 @@
 ## To start locally ##
 execute `cd front-end`, `pip install -r requirements.txt` and `python run.py`
 
-## To deploy ##
+## To deploy in docker ##
+0. if there is no `db.sqlite3` file in `back-end` folder, create an empty file
 1. in `.env` file, set `DEBUG` to `False`
 2. execute `sudo docker compose up -d`
