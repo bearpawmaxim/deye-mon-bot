@@ -42,14 +42,19 @@ def register(config: Config, services: Services):
 def sync_deye_stations(services: Services):
     with services.scheduler.app.app_context():
         stations = services.deye_api.get_station_list()
+        if stations is None:
+            return
         for station in stations.station_list:
             services.database.add_station(station)
+        services.db.session.commit()
 
 def check_deye_status(services: Services):
     with services.scheduler.app.app_context():
         stations = services.database.get_stations()
         for station in stations:
             station_data = services.deye_api.get_station_data(station.station_id)
+            if station_data is None:
+                continue
             services.database.add_station_data(station.station_id, station_data)
         services.db.session.commit()
 
