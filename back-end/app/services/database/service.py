@@ -108,7 +108,7 @@ class DatabaseService:
                 self._session.add(new_record)
         except Exception as e:
             self._session.rollback()
-            print(f"Error inserting station data: {e}")
+            print(f"Error updating station data: {e}")
 
     def get_stations(self):
         try:

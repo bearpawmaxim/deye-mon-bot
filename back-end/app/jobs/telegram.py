@@ -1,14 +1,15 @@
+from app import Config
 from app.services import Services
 
 
-def register(app, services: Services):
+def register(config: Config, services: Services):
     scheduler = services.scheduler
     scheduler.add_job(
         'periodic_send_message',
         periodic_send_message,
-        trigger='interval',
-        seconds=60,
-        args=[services]
+        trigger = 'interval',
+        seconds = 60,
+        args    = [services]
     )
 
 def periodic_send_message(services: Services):

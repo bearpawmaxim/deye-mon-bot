@@ -26,6 +26,6 @@ def create_app(config, services: Services):
     app.config.from_object(config)
     register_extensions(app, services)
     register_routes(app, services)
-    register_jobs(app, services)
+    register_jobs(config, services)
     create_user(app, config, services)
     return app

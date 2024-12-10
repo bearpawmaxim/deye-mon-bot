@@ -26,6 +26,7 @@ class Config:
     DEYE_APP_SECRET = os.getenv('DEYE_APP_SECRET')
     DEYE_EMAIL = os.getenv('DEYE_EMAIL')
     DEYE_PASSWORD = os.getenv('DEYE_PASSWORD')
+    DEYE_FETCH_INTERVAL = os.getenv('DEYE_FETCH_INTERVAL', default=120)
 
     TG_BOT_TOKEN = os.getenv('TG_BOT_TOKEN')
     TG_HOOK_BASE_URL = os.getenv('TG_HOOK_BASE_URL')

@@ -63,7 +63,9 @@ class DeyeApiService:
             response.raise_for_status()
 
             data = response.json()
-
+            print(data)
+            if not data['success']:
+                raise AssertionError(data['msg'])
             response = DeyeStationList(
                 code=data['code'],
                 msg=data['msg'],
@@ -116,6 +118,8 @@ class DeyeApiService:
             response.raise_for_status()
 
             data = response.json()
+            if not data['success']:
+                raise AssertionError(data['msg'])
 
             return DeyeStationData(
                 battery_power = data['batteryPower'],
