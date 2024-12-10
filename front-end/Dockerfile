@@ -5,7 +5,7 @@ FROM node:18 as build
 WORKDIR /app
 
 # Copy the React app into the container
-COPY package.json package-lock.json ./
+COPY package.json ./
 RUN npm install
 
 # Copy the rest of the application files
