@@ -1,5 +1,5 @@
 import { FC } from "react"
-import { Checkbox, Table, TableBody, TableCell, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
+import { Table, TableBody, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
 
 export const ChannelsPage: FC = () => {
   return <Table striped celled inverted selectable compact>
