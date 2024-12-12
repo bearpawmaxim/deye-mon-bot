@@ -21,18 +21,23 @@ class BotService:
         self._telegram = telegram
         self._database = database
 
-    def update(self, message):
+    def update(self, bot_id, message):
         if 'message' in message:
             chat_id = message["message"]["chat"]["id"]
             if (self._database.get_is_chat_allowed(chat_id)):
                 text = message['message']['text']
-                self._telegram.send_message(chat_id, f"pong '{text}'")
+                self._telegram.send_message(bot_id, chat_id, f"pong '{text}'")
             else:
                 print(f'request from not allowed chat {chat_id}')
 
     def _populate_stations_data(self, template_data, stations, channel):
+        channel_station = None
         for station in stations:
+            if not station.enabled:
+                continue
+
             data = self._database.get_station_data(station.station_id)
+            
             station_data = {
                 **data,
                 'name': station.station_name,
@@ -43,6 +48,8 @@ class BotService:
 
             if channel.station_id == station.id:
                 template_data['station'] = station_data
+                channel_station = station
+        return channel_station
 
     def _add_average_methods(self, template_data, last_sent_time):
         for station_data in template_data['stations']:
@@ -63,7 +70,7 @@ class BotService:
     def _send_message(self, channel, template_data):
         try:
             message = generate_message(channel.message_template, template_data)
-            self._telegram.send_message(channel.channel_id, message)
+            self._telegram.send_message(channel.bot.id, channel.channel_id, message)
             channel.last_sent_time = datetime.now(timezone.utc)
         except Exception as e:
             print(f"Error sending message: {e}")
@@ -77,7 +84,11 @@ class BotService:
                 'stations': [],
                 'strftime': datetime.now(self._message_timezone).strftime
             }
-            self._populate_stations_data(template_data, stations, channel)
+            channel_station = self._populate_stations_data(template_data, stations, channel)
+            if channel.station_id is not None and channel_station is None:
+                print(f"channel's {channel.id} station is disabled")
+                continue
+
             self._add_average_methods(template_data, channel.last_sent_time)
 
             timeout = get_send_timeout(channel.timeout_template, template_data)

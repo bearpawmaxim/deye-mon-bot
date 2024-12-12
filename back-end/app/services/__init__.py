@@ -53,7 +53,6 @@ def initialize_services(config: Config):
     deye_api = DeyeApiService(deye_api_config)
 
     telegram_config = TelegramConfig(
-        bot_token = config.TG_BOT_TOKEN,
         hook_base_url = config.TG_HOOK_BASE_URL
     )
     print(telegram_config)

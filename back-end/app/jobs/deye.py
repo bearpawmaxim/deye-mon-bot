@@ -15,7 +15,7 @@ def register(config: Config, services: Services):
         'sync_deye_stations',
         sync_deye_stations,
         trigger = 'cron',
-        hour    = '*/4',
+        hour    = '*/3',
         minute  = '0',
         second  = '0',
         args    = [services]
@@ -52,6 +52,9 @@ def check_deye_status(services: Services):
     with services.scheduler.app.app_context():
         stations = services.database.get_stations()
         for station in stations:
+            if not station.enabled:
+                continue
+
             station_data = services.deye_api.get_station_data(station.station_id)
             if station_data is None:
                 continue

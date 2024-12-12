@@ -4,16 +4,23 @@ from .models import TelegramConfig
 
 
 class TelegramService:
-    def _get_method_url(self, method: str):
-        return 'https://api.telegram.org/bot' + self._token + '/' + method
+    def _get_method_url(self, bot_token: str, method: str):
+        return 'https://api.telegram.org/bot' + bot_token + '/' + method
 
-    def _register_hook(self):
-        url = self._get_method_url('setWebhook')
+    def add_bot(self, id: int, token: str):
+        if id in self._bot_tokens:
+            return
+        hook_url = f'{self._hook_base_url}api/tg/callback/{id}'
+        self._bot_tokens[id] = token
+        self._register_hook(token, hook_url)
+
+    def _register_hook(self, bot_token: str, hook_url: str):
+        url = self._get_method_url(bot_token, 'setWebhook')
         headers = {
             'Content-Type': 'application/json',
         }
         data = {
-            'url': self._hook_base_url + 'api/tg_callback',
+            'url': hook_url
         }
         try:
             response = requests.post(url, headers=headers, json=data)
@@ -29,12 +36,12 @@ class TelegramService:
             return None
 
     def __init__(self, config: TelegramConfig):
-        self._token = config.bot_token
         self._hook_base_url = config.hook_base_url
-        self._register_hook()
+        self._bot_tokens = {}
 
-    def send_message(self, chat_id, text):
-        url = self._get_method_url('sendMessage')
+    def send_message(self, bot_id, chat_id, text):
+        bot_token = self._bot_tokens[bot_id]
+        url = self._get_method_url(bot_token, 'sendMessage')
         data = {
             'chat_id': chat_id,
             'text': text,

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Float, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String
 from sqlalchemy.orm import relationship
 from .base import Base
 
@@ -20,7 +20,8 @@ class Station(Base):
     connection_status         = Column(String(64))
     contact_phone             = Column(String(64))
     owner_name                = Column(String(256))
-    generation_power          = Column(Float)    
+    generation_power          = Column(Float)
+    enabled                   = Column(Boolean, default=True)
 
     station_data              = relationship("StationData", back_populates="station", cascade="all, delete-orphan")
 

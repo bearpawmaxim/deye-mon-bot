@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Float, Integer, Numeric, func
-from app.models import AllowedChat, Channel, Station, StationData, DeyeStationData, DeyeStation, User
+from app.models import Bot, AllowedChat, Channel, Station, StationData, DeyeStationData, DeyeStation, User
 
 class DatabaseService:
     def __init__(self, db: SQLAlchemy):
@@ -127,6 +127,8 @@ class DatabaseService:
                 .order_by(StationData.last_update_time.desc())
                 .limit(2)
             )
+            if stations.count() == 0:
+                return None
             return {
                 'current': stations[0],
                 'previous': stations[1] if stations.count() == 2 else None
@@ -179,3 +181,6 @@ class DatabaseService:
                 password = password
             )
             self._session.add(user)
+
+    def get_bots(self):
+        return self._session.query(Bot).filter_by(enabled=True).all()

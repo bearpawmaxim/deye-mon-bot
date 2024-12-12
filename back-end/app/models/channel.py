@@ -12,10 +12,12 @@ class Channel(Base):
     should_send_template = Column(String(8192))
     timeout_template     = Column(String(8192))
     station_id           = Column(Integer, ForeignKey('station.id'), nullable=True)
+    bot_id               = Column(Integer, ForeignKey('bot.id'))
     last_sent_time       = Column(DateTime)
     enabled              = Column(Boolean)
 
     station              = relationship("Station")
+    bot                  = relationship("Bot")
 
     def __str__(self):
         return (f"Channel(id={self.id}, channel_id='{self.channel_id}', "
