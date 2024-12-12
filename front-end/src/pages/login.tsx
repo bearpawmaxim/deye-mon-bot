@@ -1,10 +1,8 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { ChangeEvent, FC, FormEvent, useState } from 'react'
-import { Button, Card, CardBody, Col, Container, Form, FormFeedback, FormGroup, Input, Row } from 'reactstrap'
+import { FC, FormEvent, useState } from 'react'
 import apiClient from '../utils/apiClient';
 import { useAuth } from '../providers/authProvider';
 import { useNavigate } from 'react-router-dom';
-
+import { Button, Form, Grid, Header, InputOnChangeData, Message, Segment } from 'semantic-ui-react';
 
 export const LoginPage: FC = () => {
   const { setToken } = useAuth();
@@ -17,8 +15,8 @@ export const LoginPage: FC = () => {
 
   const [formError, setFormError] = useState('')
 
-  function handleChange(event: ChangeEvent<HTMLInputElement>) { 
-    const { value, name } = event.target
+  function handleChange(_: unknown, data: InputOnChangeData) { 
+    const { value, name } = data;
     setloginForm(prevNote => ({
       ...prevNote, [name]: value
     }));
@@ -37,16 +35,13 @@ export const LoginPage: FC = () => {
         setFormError(data.error);
       }
     }).catch((error) => {
-      if (error.response) {
-        console.log(error.response);
-        console.log(error.response.status);
-        console.log(error.response.headers);
+      if (error.response?.data?.error) {
         setFormError(error.response.data.error);
       }
     });
 
     setloginForm({
-      username: "",
+      username: loginForm.username,
       password: ""
     });
 
@@ -54,42 +49,37 @@ export const LoginPage: FC = () => {
   }
  
   return (
-    <Container className='bg-dark' fluid style={{ height: '100vh'}}>
-      <Row className='d-flex justify-content-center align-items-center h-100'>
-        <Col sm='12'>
-          <Card className='my-5 mx-auto' style={{borderRadius: '1rem', maxWidth: '500px'}}>
-            <CardBody className='p-5 d-flex flex-column align-items-center mx-auto w-100 h-100'>
-              <h3 className="fw-bold mb-2 text-uppercase">Login</h3>
-              <p className="text-black-50 mb-5">Please enter your login and password</p>
-              <Form onSubmit={handleSubmit} className='w-100'>
-                <FormGroup>
-                  <Input onChange={handleChange} type="text" name="username" placeholder="User name" value={loginForm.username} required />
-                </FormGroup>
-                <FormGroup>
-                  <Input onChange={handleChange} type="password" name="password" placeholder="Password" value={loginForm.password} required />
-                </FormGroup>
-                <FormGroup>
-                  <Row>
-                    <Col sm={8}>
-                      { Boolean(formError) ?
-                        <>
-                          <Input hidden invalid/>
-                          <FormFeedback invalid>
-                            { formError }
-                          </FormFeedback>
-                        </>
-                      : <></> }
-                    </Col>
-                    <Col sm={4}>
-                      <Button type="submit" color="primary" className='float-end'>Login</Button>
-                    </Col>
-                  </Row>
-                </FormGroup>
-              </Form>
-            </CardBody>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+    <Grid textAlign='center' style={{ height: '100vh' }} verticalAlign='middle' className='login-page'>
+      <Grid.Column style={{ maxWidth: 450 }}>
+      <Segment stacked inverted className='login-form'>
+        <Header as='h2' color='teal' textAlign='center'>
+          Log-in to your account
+        </Header>
+        <Form size='large' onSubmit={handleSubmit} error={Boolean(formError)}>
+          <Form.Input
+            fluid
+            icon='user'
+            value={loginForm.username}
+            onChange={handleChange}
+            iconPosition='left'
+            name='username'
+            placeholder='User name'
+          />
+          <Form.Input
+            fluid
+            icon='lock'
+            iconPosition='left'
+            placeholder='Password'
+            type='password'
+            onChange={handleChange}
+            name='password'
+            value={loginForm.password}
+          />
+          <Message error content={formError} />
+          <Button color='teal' fluid size='large'>Login</Button>
+        </Form>
+      </Segment>
+    </Grid.Column>
+  </Grid>
   );
 }

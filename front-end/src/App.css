@@ -1,0 +1,23 @@
+.login-page {
+    background-color: #1F1F1F !important;
+}
+
+.login-form {
+    border: 1px solid #00b5ad !important;
+}
+
+.header-item {
+    color: #00b5ad !important;
+}
+
+.header-row {
+    border-radius: 0 !important;
+}
+
+.content-container {
+    min-height: calc(100vh - 66px) !important;
+}
+
+.with-sidebar {
+    width: calc(100vw - 150px) !important;
+}

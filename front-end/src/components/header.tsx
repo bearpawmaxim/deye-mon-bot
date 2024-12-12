@@ -1,24 +1,39 @@
 import { FC } from "react";
-import { Button, Nav, Navbar, NavbarBrand, NavbarText, NavItem } from "reactstrap";
 import apiClient from "../utils/apiClient";
 import { useAuth } from "../providers/authProvider";
+import { Button, Icon, Menu, MenuItemProps } from "semantic-ui-react";
+import { useNavigate } from "react-router-dom";
 
-export const Header: FC = () => {
-  const { token, setToken } = useAuth();
+export type HeaderProps = {
+  sidebarShown: boolean;
+  setSidebarShown: (shown: boolean) => void;
+}
+
+export const Header: FC<HeaderProps> = ({ sidebarShown, setSidebarShown }: HeaderProps) => {
+  const { setToken } = useAuth();
+  const navigate = useNavigate();
 
   const logout = () => {
     apiClient.post("auth/logout").then(() => setToken(null));
   };
 
-  return Boolean(token)
-    ? <Navbar full color="light" fixed="top">
-        <NavbarBrand href="/">Deye monitoring bot</NavbarBrand>
-        <Nav className="me-auto" navbar>
-          <NavItem className="float-end">
-          </NavItem>
-        </Nav>
-        <NavbarText>
-          <Button size="sm" color="danger" onClick={logout} outline>Logout</Button>
-        </NavbarText>
-    </Navbar> : <></>
+  const onLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, _: MenuItemProps) => {
+    e.preventDefault();
+    navigate('/');
+  };
+
+  const iconName = sidebarShown ? 'caret square left outline' : 'caret square right outline';
+  return (
+    <Menu inverted attached="top" className="header-row" size="massive" >
+      <Menu.Item className="sidebar header-item" as="a" onClick={() => setSidebarShown(!sidebarShown)}>
+        <Icon name={iconName} />
+      </Menu.Item>
+      <Menu.Item as="a" to="/" onClick={onLinkClick} className="header-item">
+        Deye monitoring bot control panel
+      </Menu.Item>
+      <Menu.Item as={Button} position="right" onClick={logout}>
+        <Icon name='sign-out' />Logout
+      </Menu.Item>
+    </Menu>
+  )
 }
