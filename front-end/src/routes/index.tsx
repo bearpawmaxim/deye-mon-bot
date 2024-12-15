@@ -3,6 +3,7 @@ import { useAuth } from "../providers/authProvider";
 import { ProtectedRoute } from "./protectedRoute";
 import { LoginPage, HomePage, ChannelsPage, StationsPage, BotsPage, ChatsPage } from "../pages";
 import AuthenticatedLayout from "../layouts/authenticatedLayout";
+import { PageHeaderButtonsProvider } from "../providers";
 
 export type MenuItem = RouteObject & {
   children?: MenuItem[];
@@ -44,7 +45,9 @@ const Routes = () => {
     {
       path: "/",
       element: (<ProtectedRoute>
-          <AuthenticatedLayout />
+          <PageHeaderButtonsProvider>
+            <AuthenticatedLayout />
+          </PageHeaderButtonsProvider>
         </ProtectedRoute>),
       children: RootRoutes,
     },

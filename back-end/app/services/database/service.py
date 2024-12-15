@@ -182,5 +182,27 @@ class DatabaseService:
             )
             self._session.add(user)
 
-    def get_bots(self):
-        return self._session.query(Bot).filter_by(enabled=True).all()
+    def get_bots(self, all: bool = False):
+        query = self._session.query(Bot)
+        if all:
+            return query.all()
+        return query.filter_by(enabled=True).all()
+
+    def save_bot(self, id: int, token: str, enabled: bool):
+        try:
+            bot = self._session.query(Bot).filter_by(id=id).with_for_update().first()   
+            if not bot:
+                new_record = Bot(
+                    bot_token = token,
+                    enabled = enabled
+                )
+                self._session.add(new_record)
+                return new_record.id
+            else:
+                bot.bot_token = token
+                bot.enabled = enabled
+                return bot.id
+        except Exception as e:
+            self._session.rollback()
+            print(f"Error updating bot: {e}")
+            return None

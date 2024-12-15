@@ -1,6 +1,6 @@
 import requests
 
-from .models import TelegramConfig
+from .models import TelegramConfig, TelegramUserInfo
 
 
 class TelegramService:
@@ -50,6 +50,25 @@ class TelegramService:
         try:
             response = requests.post(url, data=data)
             response.raise_for_status()
+        except requests.exceptions.HTTPError as err:
+            print(f"HTTP error occurred: {err}")
+            return None
+        except Exception as err:
+            print(f"Other error occurred: {err}")
+            return None
+
+    def get_bot_info(self, bot_id):
+        bot_token = self._bot_tokens[bot_id]
+        url = self._get_method_url(bot_token, 'getMe')
+        data = {}
+        try:
+            response = requests.post(url, data=data)
+            response.raise_for_status()
+
+            data = response.json()
+            if data['ok'] == True and data['result'] is not None:
+                return TelegramUserInfo.from_json(data['result'])
+            return None
         except requests.exceptions.HTTPError as err:
             print(f"HTTP error occurred: {err}")
             return None
