@@ -1,2 +1,2 @@
 export * from './authProvider';
-export * from './pageHeaderButtonsProvider';
+export * from './pageHeaderContentProvider';

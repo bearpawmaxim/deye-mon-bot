@@ -31,7 +31,7 @@ class BotService:
                 print(f'request from not allowed chat {chat_id}')
 
     def _populate_stations_data(self, template_data, stations, channel):
-        channel_station = None
+        message_station = None
         for station in stations:
             if not station.enabled:
                 continue
@@ -48,8 +48,8 @@ class BotService:
 
             if channel.station_id == station.id:
                 template_data['station'] = station_data
-                channel_station = station
-        return channel_station
+                message_station = station
+        return message_station
 
     def _add_average_methods(self, template_data, last_sent_time):
         for station_data in template_data['stations']:
@@ -67,36 +67,36 @@ class BotService:
                 template_data['station']['current'].station_id
             )
 
-    def _send_message(self, channel, template_data):
+    def _send_message(self, message, template_data):
         try:
-            message = generate_message(channel.message_template, template_data)
-            self._telegram.send_message(channel.bot.id, channel.channel_id, message)
-            channel.last_sent_time = datetime.now(timezone.utc)
+            message_content = generate_message(message.message_template, template_data)
+            self._telegram.send_message(message.bot.id, message.channel_id, message_content)
+            message.last_sent_time = datetime.now(timezone.utc)
         except Exception as e:
             print(f"Error sending message: {e}")
 
     def periodic_send(self):
         stations = self._database.get_stations()
-        channels = self._database.get_channels()
+        messages = self._database.get_messages()
 
-        for channel in channels:
+        for message in messages:
             template_data = {
                 'stations': [],
                 'strftime': datetime.now(self._message_timezone).strftime
             }
-            channel_station = self._populate_stations_data(template_data, stations, channel)
-            if channel.station_id is not None and channel_station is None:
-                print(f"channel's {channel.id} station is disabled")
+            message_station = self._populate_stations_data(template_data, stations, message)
+            if message.station_id is not None and message_station is None:
+                print(f"message's {message.id} station is disabled")
                 continue
 
-            self._add_average_methods(template_data, channel.last_sent_time)
+            self._add_average_methods(template_data, message.last_sent_time)
 
-            timeout = get_send_timeout(channel.timeout_template, template_data)
+            timeout = get_send_timeout(message.timeout_template, template_data)
             template_data['timeout'] = timeout
-            should_send = get_should_send(channel.should_send_template, template_data)
+            should_send = get_should_send(message.should_send_template, template_data)
             next_send_time = (
-                (channel.last_sent_time or datetime.min) + timedelta(seconds=timeout)
+                (message.last_sent_time or datetime.min) + timedelta(seconds=timeout)
             ).replace(tzinfo=timezone.utc)
 
             if should_send and next_send_time <= datetime.now(timezone.utc):
-                self._send_message(channel, template_data)
+                self._send_message(message, template_data)

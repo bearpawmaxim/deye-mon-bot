@@ -1,3 +1,5 @@
+import { BaseEditableState } from "./base";
+
 export type BaseServerBotItem = {
   id?: number;
   token: string;
@@ -12,14 +14,6 @@ export type BotItem = ServerBotItem & {
   changed: boolean;
 };
 
-export type BotsState = {
+export type BotsState = BaseEditableState & {
   bots: Array<BotItem>;
-  loading: boolean;
-  creating: boolean;
-  error: string | null;
 };
-
-export type SaveBotResponse = {
-  success: boolean;
-  id: number;
-}

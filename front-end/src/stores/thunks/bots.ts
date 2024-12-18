@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import apiClient from "../../utils/apiClient";
-import { BaseServerBotItem, SaveBotResponse, ServerBotItem } from "../types";
+import { BaseServerBotItem, BaseSaveDataResponse, ServerBotItem } from "../types";
 import { botSaved } from "../slices";
 import { RootState } from "../store";
 
@@ -24,7 +24,7 @@ export const saveBots = createAsyncThunk('bots/saveBot', async (_, { getState, d
         token: bot.token,
         enabled: bot.enabled,
       } as BaseServerBotItem;
-      const response = await apiClient.put<BaseServerBotItem, SaveBotResponse>('/bots/save', serverDto);
+      const response = await apiClient.put<BaseServerBotItem, BaseSaveDataResponse>('/bots/save', serverDto);
       dispatch(botSaved(response.id));
     });
     await Promise.all(promises);

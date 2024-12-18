@@ -1,28 +1,59 @@
 from datetime import datetime, timedelta, timezone
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Float, Integer, Numeric, func
-from app.models import Bot, AllowedChat, Channel, Station, StationData, DeyeStationData, DeyeStation, User
+from app.models import Bot, AllowedChat, Message, Station, StationData, DeyeStationData, DeyeStation, User
 
 class DatabaseService:
     def __init__(self, db: SQLAlchemy):
         self._db = db
         self._session = db.session
 
-    def get_last_sent(self, channel_id: str):
+    def get_messages(self, all: bool = False):
         try:
-            channel = self._session.query(Channel).filter_by(channel_id=channel_id).first()
-            last_sent_time = channel.last_sent_time
-            return last_sent_time
+            query = self._session.query(Message)
+            if all:
+                return query.all()
+            return query.filter_by(enabled=True).with_for_update().all()
         except Exception as e:
-            print(f"Error updating or inserting record: {e}")
-
-    def get_channels(self):
-        try:
-            channels = self._session.query(Channel).filter_by(enabled=True).with_for_update().all()
-            return channels
-        except Exception as e:
-            print(f"Error fetching channels: {e}")
+            print(f"Error fetching messages: {e}")
             return []
+
+    def get_message(self, message_id):
+        try:
+            return self._session.query(Message).filter_by(id=message_id).first()
+        except Exception as e:
+            print(f"Error fetching message id={message_id}: {e}")
+            return []
+
+    def save_message(self, message: Message):
+        try:
+            existing_message = self._session.query(Message).filter_by(id=message.id).with_for_update().first()   
+            if not existing_message:
+                new_record = Message(
+                    channel_id = message.channel_id,
+                    bot_id = message.bot_id,
+                    station_id = message.station_id,
+                    message_template = message.message_template,
+                    timeout_template = message.timeout_template,
+                    should_send_template = message.should_send_template,
+                    enabled = message.enabled
+                )
+                self._session.add(new_record)
+                return new_record.id
+            else:
+                existing_message.channel_id = message.channel_id
+                existing_message.bot_id = message.bot_id
+                existing_message.station_id = message.station_id
+                existing_message.message_template = message.message_template
+                existing_message.timeout_template = message.timeout_template
+                existing_message.should_send_template = message.should_send_template
+                existing_message.name = message.name
+                existing_message.enabled = message.enabled
+                return existing_message.id
+        except Exception as e:
+            self._session.rollback()
+            print(f"Error updating message: {e}")
+            return None
 
     def get_is_chat_allowed(self, chat_id: str) -> bool:
         try:

@@ -3,14 +3,15 @@ import { Segment, Sidebar } from "semantic-ui-react";
 import { FC, useState } from "react";
 import { RootRoutes } from "../routes";
 import { Header, PageHeader, SideMenu } from "../components";
-import { useHeaderButtons } from "../providers";
+import { useHeaderContent } from "../providers";
 
 
 const AuthenticatedLayout: FC = () => {
   const [sidebarShown, setSidebarShown] = useState(true);
+  const {headerButtons, headerText} = useHeaderContent();
+
   const location = useLocation();
-  const caption = RootRoutes.find(f => f.path === location.pathname)?.name;
-  const { headerButtons } = useHeaderButtons();
+  const caption = Boolean(headerText) ? headerText : RootRoutes.find(f => f.path === location.pathname)?.name;
 
   return <>
     <Header sidebarShown={sidebarShown} setSidebarShown={setSidebarShown} />

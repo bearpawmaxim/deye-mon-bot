@@ -1,4 +1,4 @@
-from .channel import Channel
+from .message import Message
 from .station import Station
 from .station_data import StationData
 from .allowed_chat import AllowedChat
@@ -7,4 +7,4 @@ from .user import User
 from .bot import Bot
 from .base import Base
 
-__all__ = [AllowedChat, Bot, Base, User, Channel, Station, StationData, DeyeStation, DeyeStationData, DeyeStationList]
+__all__ = [AllowedChat, Bot, Base, User, Message, Station, StationData, DeyeStation, DeyeStationData, DeyeStationList]

@@ -35,7 +35,7 @@ export const TokenEditDialog: FC<TokenEditDialogProps> = ({create, opened, setOp
     setEditingToken(token);
   };
 
-  return opened ? <Modal open={true}>
+  return <Modal open={opened}>
     <ModalHeader>{create ? 'Set' : 'Edit'} token</ModalHeader>
     <ModalContent>
       <ModalDescription>
@@ -57,5 +57,5 @@ export const TokenEditDialog: FC<TokenEditDialogProps> = ({create, opened, setOp
         positive
       />
     </ModalActions>
-  </Modal> : <></>
+  </Modal>
 }

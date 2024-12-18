@@ -1,14 +1,23 @@
 import { FC, useEffect, useState } from "react"
 import { Table, TableBody, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
-import { connect, useDispatch } from "react-redux";
-import { AppDispatch, RootState } from "../../stores/store";
+import { connect } from "react-redux";
+import { RootState, useAppDispatch } from "../../stores/store";
 import { cancelBotsEditing, fetchBots, saveBots } from "../../stores/thunks";
 import { cancelCreatingBot, createBot, startCreatingBot, updateBot } from "../../stores/slices";
 import { BotItemRow } from "./components";
-import { PageHeaderButton, useHeaderButtons } from "../../providers";
+import { PageHeaderButton, useHeaderContent } from "../../providers";
 import { createSelector } from "@reduxjs/toolkit";
 import { BotItem } from "../../stores/types";
 import { TokenEditDialog } from "./components/tokenEditDialog";
+
+
+type ComponentProps = {
+  bots: Array<BotItem>;
+  loading: boolean;
+  error: string | null;
+  changed: boolean;
+  creating: boolean;
+};
 
 const selectBots = (state: RootState) => state.bots.bots;
 
@@ -25,16 +34,8 @@ const mapStateToProps = (state: RootState): ComponentProps => ({
   creating: state.bots.creating,
 });
 
-type ComponentProps = {
-  bots: Array<BotItem>;
-  loading: boolean;
-  error: string | null;
-  changed: boolean;
-  creating: boolean;
-};
-
 const Component: FC<ComponentProps> = ({ bots, loading, error, changed, creating }: ComponentProps) => {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
   const [initiallyChanged, setInitiallyChanged] = useState(false);
 
   useEffect(() => {
@@ -51,7 +52,7 @@ const Component: FC<ComponentProps> = ({ bots, loading, error, changed, creating
     { text: 'Cancel', color: "black", onClick: () => dispatch(cancelBotsEditing()), disabled: !dataChanged, },
   ];
 
-  const { setHeaderButtons, updateButtonAttributes } = useHeaderButtons();
+  const { setHeaderButtons, updateButtonAttributes } = useHeaderContent();
   useEffect(() => {
     setHeaderButtons(getHeaderButtons(false));
     return () => setHeaderButtons([]);

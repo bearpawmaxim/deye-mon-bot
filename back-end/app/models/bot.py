@@ -7,5 +7,3 @@ class Bot(Base):
     id        = Column(Integer, primary_key=True, autoincrement=True)
     bot_token = Column(String(256))
     enabled   = Column(Boolean, default=True)
-
-    # channels   = relationship("Channel", back_populates="channel", cascade="all, delete-orphan")

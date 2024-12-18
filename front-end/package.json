@@ -10,8 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@codemirror/autocomplete": "^6.18.4",
+    "@codemirror/lang-html": "^6.4.9",
+    "@codemirror/lang-markdown": "^6.3.1",
     "@reduxjs/toolkit": "^2.5.0",
+    "@uiw/codemirror-extensions-langs": "^4.23.7",
+    "@uiw/react-codemirror": "^4.23.7",
     "axios": "^1.7.9",
+    "codemirror": "^6.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-redux": "^9.2.0",

@@ -23,7 +23,7 @@ export const BotItemRow: FC<BotItemRowProps> = ({ item, loading, enableChanged, 
     </TableCell>
     <TableCell width={"1"} textAlign="center">
       <TokenEditDialog changed={tokenChanged} create={false} opened={open} setOpened={setOpen} token={item.token} />
-      <Label color={loading ? 'grey': 'teal'} onClick={() => setOpen(true)}>Edit</Label>
+      <Label color={loading ? 'grey': 'teal'} onClick={() => setOpen(true)} style={{ cursor: 'pointer' }}>Edit</Label>
     </TableCell>
     <TableCell width={"1"} textAlign="center">
       <Checkbox disabled={loading} checked={item.enabled} onChange={enableChange}></Checkbox>

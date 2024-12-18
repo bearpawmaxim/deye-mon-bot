@@ -20,7 +20,6 @@ def register(app, services: Services):
                 'token': bot.bot_token,
                 'enabled': bot.enabled
             })
-            print(bots_dict)
         return jsonify(bots_dict)
     
     @app.route('/api/bots/save', methods=['PUT'])

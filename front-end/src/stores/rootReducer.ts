@@ -1,6 +1,8 @@
 import { combineReducers } from "redux";
-import {  botsReducer } from "./slices";
+import { botsReducer, messagesReducer, stationsReducer } from "./slices";
 
 export const rootReducer = combineReducers({
-  ['bots']: botsReducer
+  ['bots']: botsReducer,
+  ['stations']: stationsReducer,
+  ['messages']: messagesReducer,
 });

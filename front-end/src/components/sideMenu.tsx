@@ -20,6 +20,9 @@ export const SideMenu: FC<SideMenuProps> = ({ sidebarShown }: SideMenuProps) => 
     <Sidebar as={Menu} width='thin' height='100%' vertical inline="true" inverted visible={sidebarShown}>
       {
         RootRoutes.map((route: MenuItem) => {
+          if (route.skipForMenu) {
+            return;
+          }
           return (<Menu.Item as='a' key={`link_${route.path}`}
             className={location.pathname === route.path ? "active" : ""}
             color='teal' href={route.path}

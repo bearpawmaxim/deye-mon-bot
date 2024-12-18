@@ -9,24 +9,28 @@ export type PageHeaderButton = {
   onClick: () => void;
 };  
   
-export type PageHeaderButtonsContextType = {
+export type PageHeaderContentContextType = {
   headerButtons: PageHeaderButton[];
+  headerText?: string;
   setHeaderButtons: (buttons: PageHeaderButton[]) => void;
   updateButtonAttributes: (index: number, newAttributes: Record<string, unknown>) => void;
+  setHeaderText: (caption: string) => void;
 };
 
-const PageHeaderButtonsContext = createContext<PageHeaderButtonsContextType>({
+const PageHeaderContentContext = createContext<PageHeaderContentContextType>({
   headerButtons: [],
   setHeaderButtons: () => {},
   updateButtonAttributes: (_0, _1) => {},
+  setHeaderText: (_) => {},
 });
 
-type PageHeaderButtonsProviderProps = {
+type PageHeaderContentProviderProps = {
   children?: ReactNode;
 }
 
-export const PageHeaderButtonsProvider = ({ children }: PageHeaderButtonsProviderProps) => {
+export const PageHeaderContentProvider = ({ children }: PageHeaderContentProviderProps) => {
   const [headerButtons, setHeaderButtons] = useState<PageHeaderButton[]>([]);
+  const [headerText, setHeaderText] = useState<string | undefined>();
 
   const updateButtonAttributes = (index: number, newAttributes: Record<string, unknown>) => {
     setHeaderButtons((prevButtons) =>
@@ -37,10 +41,10 @@ export const PageHeaderButtonsProvider = ({ children }: PageHeaderButtonsProvide
   };
 
   return (
-    <PageHeaderButtonsContext.Provider value={{ headerButtons, setHeaderButtons, updateButtonAttributes }}>
+    <PageHeaderContentContext.Provider value={{ headerButtons, headerText, setHeaderButtons, updateButtonAttributes, setHeaderText }}>
       {children}
-    </PageHeaderButtonsContext.Provider>
+    </PageHeaderContentContext.Provider>
   );
 };
 
-export const useHeaderButtons = () => useContext(PageHeaderButtonsContext);
+export const useHeaderContent = () => useContext(PageHeaderContentContext);

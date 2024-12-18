@@ -1,13 +1,14 @@
 import { RouteObject, RouterProvider, createBrowserRouter } from "react-router-dom";
 import { useAuth } from "../providers/authProvider";
 import { ProtectedRoute } from "./protectedRoute";
-import { LoginPage, HomePage, ChannelsPage, StationsPage, BotsPage, ChatsPage } from "../pages";
+import { LoginPage, HomePage, StationsPage, BotsPage, ChatsPage, MessagesPage, MessageEditPage } from "../pages";
 import AuthenticatedLayout from "../layouts/authenticatedLayout";
-import { PageHeaderButtonsProvider } from "../providers";
+import { PageHeaderContentProvider } from "../providers";
 
 export type MenuItem = RouteObject & {
   children?: MenuItem[];
   name?: string;
+  skipForMenu?: boolean;
 }
 
 export const RootRoutes: MenuItem[] = [
@@ -27,9 +28,15 @@ export const RootRoutes: MenuItem[] = [
     Component: StationsPage,
   },
   {
-    path: "/channels",
-    name: "Channels",
-    Component: ChannelsPage,
+    path: "/messages",
+    name: "Messages",
+    Component: MessagesPage,
+  },
+  {
+    path: "/messages/edit/:messageId",
+    name: "Editing message",
+    Component: MessageEditPage,
+    skipForMenu: true,
   },
   {
     path: "/chats",
@@ -45,9 +52,9 @@ const Routes = () => {
     {
       path: "/",
       element: (<ProtectedRoute>
-          <PageHeaderButtonsProvider>
+          <PageHeaderContentProvider>
             <AuthenticatedLayout />
-          </PageHeaderButtonsProvider>
+          </PageHeaderContentProvider>
         </ProtectedRoute>),
       children: RootRoutes,
     },

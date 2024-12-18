@@ -53,3 +53,25 @@ class TelegramUserInfo:
             f"can_connect_to_business={self.can_connect_to_business}, "
             f"has_main_web_app={self.has_main_web_app})"
         )
+    
+class TelegramChatInfo:
+    def __init__(
+        self,
+        id: int,
+        type: str,
+        title: str,
+        #username: str,
+    ):
+        self.id = id
+        self.type = type
+        self.title = title
+        #self.username = username
+
+    @classmethod
+    def from_json(cls, data: dict):
+        return cls(
+            id = data['id'],
+            type = data['type'],
+            title = data['title'],
+            #username = data['username'],
+        )
