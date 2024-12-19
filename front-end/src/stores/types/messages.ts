@@ -41,7 +41,6 @@ export type TemplatePreviewRequest = {
 export type MessagesState = BaseEditableState & {
   messages: Array<ServerMessageListItem>;
   editingMessage?: ServerMessageItem;
-  creatingMessage?: ServerMessageItem;
   templatePreview: TemplatePreview;
   changed: boolean;
 };

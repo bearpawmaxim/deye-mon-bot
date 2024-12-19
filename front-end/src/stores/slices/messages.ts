@@ -29,6 +29,12 @@ export const messagesSlice = createSlice({
         state.editingMessage = { ...state.editingMessage, [payload.name]: payload.value } as ServerMessageItem;
         state.changed = true;
       },
+      createMessage(state) {
+        state.editingMessage = {
+          name: 'New message',
+          enabled: true,
+        } as ServerMessageItem;
+      },
       finishEditingMessage(state) {
         delete state.editingMessage;
       },
@@ -91,5 +97,5 @@ export const messagesSlice = createSlice({
     },
   });
   
-  export const { updateMessage, finishEditingMessage } = messagesSlice.actions;
+  export const { updateMessage, createMessage, finishEditingMessage } = messagesSlice.actions;
   export const messagesReducer = messagesSlice.reducer;

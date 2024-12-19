@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import apiClient from "../../utils/apiClient";
-import { BaseSaveDataResponse, BaseServerMessageItem, ServerMessageItem, ServerMessageListItem, TemplatePreview, TemplatePreviewRequest } from "../types";
+import { BaseSaveDataResponse, ServerMessageItem, ServerMessageListItem, TemplatePreview, TemplatePreviewRequest } from "../types";
 import { RootState } from "../store";
 
 export const fetchMessages = createAsyncThunk('messages/fetchMessages', async (_, thunkAPI) => {
@@ -40,8 +40,8 @@ export const editMessage = createAsyncThunk<ServerMessageItem, number>('messages
 export const getTemplatePreview = createAsyncThunk<TemplatePreview, TemplatePreviewRequest>(
     'messages/templatePreview', async (request): Promise<TemplatePreview> => {
   try {
-    const response = await apiClient.post<TemplatePreviewRequest, TemplatePreview>('/messages/getTemplate', request);
-    return response;
+    const response = await apiClient.post<TemplatePreview>('/messages/getTemplate', request);
+    return response.data;
   } catch (error: any) {
     return Promise.reject(error.message || 'Failed to generate template preview');
   }
@@ -54,9 +54,9 @@ export const saveMessage = createAsyncThunk('messages/saveChannel', async (_,
     const data = {
       ...state.messages.editingMessage
     };
-    const response = await apiClient.patch<BaseServerMessageItem, BaseSaveDataResponse>('/messages/save', data);
+    const response = await apiClient.patch<BaseSaveDataResponse>('/messages/save', data);
     dispatch(fetchMessages());
-    return fulfillWithValue(response.id);
+    return fulfillWithValue(response.data.id);
   } catch (error: any) {
     return rejectWithValue(error.message || 'Failed to save message');
   }

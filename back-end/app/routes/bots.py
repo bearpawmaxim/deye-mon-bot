@@ -1,10 +1,12 @@
 from flask import jsonify, request
+from flask_jwt_extended import jwt_required
 from app.services import Services
 
 
 def register(app, services: Services):
 
     @app.route('/api/bots/bots', methods=['POST'])
+    @jwt_required()
     def get_bots():
         bots = services.database.get_bots(all=True)
         bots_dict = []
@@ -23,6 +25,7 @@ def register(app, services: Services):
         return jsonify(bots_dict)
     
     @app.route('/api/bots/save', methods=['PUT'])
+    @jwt_required()
     def save_bot():
         id = request.json.get("id", None)
         token = request.json.get("token", None)

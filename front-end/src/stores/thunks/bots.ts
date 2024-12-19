@@ -24,8 +24,8 @@ export const saveBots = createAsyncThunk('bots/saveBot', async (_, { getState, d
         token: bot.token,
         enabled: bot.enabled,
       } as BaseServerBotItem;
-      const response = await apiClient.put<BaseServerBotItem, BaseSaveDataResponse>('/bots/save', serverDto);
-      dispatch(botSaved(response.id));
+      const response = await apiClient.put<BaseSaveDataResponse>('/bots/save', serverDto);
+      dispatch(botSaved(response.data.id));
     });
     await Promise.all(promises);
     dispatch(fetchBots());

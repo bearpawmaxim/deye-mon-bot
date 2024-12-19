@@ -47,7 +47,7 @@ const Component: FC<ComponentProps> = ({ bots, loading, error, changed, creating
   }
 
   const getHeaderButtons = (dataChanged: boolean): PageHeaderButton[] => [
-    { text: 'Add Bot', color: "green", onClick: () => create(), disabled: false, },
+    { text: 'Create', color: "teal", onClick: () => create(), disabled: false, },
     { text: 'Save', color: "green", onClick: () => dispatch(saveBots()), disabled: !dataChanged, },
     { text: 'Cancel', color: "black", onClick: () => dispatch(cancelBotsEditing()), disabled: !dataChanged, },
   ];

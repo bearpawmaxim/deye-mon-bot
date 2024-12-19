@@ -5,6 +5,7 @@ import { AppDispatch, RootState } from "../../stores/store";
 import { fetchMessages } from "../../stores/thunks";
 import { ServerMessageListItem } from "../../stores/types";
 import { useNavigate } from "react-router-dom";
+import { PageHeaderButton, useHeaderContent } from "../../providers";
 
 type ComponentProps = {
   messages: Array<ServerMessageListItem>;
@@ -22,12 +23,24 @@ const mapStateToProps = (state: RootState): ComponentProps => ({
 
 const Component: FC<ComponentProps> = ({ messages }: ComponentProps) => {
   const dispatch = useDispatch<AppDispatch>();
+    const getHeaderButtons = (): PageHeaderButton[] => [
+      { text: 'Create', color: "teal", onClick: () => onCreateClick(), disabled: false, },
+    ];
+    const { setHeaderButtons } = useHeaderContent();
+    useEffect(() => {
+      setHeaderButtons(getHeaderButtons());
+      return () => setHeaderButtons([]);
+    }, [setHeaderButtons]);  
 
   useEffect(() => {
     dispatch(fetchMessages());
   }, [dispatch]);
 
   const navigate = useNavigate();
+
+  const onCreateClick = () => {
+    navigate(`/messages/create`);
+  }
 
   const onEditClick = (messageId: number, _1: unknown, _2: unknown) => {
     navigate(`/messages/edit/${messageId}`);
@@ -50,9 +63,9 @@ const Component: FC<ComponentProps> = ({ messages }: ComponentProps) => {
         messages.map((message, index) => <TableRow key={`message_${index}`}>
           <TableCell>{message.name}</TableCell>
           <TableCell>{message.channelName}</TableCell>
-          <TableCell>{message.stationName}</TableCell>
+          <TableCell>{Boolean(message.stationName) ? message.stationName : 'All stations'}</TableCell>
           <TableCell>{message.botName}</TableCell>
-          <TableCell>{message.lastSentTime.toString()}</TableCell>
+          <TableCell>{message.lastSentTime?.toString() ?? 'Never'}</TableCell>
           <TableCell textAlign='center'>
             <Label color={message.enabled ? 'green' : 'red'} content={message.enabled ? 'Yes' : 'No'} />
           </TableCell>

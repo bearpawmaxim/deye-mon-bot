@@ -1,4 +1,5 @@
 from flask import jsonify, request
+from flask_jwt_extended import jwt_required
 from app.services import Services
 from app.models import Message
 
@@ -20,6 +21,7 @@ def register(app, services: Services):
             return 'Invalid channel identifier'
 
     @app.route('/api/messages/messages', methods=['POST'])
+    @jwt_required()
     def get_messages():
         messages = services.database.get_messages(all=True)
         messages_dict = []
@@ -37,8 +39,9 @@ def register(app, services: Services):
                 'enabled': message.enabled,
             })
         return jsonify(messages_dict)
-    
+
     @app.route('/api/messages/getChannel', methods=['POST'])
+    @jwt_required()
     def get_channel():
         channel_id = request.json.get('channelId', None)
         bot_id = request.json.get('botId', None)
@@ -48,6 +51,7 @@ def register(app, services: Services):
         return jsonify({ 'success': True, 'channelName': channel_name })
 
     @app.route('/api/messages/message/<message_id>', methods=['POST'])
+    @jwt_required()
     def get_message(message_id: int):
         message = services.database.get_message(message_id)
         bot_name = _get_bot_name(message.bot_id)
@@ -70,7 +74,9 @@ def register(app, services: Services):
         })
 
     @app.route('/api/messages/save', methods=['PATCH'])
+    @jwt_required()
     def save_message():
+        station_id = request.json.get("stationId", None)
         message = Message(
             id = request.json.get("id", None),
             name = request.json.get("name"),
@@ -78,7 +84,7 @@ def register(app, services: Services):
             message_template = request.json.get("messageTemplate"),
             timeout_template = request.json.get("timeoutTemplate"),
             should_send_template = request.json.get("shouldSendTemplate", None),
-            station_id = request.json.get("stationId", None),
+            station_id = station_id if station_id is not None and station_id != 0 else None,
             bot_id = request.json.get("botId"),
             enabled = request.json.get("enabled")
         )

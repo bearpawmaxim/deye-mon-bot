@@ -30,6 +30,7 @@ class DatabaseService:
             existing_message = self._session.query(Message).filter_by(id=message.id).with_for_update().first()   
             if not existing_message:
                 new_record = Message(
+                    name = message.name,
                     channel_id = message.channel_id,
                     bot_id = message.bot_id,
                     station_id = message.station_id,
@@ -39,6 +40,7 @@ class DatabaseService:
                     enabled = message.enabled
                 )
                 self._session.add(new_record)
+                self._session.flush()
                 return new_record.id
             else:
                 existing_message.channel_id = message.channel_id
@@ -96,6 +98,7 @@ class DatabaseService:
                     start_operating_time = datetime.fromtimestamp(station.start_operating_time, timezone.utc)
                 )
                 self._session.add(new_record)
+                self._session.flush()
             elif (
                 existing_station.connection_status != station.connection_status or
                 existing_station.grid_interconnection_type != station.grid_interconnection_type

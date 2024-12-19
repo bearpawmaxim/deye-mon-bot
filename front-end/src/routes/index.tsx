@@ -35,7 +35,13 @@ export const RootRoutes: MenuItem[] = [
   {
     path: "/messages/edit/:messageId",
     name: "Editing message",
-    Component: MessageEditPage,
+    element: <MessageEditPage isEdit={true} />,
+    skipForMenu: true,
+  },
+  {
+    path: "/messages/create",
+    name: "Creating a new message",
+    element: <MessageEditPage isEdit={false} />,
     skipForMenu: true,
   },
   {
