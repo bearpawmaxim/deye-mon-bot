@@ -1,7 +1,7 @@
 import { FC, useEffect } from "react"
-import { connect, useDispatch } from "react-redux";
+import { connect } from "react-redux";
 import { Label, Table, TableBody, TableCell, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
-import { AppDispatch, RootState } from "../../stores/store";
+import { RootState, useAppDispatch } from "../../stores/store";
 import { fetchMessages } from "../../stores/thunks";
 import { ServerMessageListItem } from "../../stores/types";
 import { useNavigate } from "react-router-dom";
@@ -22,7 +22,7 @@ const mapStateToProps = (state: RootState): ComponentProps => ({
 });
 
 const Component: FC<ComponentProps> = ({ messages }: ComponentProps) => {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
     const getHeaderButtons = (): PageHeaderButton[] => [
       { text: 'Create', color: "teal", onClick: () => onCreateClick(), disabled: false, },
     ];

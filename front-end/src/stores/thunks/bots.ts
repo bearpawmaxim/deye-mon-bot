@@ -18,7 +18,7 @@ export const saveBots = createAsyncThunk('bots/saveBot', async (_, { getState, d
   try {
     const state = getState() as RootState;
     const botsState = state.bots;
-    const promises = botsState.bots.map(async bot => {
+    const promises = botsState.bots.filter(b => b.changed).map(async bot => {
       const serverDto = {
         id: bot.id,
         token: bot.token,

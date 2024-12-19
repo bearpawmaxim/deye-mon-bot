@@ -152,6 +152,19 @@ class DatabaseService:
             print(f"Error fetching stations: {e}")
             return []
 
+    def save_station_state(self, id: int, enabled: bool):
+        try:
+            station = self._session.query(Station).filter_by(id=id).with_for_update().first()   
+            if not station:
+                return None
+            else:
+                station.enabled = enabled
+                return station.id
+        except Exception as e:
+            self._session.rollback()
+            print(f"Error updating station: {e}")
+            return None
+
     def get_station_data(self, station_id: str):
         try:
             stations = (
