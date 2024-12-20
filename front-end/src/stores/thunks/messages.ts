@@ -47,7 +47,7 @@ export const getTemplatePreview = createAsyncThunk<TemplatePreview, TemplatePrev
   }
 });
 
-export const saveMessage = createAsyncThunk('messages/saveChannel', async (_,
+export const saveMessage = createAsyncThunk('messages/saveMessage', async (_,
     { getState, fulfillWithValue, dispatch, rejectWithValue }) => {
   try {
     const state = getState() as RootState;
