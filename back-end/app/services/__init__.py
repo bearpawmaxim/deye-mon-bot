@@ -1,3 +1,4 @@
+from flask_executor import Executor
 from flask_jwt_extended import JWTManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_apscheduler import APScheduler
@@ -17,6 +18,7 @@ class Services:
     database: DatabaseService
     bot: BotService
     authorization: AuthorizationService
+    executor: Executor
 
     def __init__(
         self,
@@ -26,7 +28,8 @@ class Services:
         scheduler: APScheduler,
         database: DatabaseService,
         bot: BotService,
-        authorization: AuthorizationService
+        authorization: AuthorizationService,
+        executor: Executor
     ):
         self.db = db
         self.deye_api = deye_api
@@ -35,6 +38,7 @@ class Services:
         self.database = database
         self.bot = bot
         self.authorization = authorization
+        self.executor = executor
 
 
 def initialize_services(config: Config):
@@ -66,6 +70,8 @@ def initialize_services(config: Config):
 
     authorization = AuthorizationService(database)
 
+    executor = Executor()
+
     return Services(
         db = db,
         deye_api = deye_api,
@@ -73,7 +79,8 @@ def initialize_services(config: Config):
         scheduler = scheduler,
         database = database,
         bot = bot,
-        authorization = authorization
+        authorization = authorization,
+        executor = executor
     )
 
 __all__ = [Services, AuthorizationService, DatabaseService, BotService, DeyeConfig,

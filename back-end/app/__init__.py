@@ -15,6 +15,7 @@ def register_extensions(app, services: Services):
     services.authorization.init_app(app)
     services.scheduler.init_app(app)
     services.scheduler.start()
+    services.executor.init_app(app)
 
 def create_user(app, config, services: Services):
     with app.app_context():

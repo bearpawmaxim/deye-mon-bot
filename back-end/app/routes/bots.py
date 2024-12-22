@@ -9,19 +9,23 @@ def register(app, services: Services):
     @jwt_required()
     def get_bots():
         bots = services.database.get_bots(all=True)
-        bots_dict = []
-        for bot in bots:
+
+        def process_bot(bot):
             bot_name = 'Invalid bot token'
             try:
-              bot_name = services.telegram.get_bot_info(bot.id).username
+                bot_name = services.telegram.get_bot_info(bot.id).username
             except:
-              print(f'Cannot get bot info for bot {bot.id}')
-            bots_dict.append({
+                print(f'Cannot get bot info for bot {bot.id}')
+            return {
                 'id': bot.id,
                 'name': bot_name,
                 'token': bot.bot_token,
                 'enabled': bot.enabled
-            })
+            }
+
+        futures = [services.executor.submit(process_bot, bot) for bot in bots]
+        bots_dict = [future.result() for future in futures]
+
         return jsonify(bots_dict)
     
     @app.route('/api/bots/save', methods=['PUT'])

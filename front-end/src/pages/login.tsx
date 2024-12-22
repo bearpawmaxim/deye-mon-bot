@@ -49,7 +49,7 @@ const Component: FC<ComponentProps> = ({ loading, error, token }) => {
     });
     event.preventDefault();
   }
- 
+
   return (
     <Grid textAlign='center' style={{ height: '100vh' }} verticalAlign='middle' className='login-page'>
       <Grid.Column style={{ maxWidth: 450 }}>

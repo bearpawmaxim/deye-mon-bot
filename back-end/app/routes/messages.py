@@ -24,12 +24,12 @@ def register(app, services: Services):
     @jwt_required()
     def get_messages():
         messages = services.database.get_messages(all=True)
-        messages_dict = []
-        for message in messages:
+
+        def process_message(message):
             bot_name = _get_bot_name(message.bot_id)
             channel_name = _get_channel_name(message.channel_id, message.bot_id)
             station_name = message.station.station_name if message.station else ''
-            messages_dict.append({
+            return {
                 'id': message.id,
                 'name': message.name,
                 'channelName': channel_name,
@@ -37,7 +37,11 @@ def register(app, services: Services):
                 'botName': bot_name,
                 'lastSentTime': message.last_sent_time,
                 'enabled': message.enabled,
-            })
+            }
+
+        futures = [services.executor.submit(process_message, message) for message in messages]
+        messages_dict = [future.result() for future in futures]
+
         return jsonify(messages_dict)
 
     @app.route('/api/messages/getChannel', methods=['POST'])
