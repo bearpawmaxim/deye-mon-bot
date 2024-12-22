@@ -1,9 +1,10 @@
 import { RouteObject, RouterProvider, createBrowserRouter } from "react-router-dom";
-import { useAuth } from "../providers/authProvider";
 import { ProtectedRoute } from "./protectedRoute";
-import { LoginPage, HomePage, StationsPage, BotsPage, ChatsPage, MessagesPage, MessageEditPage } from "../pages";
-import AuthenticatedLayout from "../layouts/authenticatedLayout";
-import { PageHeaderContentProvider } from "../providers";
+import { LoginPage, HomePage, StationsPage, BotsPage,
+  ChatsPage, MessagesPage, MessageEditPage } from "../pages";
+import { FC } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "../stores/store";
 
 export type MenuItem = RouteObject & {
   children?: MenuItem[];
@@ -51,26 +52,25 @@ export const RootRoutes: MenuItem[] = [
   }
 ];
 
-const Routes = () => {
-  const { token } = useAuth();
+const Routes: FC = () => {
+  const token = useSelector<RootState>(state => state.auth.token);
+
+  const loginRoute = {
+    path: "/login",
+    Component: LoginPage,
+  } as RouteObject;
 
   const routesForAuthenticatedOnly: MenuItem[] = [
+    loginRoute,
     {
       path: "/",
-      element: (<ProtectedRoute>
-          <PageHeaderContentProvider>
-            <AuthenticatedLayout />
-          </PageHeaderContentProvider>
-        </ProtectedRoute>),
+      element: (<ProtectedRoute/>),
       children: RootRoutes,
     },
   ];
 
   const routesForNotAuthenticated: RouteObject[] = [
-    {
-      path: "/login",
-      Component: LoginPage,
-    } as RouteObject,
+    loginRoute
   ];
 
   const router = createBrowserRouter([

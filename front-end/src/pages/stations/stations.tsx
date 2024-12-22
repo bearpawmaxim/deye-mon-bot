@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react"
-import { Checkbox, CheckboxProps, Icon, Table, TableBody, TableCell, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
+import { Checkbox, CheckboxProps, Icon, Segment, Table, TableBody, TableCell, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
 import { StationItem } from "../../stores/types";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { connect } from "react-redux";
@@ -64,35 +64,37 @@ const Component: FC<ComponentProps> = ({ stations, changed, loading, error }: Co
     }, 1);
   }
 
-  return <Table striped celled inverted selectable compact>
-    <TableHeader>
-      <TableRow>
-        <TableHeaderCell>Station</TableHeaderCell>
-        <TableHeaderCell>Connection status</TableHeaderCell>
-        <TableHeaderCell>Mode</TableHeaderCell>
-        <TableHeaderCell>Last update</TableHeaderCell>
-        <TableHeaderCell width={1}>Active</TableHeaderCell>
-      </TableRow>
-    </TableHeader>
-    <TableBody>
-      {
-        (stations ?? []).map((station, index) => {
-          return <TableRow key={`station_${index}`}>
-            <TableCell>
-              <Icon name="pencil" color={!station.changed || loading ? 'grey' : 'orange'}></Icon>
-              {station.stationName}
-            </TableCell>
-            <TableCell>{station.connectionStatus}</TableCell>
-            <TableCell>{station.gridInterconnectionType}</TableCell>
-            <TableCell>{station.lastUpdateTime?.toString() ?? 'Never'}</TableCell>
-            <TableCell>
-              <Checkbox checked={station.enabled} onChange={onStationEnableChange.bind(this, station.id)} />
-            </TableCell>
-          </TableRow>
-        })
-      }
-    </TableBody>
-  </Table>
+  return <Segment basic loading={loading}>
+    <Table striped celled inverted selectable compact>
+      <TableHeader>
+        <TableRow>
+          <TableHeaderCell>Station</TableHeaderCell>
+          <TableHeaderCell>Connection status</TableHeaderCell>
+          <TableHeaderCell>Mode</TableHeaderCell>
+          <TableHeaderCell>Last update</TableHeaderCell>
+          <TableHeaderCell width={1}>Active</TableHeaderCell>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {
+          (stations ?? []).map((station, index) => {
+            return <TableRow key={`station_${index}`}>
+              <TableCell>
+                <Icon name="pencil" color={!station.changed || loading ? 'grey' : 'orange'}></Icon>
+                {station.stationName}
+              </TableCell>
+              <TableCell>{station.connectionStatus}</TableCell>
+              <TableCell>{station.gridInterconnectionType}</TableCell>
+              <TableCell>{station.lastUpdateTime?.toString() ?? 'Never'}</TableCell>
+              <TableCell>
+                <Checkbox checked={station.enabled} onChange={onStationEnableChange.bind(this, station.id)} />
+              </TableCell>
+            </TableRow>
+          })
+        }
+      </TableBody>
+    </Table>
+  </Segment>
 };
 
 export const StationsPage = connect(mapStateToProps)(Component);

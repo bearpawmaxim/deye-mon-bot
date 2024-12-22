@@ -10,10 +10,8 @@ class DatabaseService:
 
     def get_messages(self, all: bool = False):
         try:
-            query = self._session.query(Message)
-            if all:
-                return query.all()
-            return query.filter_by(enabled=True).with_for_update().all()
+            query = self._session.query(Message).with_for_update()
+            return query.all() if all else query.filter_by(enabled=True).all()
         except Exception as e:
             print(f"Error fetching messages: {e}")
             return []
@@ -144,10 +142,10 @@ class DatabaseService:
             self._session.rollback()
             print(f"Error updating station data: {e}")
 
-    def get_stations(self):
+    def get_stations(self, all: bool = False):
         try:
-            stations = self._session.query(Station).all()
-            return stations
+            query = self._session.query(Station)
+            return query.all() if all else query.filter_by(enabled=True).all()
         except Exception as e:
             print(f"Error fetching stations: {e}")
             return []
@@ -231,9 +229,7 @@ class DatabaseService:
 
     def get_bots(self, all: bool = False):
         query = self._session.query(Bot)
-        if all:
-            return query.all()
-        return query.filter_by(enabled=True).all()
+        return query.all() if all else query.filter_by(enabled=True).all()
 
     def save_bot(self, id: int, token: str, enabled: bool):
         try:

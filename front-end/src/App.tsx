@@ -1,16 +1,19 @@
 import { Provider } from 'react-redux';
 import './App.css'
-import AuthProvider from "./providers/authProvider";
 import Routes from './routes';
 import { store } from './stores/store';
+import { getToken } from './utils';
+import { fetchUserData } from './stores/thunks';
 
 function App() {
+  if (getToken()) {
+    store.dispatch(fetchUserData());
+  }  
+
   return (
-    <AuthProvider>
-      <Provider store={store}>
-        <Routes />
-      </Provider>
-    </AuthProvider>
+    <Provider store={store}>
+      <Routes />
+    </Provider>
   )
 }
 

@@ -4,7 +4,11 @@ export type BaseEditableState = {
   error: string | null;
 };
 
-export type BaseSaveDataResponse = {
+export type BaseResponse = {
   success: boolean;
+  error?: string;
+}
+
+export type BaseSaveDataResponse = BaseResponse & {
   id: number;
 };

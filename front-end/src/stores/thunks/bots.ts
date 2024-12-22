@@ -1,8 +1,8 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import apiClient from "../../utils/apiClient";
 import { BaseServerBotItem, BaseSaveDataResponse, ServerBotItem } from "../types";
 import { botSaved } from "../slices";
 import { RootState } from "../store";
+import apiClient from "../../utils/apiClient";
 
 
 export const fetchBots = createAsyncThunk('bots/fetchBots', async (_, thunkAPI) => {

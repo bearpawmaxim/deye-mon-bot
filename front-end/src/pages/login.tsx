@@ -1,19 +1,35 @@
-import { FC, FormEvent, useState } from 'react'
-import apiClient from '../utils/apiClient';
-import { useAuth } from '../providers/authProvider';
-import { useNavigate } from 'react-router-dom';
+import { FC, FormEvent, useEffect, useState } from 'react'
 import { Button, Form, Grid, Header, InputOnChangeData, Message, Segment } from 'semantic-ui-react';
+import { login } from '../stores/thunks';
+import { RootState, useAppDispatch } from '../stores/store';
+import { connect } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
-export const LoginPage: FC = () => {
-  const { setToken } = useAuth();
-  const navigate = useNavigate();
+type ComponentProps = {
+  loading: boolean;
+  error?: string;
+  token: string | null;
+};
 
+const mapStateToProps = (state: RootState): ComponentProps => ({
+  loading: state.auth.loading,
+  error: state.auth.error,
+  token: state.auth.token,
+});
+
+const Component: FC<ComponentProps> = ({ loading, error, token }) => {
+  const dispatch = useAppDispatch();
   const [loginForm, setloginForm] = useState({
     username: "",
     password: ""
   });
+  const navigate = useNavigate();
 
-  const [formError, setFormError] = useState('')
+  useEffect(() => {
+    if (token) {
+      navigate('/');
+    }
+  }, [token]);
 
   function handleChange(_: unknown, data: InputOnChangeData) { 
     const { value, name } = data;
@@ -23,28 +39,14 @@ export const LoginPage: FC = () => {
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    apiClient.post("auth/login", {
-        username: loginForm.username,
-        password: loginForm.password
-      }).then((response) => {
-      const data = response.data;
-      if (data.success) {
-        setToken(response.data.access_token);
-        navigate("/", { replace: true });
-      } else {
-        setFormError(data.error);
-      }
-    }).catch((error) => {
-      if (error.response?.data?.error) {
-        setFormError(error.response.data.error);
-      }
-    });
-
+    dispatch(login({
+      username: loginForm.username,
+      password: loginForm.password,
+    }));
     setloginForm({
       username: loginForm.username,
       password: ""
     });
-
     event.preventDefault();
   }
  
@@ -55,7 +57,7 @@ export const LoginPage: FC = () => {
         <Header as='h2' color='teal' textAlign='center'>
           Log-in to your account
         </Header>
-        <Form size='large' onSubmit={handleSubmit} error={Boolean(formError)}>
+        <Form size='large' onSubmit={handleSubmit} error={Boolean(error)} loading={loading}>
           <Form.Input
             fluid
             icon='user'
@@ -75,11 +77,13 @@ export const LoginPage: FC = () => {
             name='password'
             value={loginForm.password}
           />
-          <Message error content={formError} />
+          <Message size='tiny' error content={error} />
           <Button color='teal' fluid size='large'>Login</Button>
         </Form>
       </Segment>
     </Grid.Column>
   </Grid>
   );
-}
+};
+
+export const LoginPage = connect(mapStateToProps)(Component);

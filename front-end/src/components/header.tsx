@@ -1,8 +1,8 @@
 import { FC } from "react";
-import apiClient from "../utils/apiClient";
-import { useAuth } from "../providers/authProvider";
 import { Button, Icon, Menu, MenuItemProps } from "semantic-ui-react";
 import { useNavigate } from "react-router-dom";
+import { useAppDispatch } from "../stores/store";
+import { logout } from "../stores/thunks/auth";
 
 export type HeaderProps = {
   sidebarShown: boolean;
@@ -10,11 +10,11 @@ export type HeaderProps = {
 }
 
 export const Header: FC<HeaderProps> = ({ sidebarShown, setSidebarShown }: HeaderProps) => {
-  const { setToken } = useAuth();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch()
 
-  const logout = () => {
-    apiClient.post("auth/logout").then(() => setToken(null));
+  const logoutClick = () => {
+    dispatch(logout());
   };
 
   const onLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, _: MenuItemProps) => {
@@ -31,7 +31,7 @@ export const Header: FC<HeaderProps> = ({ sidebarShown, setSidebarShown }: Heade
       <Menu.Item as="a" to="/" onClick={onLinkClick} className="header-item">
         Deye monitoring bot control panel
       </Menu.Item>
-      <Menu.Item as={Button} position="right" onClick={logout}>
+      <Menu.Item as={Button} position="right" onClick={logoutClick}>
         <Icon name='sign-out' />Logout
       </Menu.Item>
     </Menu>

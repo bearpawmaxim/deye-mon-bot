@@ -37,7 +37,7 @@ class BotService:
                 continue
 
             data = self._database.get_station_data(station.station_id)
-            
+
             station_data = {
                 **data,
                 'name': station.station_name,
@@ -80,23 +80,26 @@ class BotService:
         messages = self._database.get_messages()
 
         for message in messages:
-            template_data = {
-                'stations': [],
-                'strftime': datetime.now(self._message_timezone).strftime
-            }
-            message_station = self._populate_stations_data(template_data, stations, message)
-            if message.station_id is not None and message_station is None:
-                print(f"message's {message.id} station is disabled")
-                continue
+            try:
+                template_data = {
+                    'stations': [],
+                    'strftime': datetime.now(self._message_timezone).strftime
+                }
+                message_station = self._populate_stations_data(template_data, stations, message)
+                if message.station_id is not None and message_station is None:
+                    print(f"message's {message.id} station is disabled")
+                    continue
 
-            self._add_average_methods(template_data, message.last_sent_time)
+                self._add_average_methods(template_data, message.last_sent_time)
 
-            timeout = get_send_timeout(message.timeout_template, template_data)
-            template_data['timeout'] = timeout
-            should_send = get_should_send(message.should_send_template, template_data)
-            next_send_time = (
-                (message.last_sent_time or datetime.min) + timedelta(seconds=timeout)
-            ).replace(tzinfo=timezone.utc)
+                timeout = get_send_timeout(message.timeout_template, template_data)
+                template_data['timeout'] = timeout
+                should_send = get_should_send(message.should_send_template, template_data)
+                next_send_time = (
+                    (message.last_sent_time or datetime.min) + timedelta(seconds=timeout)
+                ).replace(tzinfo=timezone.utc)
 
-            if should_send and next_send_time <= datetime.now(timezone.utc):
-                self._send_message(message, template_data)
+                if should_send and next_send_time <= datetime.now(timezone.utc):
+                    self._send_message(message, template_data)
+            except Exception as e:
+                print(f"Error sending message '{message.name}': {e}")

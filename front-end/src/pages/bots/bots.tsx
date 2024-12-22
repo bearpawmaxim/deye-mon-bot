@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react"
-import { Table, TableBody, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
+import { Segment, Table, TableBody, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
 import { connect } from "react-redux";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { cancelBotsEditing, fetchBots, saveBots } from "../../stores/thunks";
@@ -88,7 +88,7 @@ const Component: FC<ComponentProps> = ({ bots, loading, error, changed, creating
     }, 1);
   }
 
-  return <>
+  return <Segment basic loading={loading}>
     <Table striped celled inverted selectable compact>
       <TableHeader>
         <TableRow>
@@ -100,7 +100,7 @@ const Component: FC<ComponentProps> = ({ bots, loading, error, changed, creating
       <TableBody>
         {
           bots.map((bot, index) => 
-            <BotItemRow key={`bot_${index}`} item={bot} loading={loading}
+            <BotItemRow key={`bot_${index}`} item={bot}
               enableChanged={onBotEnableChange.bind(this, bot.id!)}
               tokenChanged={onBotTokenChange.bind(this, bot.id!)} />
           )
@@ -108,7 +108,7 @@ const Component: FC<ComponentProps> = ({ bots, loading, error, changed, creating
       </TableBody>
     </Table>
     <TokenEditDialog opened={creating} setOpened={() => {}} changed={onBotCreate} create={true} token='' />
-  </>
+  </Segment>
 }
 
 export const BotsPage = connect(mapStateToProps)(Component);

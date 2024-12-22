@@ -1,17 +1,17 @@
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../providers/authProvider";
-import { ReactNode } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "../stores/store";
+import AuthenticatedLayout from "../layouts/authenticatedLayout";
+import { PageHeaderContentProvider } from "../providers";
 
-type ProtectedRouteProps = {
-  children?: ReactNode;
-}
+export const ProtectedRoute = () => {
+  const token = useSelector((state: RootState) => state.auth.token);
 
-export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { token } = useAuth();
-  
   if (!token) {
     return <Navigate to="/login" />;
   }
 
-  return <>{children}</>;
+  return <PageHeaderContentProvider>
+      <AuthenticatedLayout/>
+    </PageHeaderContentProvider>;
 };

@@ -7,7 +7,7 @@ def register(app, services: Services):
     @app.route('/api/stations/stations', methods=['POST'])
     @jwt_required()
     def get_stations():
-        stations = services.database.get_stations()
+        stations = services.database.get_stations(True)
         stations_dict = []
         for station in stations:
             stations_dict.append({

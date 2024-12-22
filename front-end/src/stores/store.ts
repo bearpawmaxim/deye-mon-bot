@@ -8,6 +8,7 @@ export const store = configureStore({
   devTools: true,
 });
 
+export type StoreType = typeof store;
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 export const useAppDispatch = () => useDispatch<AppDispatch>();

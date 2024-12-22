@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import apiClient from "../../utils/apiClient";
 import { BaseSaveDataResponse, ServerMessageItem, ServerMessageListItem, TemplatePreview, TemplatePreviewRequest } from "../types";
 import { RootState } from "../store";
+import apiClient from "../../utils/apiClient";
 
 export const fetchMessages = createAsyncThunk('messages/fetchMessages', async (_, thunkAPI) => {
   try {

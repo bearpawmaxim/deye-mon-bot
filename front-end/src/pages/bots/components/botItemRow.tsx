@@ -6,27 +6,26 @@ import { TokenEditDialog } from "./tokenEditDialog";
 
 type BotItemRowProps = {
   item: BotItem;
-  loading: boolean;
   enableChanged: (enabled: boolean) => void;
   tokenChanged: (result: boolean, token: string) => void;
 }
 
-export const BotItemRow: FC<BotItemRowProps> = ({ item, loading, enableChanged, tokenChanged }: BotItemRowProps) => {
+export const BotItemRow: FC<BotItemRowProps> = ({ item, enableChanged, tokenChanged }: BotItemRowProps) => {
   const [open, setOpen] = useState(false);
   const enableChange = (_: unknown, data: CheckboxProps) => {
     enableChanged(data.checked!);
   };
-  return (<TableRow disabled={loading}>
+  return (<TableRow>
     <TableCell>
-      <Icon name="pencil" color={!item.changed || loading ? 'grey' : 'orange'}></Icon>
+      <Icon name="pencil" color={item.changed ? 'orange' : 'grey'}></Icon>
       {item.name}
     </TableCell>
     <TableCell width={"1"} textAlign="center">
       <TokenEditDialog changed={tokenChanged} create={false} opened={open} setOpened={setOpen} token={item.token} />
-      <Label color={loading ? 'grey': 'teal'} onClick={() => setOpen(true)} style={{ cursor: 'pointer' }}>Edit</Label>
+      <Label color='teal' onClick={() => setOpen(true)} style={{ cursor: 'pointer' }}>Edit</Label>
     </TableCell>
     <TableCell width={"1"} textAlign="center">
-      <Checkbox disabled={loading} checked={item.enabled} onChange={enableChange}></Checkbox>
+      <Checkbox checked={item.enabled} onChange={enableChange}></Checkbox>
     </TableCell>
   </TableRow>);
 }

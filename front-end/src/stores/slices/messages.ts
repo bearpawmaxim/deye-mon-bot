@@ -30,8 +30,9 @@ export const messagesSlice = createSlice({
         state.changed = true;
       },
       createMessage(state) {
+        const messageNumber = state.messages?.length ?? 0;
         state.editingMessage = {
-          name: 'New message',
+          name: `New message ${messageNumber + 1}`,
           enabled: true,
         } as ServerMessageItem;
       },

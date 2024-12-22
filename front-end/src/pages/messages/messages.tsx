@@ -1,11 +1,12 @@
 import { FC, useEffect } from "react"
 import { connect } from "react-redux";
-import { Label, Table, TableBody, TableCell, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
+import { Segment, Table, TableBody, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
 import { RootState, useAppDispatch } from "../../stores/store";
 import { fetchMessages } from "../../stores/thunks";
 import { ServerMessageListItem } from "../../stores/types";
 import { useNavigate } from "react-router-dom";
 import { PageHeaderButton, useHeaderContent } from "../../providers";
+import { MessageItemRow } from "./components/messageItemRow";
 
 type ComponentProps = {
   messages: Array<ServerMessageListItem>;
@@ -21,7 +22,7 @@ const mapStateToProps = (state: RootState): ComponentProps => ({
   creating: state.messages.creating,
 });
 
-const Component: FC<ComponentProps> = ({ messages }: ComponentProps) => {
+const Component: FC<ComponentProps> = ({ messages, loading }: ComponentProps) => {
   const dispatch = useAppDispatch();
     const getHeaderButtons = (): PageHeaderButton[] => [
       { text: 'Create', color: "teal", onClick: () => onCreateClick(), disabled: false, },
@@ -42,11 +43,12 @@ const Component: FC<ComponentProps> = ({ messages }: ComponentProps) => {
     navigate(`/messages/create`);
   }
 
-  const onEditClick = (messageId: number, _1: unknown, _2: unknown) => {
+  const onEditClick = (messageId: number) => {
     navigate(`/messages/edit/${messageId}`);
   };
 
-  return <Table striped celled inverted selectable compact>
+  return <Segment basic loading={loading}>
+    <Table striped celled inverted selectable compact>
     <TableHeader>
       <TableRow>
         <TableHeaderCell>Name</TableHeaderCell>
@@ -59,24 +61,12 @@ const Component: FC<ComponentProps> = ({ messages }: ComponentProps) => {
       </TableRow>
     </TableHeader>
     <TableBody>
-      {
-        messages.map((message, index) => <TableRow key={`message_${index}`}>
-          <TableCell>{message.name}</TableCell>
-          <TableCell>{message.channelName}</TableCell>
-          <TableCell>{Boolean(message.stationName) ? message.stationName : 'All stations'}</TableCell>
-          <TableCell>{message.botName}</TableCell>
-          <TableCell>{message.lastSentTime?.toString() ?? 'Never'}</TableCell>
-          <TableCell textAlign='center'>
-            <Label color={message.enabled ? 'green' : 'red'} content={message.enabled ? 'Yes' : 'No'} />
-          </TableCell>
-          <TableCell textAlign='center'>
-            <Label color={'teal'} content='Edit'
-              style={{ cursor: 'pointer' }} onClick={onEditClick.bind(this, message.id!)}/>
-          </TableCell>
-        </TableRow>)
-      }
+      { messages.map((message, index) =>
+        <MessageItemRow key={`message_${index}`} message={message}
+          onEditClick={onEditClick.bind(this, message.id!)} />) }
     </TableBody>
   </Table>
+  </Segment>
 }
 
 export const MessagesPage = connect(mapStateToProps)(Component);
