@@ -37,13 +37,26 @@ export const editMessage = createAsyncThunk<ServerMessageItem, number>('messages
   }
 });
 
-export const getTemplatePreview = createAsyncThunk<TemplatePreview, TemplatePreviewRequest>(
-    'messages/templatePreview', async (request): Promise<TemplatePreview> => {
+export const getTemplatePreview = createAsyncThunk<TemplatePreview, void>(
+    'messages/templatePreview', async (_, { getState, rejectWithValue, fulfillWithValue }) => {
   try {
-    const response = await apiClient.post<TemplatePreview>('/messages/getTemplate', request);
-    return response.data;
+    const state = getState() as RootState;
+    const message = state.messages.editingMessage;
+    if (!message) {
+      return rejectWithValue('No message is currently editing');
+    }
+    const request = {
+      botId: message.botId,
+      channelId: message.channelId,
+      messageTemplate: message.messageTemplate,
+      shouldSendTemplate: message.shouldSendTemplate,
+      timeoutTemplate: message.timeoutTemplate,
+      stationId: message.stationId
+    } as TemplatePreviewRequest;
+    const response = await apiClient.post<TemplatePreview>('/messages/getPreview', request);
+    return fulfillWithValue(response.data);
   } catch (error: any) {
-    return Promise.reject(error.message || 'Failed to generate template preview');
+    return rejectWithValue(error.message || 'Failed to generate template preview');
   }
 });
 

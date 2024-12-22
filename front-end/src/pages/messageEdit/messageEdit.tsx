@@ -9,7 +9,7 @@ import { editMessage, fetchBots, fetchStations, getChannel, saveMessage } from "
 import { createMessage, finishEditingMessage, updateMessage } from "../../stores/slices";
 import { BotItem, ServerMessageItem, ServerStationItem } from "../../stores/types";
 import { connect } from "react-redux";
-import { TemplateEditor } from "./components";
+import { MessagePreview, TemplateEditor } from "./components";
 import { createSelector } from "@reduxjs/toolkit";
 
 type ComponentOwnProps = {
@@ -51,6 +51,7 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loadin
   const [formErrors, setFormErrors] = useState<Record<string, string | null>>({});
   const hasError = (name: string) => formErrors[name]?.trim() ?? '' !== '';
   const getError = (name: string) => formErrors[name];
+  const [previewShown, setPreviewShown] = useState(false);
 
   const messageRef = useRef(message);
   useEffect(() => {
@@ -243,8 +244,11 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loadin
       </Form.Input>
       Channel name: <Label basic>{message?.channelName ?? ''}</Label>
       <Divider />
-      <Header as='h4' content='Templates' />
-      <Tab panes={panes} renderActiveOnly={false} />  
+      <Header as='h4' content='Templates'>
+        Templates&nbsp;&nbsp;
+        <MessagePreview shown={previewShown} setShown={setPreviewShown} />
+      </Header>
+      <Tab panes={panes} renderActiveOnly={false} />
     </Form>
   </Segment>;
 };

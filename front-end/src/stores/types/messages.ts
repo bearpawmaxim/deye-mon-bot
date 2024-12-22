@@ -27,21 +27,19 @@ export type ServerMessageListItem = BaseServerMessageListItem & MessageDetailsIt
 export type ServerMessageItem = BaseServerMessageItem & MessageDetailsItem;
 
 export type TemplatePreview = {
-  shouldSendPreview: string;
-  timeoutPreview: string;
-  messagePreview: string;
+  shouldSend: boolean;
+  timeout: number;
+  message: string;
+  nextSendTime: Date;
 };
 
-export type TemplatePreviewRequest = {
-  shouldSendTemplate: string;
-  timeoutTemplate: string;
-  messageTemplate: string;
-};
+export type TemplatePreviewRequest = Omit<BaseServerMessageItem, 'id'|'name'|'lastSentTime'|'enabled'>;
 
 export type MessagesState = BaseEditableState & {
   messages: Array<ServerMessageListItem>;
   editingMessage?: ServerMessageItem;
-  templatePreview: TemplatePreview;
+  templatePreview?: TemplatePreview;
+  loadingPreview: boolean;
   changed: boolean;
 };
 

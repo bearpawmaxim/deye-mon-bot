@@ -76,6 +76,26 @@ def register(app, services: Services):
             'lastSentTime': message.last_sent_time,
             'enabled': message.enabled,
         })
+    
+    @app.route('/api/messages/getPreview', methods=['POST'])
+    @jwt_required()
+    def get_message_preview():
+        station_id = request.json.get("stationId", None)
+        message = Message(
+            channel_id = request.json.get("channelId"),
+            message_template = request.json.get("messageTemplate"),
+            timeout_template = request.json.get("timeoutTemplate"),
+            should_send_template = request.json.get("shouldSendTemplate", None),
+            station_id = station_id if station_id is not None and station_id != 0 else None,
+            bot_id = request.json.get("botId")
+        )
+        info = services.bot.get_message(message)
+        return jsonify({
+            'message': info.message,
+            'shouldSend': info.should_send,
+            'timeout': info.timeout,
+            'nextSendTime': info.next_send_time,
+        })
 
     @app.route('/api/messages/save', methods=['PATCH'])
     @jwt_required()

@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { MessagesState, ServerMessageItem, ServerMessageListItem } from "../types";
-import { editMessage, fetchMessages, getChannel, saveMessage } from "../thunks";
+import { MessagesState, ServerMessageItem, ServerMessageListItem, TemplatePreview } from "../types";
+import { editMessage, fetchMessages, getChannel, getTemplatePreview, saveMessage } from "../thunks";
 
 
 const initialState: MessagesState = {
@@ -9,11 +9,7 @@ const initialState: MessagesState = {
   error: null,
   loading: false,
   changed: false,
-  templatePreview: {
-    messagePreview: '',
-    shouldSendPreview: '',
-    timeoutPreview: '',
-  },
+  loadingPreview: false,
 };
 
 export type UpdateMessageActionPayload = {
@@ -80,6 +76,17 @@ export const messagesSlice = createSlice({
         .addCase(getChannel.rejected, (state, action: PayloadAction<any>) => {
           state.error = action.payload;
           state.editingMessage!.channelName = action.payload;
+        });
+      builder
+        .addCase(getTemplatePreview.pending, (state) => {
+          state.loadingPreview = true;
+        })
+        .addCase(getTemplatePreview.fulfilled, (state, action: PayloadAction<TemplatePreview>) => {
+          state.loadingPreview = false;
+          state.templatePreview = action.payload;
+        })
+        .addCase(getTemplatePreview.rejected, (state) => {
+          state.loading = false;
         });
       builder
         .addCase(saveMessage.pending, (state) => {
