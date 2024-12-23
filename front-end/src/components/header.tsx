@@ -1,17 +1,38 @@
-import { FC } from "react";
-import { Button, Icon, Menu, MenuItemProps } from "semantic-ui-react";
+import { FC, useEffect } from "react";
+import { Button, Grid, GridColumn, GridRow, Icon, Label, Menu, MenuItemProps } from "semantic-ui-react";
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch } from "../stores/store";
-import { logout } from "../stores/thunks/auth";
+import { RootState, useAppDispatch } from "../stores/store";
+import { fetchUser, logout } from "../stores/thunks/auth";
+import { UserData } from "../stores/types";
+import { connect } from "react-redux";
 
-export type HeaderProps = {
+
+type HeaderOwnProps = {
   sidebarShown: boolean;
   setSidebarShown: (shown: boolean) => void;
 }
 
-export const Header: FC<HeaderProps> = ({ sidebarShown, setSidebarShown }: HeaderProps) => {
+type HeaderStateProps = {
+  user: UserData;
+};
+
+type ComponentProps = HeaderOwnProps & HeaderStateProps;
+
+const mapStateToProps = (state: RootState, ownProps: HeaderOwnProps): ComponentProps => ({
+  user: state.auth.user!,
+  sidebarShown: ownProps.sidebarShown,
+  setSidebarShown: ownProps.setSidebarShown,
+});
+
+const Component: FC<ComponentProps> = ({ sidebarShown, setSidebarShown, user }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch()
+
+  useEffect(() => {
+    if (!user) {
+      dispatch(fetchUser());
+    };
+  }, [user]);
 
   const logoutClick = () => {
     dispatch(logout());
@@ -32,8 +53,19 @@ export const Header: FC<HeaderProps> = ({ sidebarShown, setSidebarShown }: Heade
         Deye monitoring bot control panel
       </Menu.Item>
       <Menu.Item as={Button} position="right" onClick={logoutClick}>
-        <Icon name='sign-out' />Logout
+        <Grid>
+          <GridColumn textAlign="left">
+            <GridRow>
+              {user?.name && (<><Icon name='user' />{user.name}</>)}
+            </GridRow>
+            <GridRow>
+              <Icon name='sign-out' />Logout
+            </GridRow>
+          </GridColumn>
+        </Grid>
       </Menu.Item>
     </Menu>
   )
-}
+};
+
+export const Header = connect(mapStateToProps)(Component);

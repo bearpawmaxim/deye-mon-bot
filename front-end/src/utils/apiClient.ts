@@ -1,12 +1,13 @@
 import axios from 'axios';
 import { logout } from '../stores/thunks';
 import { StoreType } from '../stores/store';
+import { NavigateFunction } from 'react-router-dom';
 
 const apiClient = axios.create({
   baseURL: '/api',
 });
 
-export const setAuthorizationHeader = (token: string | undefined) => {
+export const setAuthorizationHeader = (token: string | null) => {
   if (token) {
     apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   } else {
@@ -14,7 +15,7 @@ export const setAuthorizationHeader = (token: string | undefined) => {
   }
 };
 
-export const setupResponseInterceptor = (store: StoreType, navigate: any) => {
+export const setupResponseInterceptor = (store: StoreType, navigate: NavigateFunction) => {
   apiClient.interceptors.response.use(
     (response) => response,
     (error) => {

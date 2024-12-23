@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AuthState, UserData } from "../types";
-import { fetchUserData, login, logout } from "../thunks";
+import { fetchUser, login, logout } from "../thunks";
 import { getToken } from "../../utils/tokenStorage";
 
 const initialState: AuthState = {
@@ -32,20 +32,17 @@ export const authSlice = createSlice({
         state.error = action.payload;
       });
     builder
-      .addCase(fetchUserData.pending, (state) => {
+      .addCase(fetchUser.pending, (state) => {
         state.loading = true;
       })
-      .addCase(fetchUserData.fulfilled, (state, action: PayloadAction<{ accessToken: string, user: UserData }>) => {
-        const {accessToken, user} = action.payload;
-        state.token = accessToken;
-        state.user = user;
+      .addCase(fetchUser.fulfilled, (state, action: PayloadAction<UserData>) => {
+        state.user = action.payload;
         state.loading = false;
       })
-      .addCase(fetchUserData.rejected, (state) => {
+      .addCase(fetchUser.rejected, (state) => {
         state.loading = false;
         delete state.user;
         state.token = null;
-        // TODO: Error.
       });
   },
 });
