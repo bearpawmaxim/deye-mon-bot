@@ -1,4 +1,4 @@
-import { BaseEditableState } from "./base";
+import { BaseState } from "./base";
 
 export type BaseServerStationItem = {
   id: number;
@@ -16,6 +16,6 @@ export type StationItem = ServerStationItem & {
   changed: boolean;
 }
 
-export type StationsState = Omit<BaseEditableState, 'creating'> & {
+export type StationsState = BaseState & {
   stations: Array<StationItem>;
 }

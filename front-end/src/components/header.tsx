@@ -1,5 +1,5 @@
 import { FC, useEffect } from "react";
-import { Button, Grid, GridColumn, GridRow, Icon, Label, Menu, MenuItemProps } from "semantic-ui-react";
+import { Button, Grid, GridColumn, GridRow, Icon, Menu, MenuItemProps } from "semantic-ui-react";
 import { useNavigate } from "react-router-dom";
 import { RootState, useAppDispatch } from "../stores/store";
 import { fetchUser, logout } from "../stores/thunks/auth";

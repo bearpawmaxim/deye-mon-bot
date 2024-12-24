@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Float, Integer, Numeric, func
-from app.models import Bot, AllowedChat, Message, Station, StationData, DeyeStationData, DeyeStation, User
+from app.models import Bot, AllowedChat, ChatRequest, Message, Station, StationData, DeyeStationData, DeyeStation, User
 
 class DatabaseService:
     def __init__(self, db: SQLAlchemy):
@@ -69,6 +69,37 @@ class DatabaseService:
         except Exception as e:
             print(e)
             return []
+
+    def get_chat_requests(self):
+        try:
+            return self._session.query(ChatRequest).all()
+        except Exception as e:
+            print(f'Error getting chat requests: {e}')
+            return []
+        
+    def add_chat_request(self, chat_id, bot_id):
+        try:
+            existing_request = self._session.query(ChatRequest).filter_by(chat_id=chat_id, bot_id=bot_id).first()
+            if not existing_request:
+                new_record = ChatRequest(
+                    chat_id = chat_id,
+                    bot_id = bot_id
+                )
+                self._session.add(new_record)
+        except Exception as e:
+            print(f'Error getting chat requests: {e}')
+
+    def approve_chat_request(self, request_id):
+        try:
+            chat_request = self._session.query(ChatRequest).filter_by(id=request_id).first()
+            chat = AllowedChat(
+                chat_id = chat_request.chat_id,
+                bot_id = chat_request.bot_id
+            )
+            self._session.add(chat)
+            self._session.delete(chat_request)
+        except Exception as e:
+            print(f'Error approving chat request {request_id}: {e}')
 
     def _get_station(self, station_id: str):
         return self._session.query(Station).filter_by(station_id=station_id).first()

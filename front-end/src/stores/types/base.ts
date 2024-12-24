@@ -1,7 +1,10 @@
-export type BaseEditableState = {
+export type BaseState = {
   loading: boolean;
-  creating: boolean;
   error: string | null;
+};
+
+export type BaseEditableState = BaseState & {
+  creating: boolean;
 };
 
 export type BaseResponse = {
