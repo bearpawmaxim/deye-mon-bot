@@ -89,13 +89,20 @@ def register(app, services: Services):
             station_id = station_id if station_id is not None and station_id != 0 else None,
             bot_id = request.json.get("botId")
         )
-        info = services.bot.get_message(message)
-        return jsonify({
-            'message': info.message,
-            'shouldSend': info.should_send,
-            'timeout': info.timeout,
-            'nextSendTime': info.next_send_time,
-        })
+        try:
+            info = services.bot.get_message(message)
+            return jsonify({
+                'success': True,
+                'message': info.message,
+                'shouldSend': info.should_send,
+                'timeout': info.timeout,
+                'nextSendTime': info.next_send_time,
+            })
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            })
 
     @app.route('/api/messages/save', methods=['PATCH'])
     @jwt_required()

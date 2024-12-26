@@ -1,9 +1,10 @@
 import { FC, useEffect } from "react"
-import { Button, Header, Segment, Table, TableBody, TableCell, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
+import { Header, Segment, Table, TableBody, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
 import { AllowedChatListItem, ChatRequestListItem } from "../../stores/types";
 import { connect } from "react-redux";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { approveChatRequest, fetchAllowedChats, fetchChatRequests } from "../../stores/thunks";
+import { AllowedChatItemRow, ChatRequestItemRow } from "./components";
 
 type ComponentProps = {
   allowedChats: AllowedChatListItem[];
@@ -40,11 +41,8 @@ const Component: FC<ComponentProps> = ({ allowedChats, chatRequests, loading }) 
         </TableRow>
       </TableHeader>
       <TableBody>
-        { allowedChats.map((chat, index) => (<TableRow key={`chat_${index}`}>
-            <TableCell>{chat.chatName}</TableCell>
-            <TableCell>{chat.botName}</TableCell>
-            <TableCell>{chat.approveDate.toString()}</TableCell>
-          </TableRow>)) }
+        { allowedChats.map((chat, index) =>
+            <AllowedChatItemRow key={`chat_${index}`} chat={chat} />) }
       </TableBody>
     </Table>
     <Header as='h4' content='Chat requests' />
@@ -58,14 +56,9 @@ const Component: FC<ComponentProps> = ({ allowedChats, chatRequests, loading }) 
         </TableRow>
       </TableHeader>
       <TableBody>
-      { chatRequests.map((chat, index) => (<TableRow key={`chat_${index}`}>
-          <TableCell>{chat.chatName}</TableCell>
-          <TableCell>{chat.botName}</TableCell>
-          <TableCell>{chat.requestDate.toString()}</TableCell>
-          <TableCell>
-            <Button content='Approve' color="teal" onClick={approveClick.bind(this, chat.id)} />
-          </TableCell>
-        </TableRow>)) }
+        { chatRequests.map((request, index) =>
+            <ChatRequestItemRow key={`request_${index}`} request={request}
+              approve={approveClick.bind(this, request.id)}/>) }
       </TableBody>
     </Table>
   </Segment>

@@ -1,4 +1,4 @@
-import { BaseEditableState } from "./base";
+import { BaseEditableState, BaseResponse } from "./base";
 
 export type BaseServerMessageListItem = {
   id?: number;
@@ -33,6 +33,8 @@ export type TemplatePreview = {
   nextSendTime: Date;
 };
 
+export type TemplatePreviewResponse = BaseResponse & TemplatePreview;
+
 export type TemplatePreviewRequest = Omit<BaseServerMessageItem, 'id'|'name'|'lastSentTime'|'enabled'>;
 
 export type MessagesState = BaseEditableState & {
@@ -40,6 +42,7 @@ export type MessagesState = BaseEditableState & {
   editingMessage?: ServerMessageItem;
   templatePreview?: TemplatePreview;
   loadingPreview: boolean;
+  previewError?: string;
   changed: boolean;
 };
 

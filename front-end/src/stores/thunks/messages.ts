@@ -1,5 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { BaseSaveDataResponse, ServerMessageItem, ServerMessageListItem, TemplatePreview, TemplatePreviewRequest } from "../types";
+import { BaseSaveDataResponse, ServerMessageItem, ServerMessageListItem, 
+  TemplatePreviewRequest, TemplatePreviewResponse } from "../types";
 import { RootState } from "../store";
 import apiClient from "../../utils/apiClient";
 
@@ -37,7 +38,7 @@ export const editMessage = createAsyncThunk<ServerMessageItem, number>('messages
   }
 });
 
-export const getTemplatePreview = createAsyncThunk<TemplatePreview, void>(
+export const getTemplatePreview = createAsyncThunk<TemplatePreviewResponse, void>(
     'messages/templatePreview', async (_, { getState, rejectWithValue, fulfillWithValue }) => {
   try {
     const state = getState() as RootState;
@@ -53,8 +54,12 @@ export const getTemplatePreview = createAsyncThunk<TemplatePreview, void>(
       timeoutTemplate: message.timeoutTemplate,
       stationId: message.stationId
     } as TemplatePreviewRequest;
-    const response = await apiClient.post<TemplatePreview>('/messages/getPreview', request);
-    return fulfillWithValue(response.data);
+    const response = await apiClient.post<TemplatePreviewResponse>('/messages/getPreview', request);
+    if (response.data.success) {
+      return fulfillWithValue(response.data);
+    } else {
+      return rejectWithValue(response.data.error);
+    }
   } catch (error: any) {
     return rejectWithValue(error.message || 'Failed to generate template preview');
   }

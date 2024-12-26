@@ -39,7 +39,7 @@ def register(app, services: Services):
                 access_token = create_access_token(identity=get_jwt_identity())
                 data = response.get_json()
                 if type(data) is dict:
-                    data["access_token"] = access_token 
+                    data["access_token"] = access_token
                     response.data = json.dumps(data)
             return response
         except (RuntimeError, KeyError):

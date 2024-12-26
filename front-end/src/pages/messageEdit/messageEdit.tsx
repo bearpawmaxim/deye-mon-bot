@@ -207,11 +207,10 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loadin
     dispatchChange(data.name, data.value);
   };
 
-  return <Segment>
-    <Form loading={loading} error>
+  return <Segment loading={loading} >
+    <Form error>
       <Form.Checkbox name='enabled' label='Enabled' checked={message?.enabled ?? false} onChange={onFormCheckboxChange} />
       <Form.Input name='name' label='Name' value={message?.name ?? ''} onChange={onFormInputChange} error={hasError('name')} />
-      {/* <Message size="tiny" error>{getError('name')}</Message> */}
       <Divider />
       <Form.Group>
         <Form.Dropdown
@@ -244,7 +243,7 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loadin
       </Form.Input>
       Channel name: <Label basic>{message?.channelName ?? ''}</Label>
       <Divider />
-      <Header as='h4' content='Templates'>
+      <Header as='h4'>
         Templates&nbsp;&nbsp;
         <MessagePreview shown={previewShown} setShown={setPreviewShown} />
       </Header>

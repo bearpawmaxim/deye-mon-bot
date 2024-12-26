@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react"
-import { Checkbox, CheckboxProps, Icon, Segment, Table, TableBody, TableCell, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
+import { Segment, Table, TableBody, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
 import { StationItem } from "../../stores/types";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { connect } from "react-redux";
@@ -7,6 +7,7 @@ import { PageHeaderButton, useHeaderContent } from "../../providers";
 import { cancelStationsEditing, fetchStations, saveStationStates } from "../../stores/thunks";
 import { createSelector } from "@reduxjs/toolkit";
 import { updateStationState } from "../../stores/slices";
+import { StationItemRow } from "./components";
 
 
 type ComponentProps = {
@@ -52,8 +53,8 @@ const Component: FC<ComponentProps> = ({ stations, changed, loading, error }: Co
     return <p>Error: {error}</p>;
   }
 
-  const onStationEnableChange = (id: number, _: unknown, data: CheckboxProps) => {
-    dispatch(updateStationState({ id, enabled: data.checked ?? false }));
+  const onStationEnableChange = (id: number, enabled: boolean) => {
+    dispatch(updateStationState({ id, enabled }));
   };  
 
   if (changed != initiallyChanged) {
@@ -77,20 +78,10 @@ const Component: FC<ComponentProps> = ({ stations, changed, loading, error }: Co
       </TableHeader>
       <TableBody>
         {
-          (stations ?? []).map((station, index) => {
-            return <TableRow key={`station_${index}`}>
-              <TableCell>
-                <Icon name="pencil" color={!station.changed || loading ? 'grey' : 'orange'}></Icon>
-                {station.stationName}
-              </TableCell>
-              <TableCell>{station.connectionStatus}</TableCell>
-              <TableCell>{station.gridInterconnectionType}</TableCell>
-              <TableCell>{station.lastUpdateTime?.toString() ?? 'Never'}</TableCell>
-              <TableCell>
-                <Checkbox checked={station.enabled} onChange={onStationEnableChange.bind(this, station.id)} />
-              </TableCell>
-            </TableRow>
-          })
+          (stations ?? []).map((station, index) =>
+            <StationItemRow key={`station_${index}`}
+              loading={loading} station={station}
+              onStationEnableChange={onStationEnableChange.bind(this, station.id)} />)
         }
       </TableBody>
     </Table>
