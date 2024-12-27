@@ -22,6 +22,7 @@ export const saveStationStates = createAsyncThunk('stations/saveStationState', a
       const serverDto = {
         id: station.id,
         enabled: station.enabled,
+        order: station.order,
       } as BaseServerStationItem;
       const response = await apiClient.put<BaseSaveDataResponse>('/stations/save', serverDto);
       dispatch(stationStateSaved(response.data.id));

@@ -6,12 +6,13 @@ import { connect } from "react-redux";
 import { PageHeaderButton, useHeaderContent } from "../../providers";
 import { cancelStationsEditing, fetchStations, saveStationStates } from "../../stores/thunks";
 import { createSelector } from "@reduxjs/toolkit";
-import { updateStationState } from "../../stores/slices";
+import { updateStationOrder, updateStationState } from "../../stores/slices";
 import { StationItemRow } from "./components";
 
 
 type ComponentProps = {
   stations: StationItem[];
+  maxOrder: number;
   changed: boolean;
   loading: boolean;
   error: string | null;
@@ -21,17 +22,22 @@ const selectStations = (state: RootState) => state.stations.stations;
 
 const selectChanged = createSelector(
   [selectStations],
-  (stations) => stations.some(s => s.changed)
+  (stations) => stations.some(s => s.changed),
 );
+const selectMaxOrder = createSelector(
+  [selectStations],
+  (stations) => Math.max(...stations.map(s => s.order)),
+)
 
 const mapStateToProps = (state: RootState): ComponentProps => ({
   stations: state.stations.stations,
+  maxOrder: selectMaxOrder(state),
   changed: selectChanged(state),
   loading: state.stations.loading,
   error: state.stations.error,
 });
 
-const Component: FC<ComponentProps> = ({ stations, changed, loading, error }: ComponentProps) => {
+const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, error }: ComponentProps) => {
   const dispatch = useAppDispatch();
   const [initiallyChanged, setInitiallyChanged] = useState(false);
 
@@ -55,7 +61,10 @@ const Component: FC<ComponentProps> = ({ stations, changed, loading, error }: Co
 
   const onStationEnableChange = (id: number, enabled: boolean) => {
     dispatch(updateStationState({ id, enabled }));
-  };  
+  };
+  const onStationOrderChange = (id: number, currentOrder: number, delta: number) => {
+    dispatch(updateStationOrder({ id, currentOrder, delta }));
+  };
 
   if (changed != initiallyChanged) {
     setInitiallyChanged(!initiallyChanged);
@@ -73,7 +82,8 @@ const Component: FC<ComponentProps> = ({ stations, changed, loading, error }: Co
           <TableHeaderCell>Connection status</TableHeaderCell>
           <TableHeaderCell>Mode</TableHeaderCell>
           <TableHeaderCell>Last update</TableHeaderCell>
-          <TableHeaderCell width={1}>Active</TableHeaderCell>
+          <TableHeaderCell width={1} textAlign="center">Enabled</TableHeaderCell>
+          <TableHeaderCell width={1} textAlign="center">Order</TableHeaderCell>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -81,7 +91,9 @@ const Component: FC<ComponentProps> = ({ stations, changed, loading, error }: Co
           (stations ?? []).map((station, index) =>
             <StationItemRow key={`station_${index}`}
               loading={loading} station={station}
-              onStationEnableChange={onStationEnableChange.bind(this, station.id)} />)
+              maxOrder={maxOrder}
+              onStationEnableChange={onStationEnableChange.bind(this, station.id)} 
+              onStationOrderChange={onStationOrderChange.bind(this, station.id, station.order)} />)
         }
       </TableBody>
     </Table>

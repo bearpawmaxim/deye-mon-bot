@@ -13,17 +13,43 @@ export type UpdateStationActionPayload = {
   enabled: boolean;
 };
 
+export type ChangeStationOrderPayload = {
+  id: number;
+  currentOrder: number;
+  delta: number;
+};
+
 export const stationsSlice = createSlice({
   name: 'stations',
   initialState: initialState,
   reducers: {
     updateStationState(state, { payload }: PayloadAction<UpdateStationActionPayload>) {
-          const station = state.stations.find(s => s.id === payload.id);
-          if (station) {
-            station.enabled = payload.enabled;
-            station.changed = true;
-          }
-        },
+      const station = state.stations.find(s => s.id === payload.id);
+      if (!station) {
+        return;
+      }
+      if (station.enabled !== payload.enabled) {
+        station.enabled = payload.enabled;
+        station.changed = true;
+      }
+    },
+    updateStationOrder(state, { payload }: PayloadAction<ChangeStationOrderPayload>) {
+      const { currentOrder, delta } = payload;
+      const newOrder = currentOrder + delta;
+      if (newOrder < 1 || newOrder > state.stations.length) {
+        return;
+      }
+
+      const stationsCopy = [...state.stations];
+
+      const stationA = state.stations[currentOrder - 1];
+      const stationB = state.stations[newOrder - 1];
+
+      stationsCopy[newOrder - 1] = { ...stationA, order: newOrder, changed: true };
+      stationsCopy[currentOrder - 1] = { ...stationB, order: currentOrder, changed: true };
+
+      state.stations = stationsCopy;
+    },
     stationStateSaved(state, { payload: stationId }: PayloadAction<number>) {
       const station = state.stations.find(s => s.id === stationId);
       if (station) {
@@ -60,5 +86,5 @@ export const stationsSlice = createSlice({
   },
 });
   
-export const { updateStationState, stationStateSaved } = stationsSlice.actions;
+export const { updateStationState, updateStationOrder, stationStateSaved } = stationsSlice.actions;
 export const stationsReducer = stationsSlice.reducer;

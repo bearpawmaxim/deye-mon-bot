@@ -17,6 +17,7 @@ def register(app, services: Services):
                 'gridInterconnectionType': station.grid_interconnection_type,
                 'lastUpdateTime': station.last_update_time,
                 'enabled': station.enabled,
+                'order': station.order,
             })
         return jsonify(stations_dict)
 
@@ -25,6 +26,7 @@ def register(app, services: Services):
     def save_station():
         id = request.json.get("id", None)
         enabled = request.json.get("enabled", False)
-        station_id = services.database.save_station_state(id, enabled)
+        order = request.json.get("order", 1)
+        station_id = services.database.save_station_state(id, enabled, order)
         services.db.session.commit()
         return jsonify({ 'success': True, 'id': station_id }), 200

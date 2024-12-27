@@ -6,7 +6,7 @@ import { fetchMessages } from "../../stores/thunks";
 import { ServerMessageListItem } from "../../stores/types";
 import { useNavigate } from "react-router-dom";
 import { PageHeaderButton, useHeaderContent } from "../../providers";
-import { MessageItemRow } from "./components/messageItemRow";
+import { MessageItemRow } from "./components";
 
 type ComponentProps = {
   messages: Array<ServerMessageListItem>;
@@ -56,7 +56,7 @@ const Component: FC<ComponentProps> = ({ messages, loading }: ComponentProps) =>
         <TableHeaderCell>Station</TableHeaderCell>
         <TableHeaderCell>Bot</TableHeaderCell>
         <TableHeaderCell>Last message sent</TableHeaderCell>
-        <TableHeaderCell width={1}>Active</TableHeaderCell>
+        <TableHeaderCell width={1} textAlign="center">Enabled</TableHeaderCell>
         <TableHeaderCell width={1}></TableHeaderCell>
       </TableRow>
     </TableHeader>

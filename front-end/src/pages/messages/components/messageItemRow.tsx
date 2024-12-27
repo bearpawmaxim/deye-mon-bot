@@ -16,7 +16,7 @@ export const MessageItemRow: FC<MessageItemRowProps> = ({ message, onEditClick }
     <TableCell>{message.botName}</TableCell>
     <TableCell>{message.lastSentTime?.toString() ?? 'Never'}</TableCell>
     <TableCell textAlign='center'>
-      <Label color={message.enabled ? 'green' : 'red'} content={message.enabled ? 'Yes' : 'No'} />
+      <Label color={message.enabled ? 'green' : 'orange'} content={message.enabled ? 'Yes' : 'No'} />
     </TableCell>
     <TableCell textAlign='center'>
       <Label color={'teal'} content='Edit'

@@ -3,6 +3,7 @@ import { BaseState } from "./base";
 export type BaseServerStationItem = {
   id: number;
   enabled: boolean;
+  order: number;
 };
 
 export type ServerStationItem = BaseServerStationItem & {

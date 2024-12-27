@@ -21,6 +21,7 @@ class Station(Base):
     contact_phone             = Column(String(64))
     owner_name                = Column(String(256))
     generation_power          = Column(Float)
+    order                     = Column(Integer, default=1)
     enabled                   = Column(Boolean, default=True)
 
     station_data              = relationship("StationData", back_populates="station", cascade="all, delete-orphan")
@@ -33,4 +34,5 @@ class Station(Base):
             f"location_lat={self.location_lat}, location_lng={self.location_lng}, "
             f"owner_name='{self.owner_name}', region_nation_id={self.region_nation_id}, "
             f"region_timezone='{self.region_timezone}', generationPower={self.generation_power}, "
-            f"lastUpdateTime={self.last_update_time}, start_operating_time={self.start_operating_time})")
+            f"lastUpdateTime={self.last_update_time}, start_operating_time={self.start_operating_time}, "
+            f"order={self.order}, enabled={self.enabled})")

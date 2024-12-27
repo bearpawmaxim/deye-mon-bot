@@ -106,6 +106,7 @@ class DatabaseService:
 
     def add_station(self, station: DeyeStation):
         try:
+            max_order = self._session.query(Station).order_by(Station.order.desc()).first().order
             existing_station = self._get_station(station.id)
             if existing_station == None:
                 new_record = Station(
@@ -124,16 +125,15 @@ class DatabaseService:
                     region_timezone = station.region_timezone,
                     generation_power = station.generation_power,
                     last_update_time = datetime.fromtimestamp(station.last_update_time, timezone.utc),
-                    start_operating_time = datetime.fromtimestamp(station.start_operating_time, timezone.utc)
+                    start_operating_time = datetime.fromtimestamp(station.start_operating_time, timezone.utc),
+                    order = max_order + 1,
                 )
                 self._session.add(new_record)
                 self._session.flush()
-            elif (
-                existing_station.connection_status != station.connection_status or
-                existing_station.grid_interconnection_type != station.grid_interconnection_type
-            ):
+            else:
                 existing_station.connection_status = station.connection_status
                 existing_station.grid_interconnection_type = station.grid_interconnection_type
+                existing_station.last_update_time = datetime.fromtimestamp(station.last_update_time, timezone.utc)
 
         except Exception as e:
             print(f"Error inserting station: {e}")
@@ -175,19 +175,20 @@ class DatabaseService:
 
     def get_stations(self, all: bool = False):
         try:
-            query = self._session.query(Station)
+            query = self._session.query(Station).order_by(Station.order.asc())
             return query.all() if all else query.filter_by(enabled=True).all()
         except Exception as e:
             print(f"Error fetching stations: {e}")
             return []
 
-    def save_station_state(self, id: int, enabled: bool):
+    def save_station_state(self, id: int, enabled: bool, order: int):
         try:
             station = self._session.query(Station).filter_by(id=id).with_for_update().first()   
             if not station:
                 return None
             else:
                 station.enabled = enabled
+                station.order = order
                 return station.id
         except Exception as e:
             self._session.rollback()

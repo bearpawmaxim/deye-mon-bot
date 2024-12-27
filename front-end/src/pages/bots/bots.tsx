@@ -94,7 +94,7 @@ const Component: FC<ComponentProps> = ({ bots, loading, error, changed, creating
         <TableRow>
           <TableHeaderCell>Bot</TableHeaderCell>
           <TableHeaderCell>Token</TableHeaderCell>
-          <TableHeaderCell>Active</TableHeaderCell>
+          <TableHeaderCell textAlign="center">Active</TableHeaderCell>
         </TableRow>
       </TableHeader>
       <TableBody>
