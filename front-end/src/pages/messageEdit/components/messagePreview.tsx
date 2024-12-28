@@ -1,5 +1,5 @@
 import { FC, useEffect } from "react";
-import { Button, Container, Label, Message, Modal, ModalActions, ModalContent, ModalHeader, Segment } from "semantic-ui-react";
+import { Button, Label, Message, Modal, ModalActions, ModalContent, ModalHeader, Segment } from "semantic-ui-react";
 import { RootState, useAppDispatch } from "../../../stores/store";
 import { getTemplatePreview } from "../../../stores/thunks";
 import { TemplatePreview } from "../../../stores/types";
