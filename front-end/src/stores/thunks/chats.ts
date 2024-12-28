@@ -30,3 +30,13 @@ export const approveChatRequest = createAsyncThunk('chats/approve', async (id: n
     dispatch(fetchChatRequests());
   }
 });
+
+export const rejectChatRequest = createAsyncThunk('chats/reject', async (id: number, { rejectWithValue, dispatch }) => {
+  try {
+    await apiClient.patch('/chats/reject', { id: id });
+  } catch (error: any) {
+    return rejectWithValue(error.message || 'Failed to fetch chat requests');
+  } finally {
+    dispatch(fetchChatRequests());
+  }
+});

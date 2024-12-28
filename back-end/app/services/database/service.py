@@ -101,6 +101,13 @@ class DatabaseService:
         except Exception as e:
             print(f'Error approving chat request {request_id}: {e}')
 
+    def reject_chat_request(self, request_id):
+        try:
+            chat_request = self._session.query(ChatRequest).filter_by(id=request_id).first()
+            self._session.delete(chat_request)
+        except Exception as e:
+            print(f'Error rejecting chat request {request_id}: {e}')
+
     def _get_station(self, station_id: str):
         return self._session.query(Station).filter_by(station_id=station_id).first()
 

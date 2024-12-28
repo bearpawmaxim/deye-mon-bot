@@ -73,3 +73,13 @@ def register(app, services: Services):
         services.db.session.commit()
 
         return { "ok": True }
+    
+    @app.route('/api/chats/reject', methods=['PATCH'])
+    @jwt_required()
+    def reject_chat_request():
+        request_id = request.json.get('id')
+
+        services.database.reject_chat_request(request_id)
+        services.db.session.commit()
+
+        return { "ok": True }
