@@ -15,9 +15,9 @@ def register(app, services: Services):
     def _get_chat_name(char_id: str, bot_id: str):
         try:
             chat_info = services.telegram.get_chat_info(char_id, bot_id)
-            return chat_info.title
+            return chat_info.username if chat_info.username is not None else chat_info.title
         except:
-            print(f'Cannot get chat info for channel/channel {char_id}')
+            print(f'Cannot get chat info for chat {char_id}')
             return 'Invalid chat identifier'
 
     @app.route('/api/chats/allowedChats', methods=['POST'])

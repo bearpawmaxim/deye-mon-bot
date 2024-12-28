@@ -60,18 +60,19 @@ class TelegramChatInfo:
         id: int,
         type: str,
         title: str,
-        #username: str,
+        username: str,
     ):
         self.id = id
         self.type = type
         self.title = title
-        #self.username = username
+        self.username = username
 
     @classmethod
     def from_json(cls, data: dict):
+        print(type(data))
         return cls(
             id = data['id'],
             type = data['type'],
-            title = data['title'],
-            #username = data['username'],
+            title = data.get('title', None),
+            username=data.get('username', None),
         )
