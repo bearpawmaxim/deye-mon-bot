@@ -87,7 +87,6 @@ class TelegramService:
             response.raise_for_status()
 
             data = response.json()
-            print(data)
             if data['ok'] == True and data['result'] is not None:
                 return TelegramChatInfo.from_json(data['result'])
             return None
