@@ -218,8 +218,23 @@ class DatabaseService:
                 'previous': stations[1] if stations.count() == 2 else None
             }
         except Exception as e:
-            print(f"Error fetching stations: {e}")
+            print(f"Error fetching station data: {e}")
             return None
+
+    def get_full_station_data(self, id: int, last_seconds: int):
+        try:
+            min_date = datetime.now(timezone.utc) - timedelta(seconds=last_seconds)
+            print(min_date)
+            stations = (
+                self._session.query(StationData)
+                    .join(Station, Station.id == StationData.station_id)
+                    .filter(Station.id == id, StationData.last_update_time >= min_date)
+                    .order_by(StationData.last_update_time.asc())
+            )
+            return stations
+        except Exception as e:
+            print(f"Error fetching station data: {e}")
+            return []
 
     def get_station_data_average_column(
             self,

@@ -1,4 +1,4 @@
-export * from './home';
+export * from './home/home';
 export * from './login';
 export * from './bots/bots';
 export * from './messages/messages';

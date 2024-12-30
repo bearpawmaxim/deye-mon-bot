@@ -10,7 +10,7 @@ export const fetchStations = createAsyncThunk('stations/fetchStations', async (_
     const response = await apiClient.post<Array<ServerStationItem>>('/stations/stations');
     return response.data;
   } catch (error: any) {
-    return thunkAPI.rejectWithValue(error.message || 'Failed to fetch channels');
+    return thunkAPI.rejectWithValue(error.message || 'Failed to fetch stations');
   }
 });
 
