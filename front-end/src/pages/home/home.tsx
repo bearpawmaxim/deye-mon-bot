@@ -40,6 +40,16 @@ const intervalOptions: DropdownItemProps[] = [
     text: 'Last 3 hours',
     value: 3600 * 3,
   },
+  {
+    key: 'last_6_h',
+    text: 'Last 6 hours',
+    value: 3600 * 6,
+  },
+  {
+    key: 'last_1_d',
+    text: 'Last day',
+    value: 3600 * 12,
+  },
 ];
 
 const Component: FC<ComponentProps> = ({ stationsData, loading, error }) => {
@@ -50,12 +60,11 @@ const Component: FC<ComponentProps> = ({ stationsData, loading, error }) => {
     dispatch(fetchStationsData(dataInterval));
     const interval = setInterval(() => dispatch(fetchStationsData(dataInterval)), 30000);
     return () => clearInterval(interval);
-  }, [dispatch]);
+  }, [dispatch, dataInterval]);
 
   const onDataIntervalChange = (_: unknown, data: DropdownProps) => {
     const interval = Number(data.value!);
     setDataInterval(interval);
-    dispatch(fetchStationsData(interval));
   };
 
   return <Segment loading={loading} basic>
