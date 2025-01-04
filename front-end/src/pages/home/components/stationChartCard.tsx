@@ -10,17 +10,15 @@ type StationChartCardProps = {
 };
 
 export const StationChartCard: FC<StationChartCardProps> = ({ data }) => {
-  const formatTimeValue = (value: Date) => new Date(value).toLocaleTimeString();
+  const formatTimeValue = (value: Date) => new Date(value).toLocaleTimeString('uk-UA');
   const formatKilowattsValue = (value: number) => `${Math.abs(value / 1000)} kW`;
   const dataLength = data?.data?.length ?? 0;
   return <Segment size="large" inverted style={{width: '100%'}}>
     <Header as="h4" content={data.name} textAlign="center" />
     { dataLength === 0 && <Label style={{textAlign: 'center'}} attached="bottom">No data!</Label>}
     { dataLength > 0 && <>
-        <ResponsiveContainer aspect={1} maxHeight={200} >
+        <ResponsiveContainer aspect={1} maxHeight={300} >
           <ComposedChart
-            width={400}
-            height={200}
             data={data.data}
             syncId={data.id}>
             <Legend wrapperStyle={{fontSize: "12px"}} />
@@ -68,10 +66,8 @@ export const StationChartCard: FC<StationChartCardProps> = ({ data }) => {
               />
           </ComposedChart>
         </ResponsiveContainer>
-        <ResponsiveContainer aspect={1} maxHeight={200} >
+        <ResponsiveContainer aspect={1} maxHeight={300} >
           <AreaChart
-            width={400}
-            height={200}
             data={data.data}
             syncId={data.id}>
             <Legend wrapperStyle={{fontSize: "12px"}} />
