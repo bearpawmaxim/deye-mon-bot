@@ -1,6 +1,6 @@
 import { FC, useEffect } from "react"
 import { connect } from "react-redux";
-import { Segment, Table, TableBody, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
+import { Message, Segment, Table, TableBody, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
 import { RootState, useAppDispatch } from "../../stores/store";
 import { fetchMessages } from "../../stores/thunks";
 import { ServerMessageListItem } from "../../stores/types";
@@ -12,17 +12,15 @@ type ComponentProps = {
   messages: Array<ServerMessageListItem>;
   loading: boolean;
   error: string | null;
-  creating: boolean;
 };
 
 const mapStateToProps = (state: RootState): ComponentProps => ({
   messages: state.messages.messages,
   loading: state.messages.loading,
   error: state.messages.error,
-  creating: state.messages.creating,
 });
 
-const Component: FC<ComponentProps> = ({ messages, loading }: ComponentProps) => {
+const Component: FC<ComponentProps> = ({ messages, loading, error }: ComponentProps) => {
   const dispatch = useAppDispatch();
     const getHeaderButtons = (): PageHeaderButton[] => [
       { text: 'Create', icon: "add", color: "teal", onClick: () => onCreateClick(), disabled: false, },
@@ -46,6 +44,10 @@ const Component: FC<ComponentProps> = ({ messages, loading }: ComponentProps) =>
   const onEditClick = (messageId: number) => {
     navigate(`/messages/edit/${messageId}`);
   };
+
+  if (error) {
+    return <Message error>Error: {error}</Message>;
+  }
 
   return <Segment basic loading={loading}>
     <Table striped celled inverted selectable compact>

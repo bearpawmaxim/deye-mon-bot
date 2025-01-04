@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react"
-import { Segment, Table, TableBody, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
+import { Message, Segment, Table, TableBody, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
 import { StationItem } from "../../stores/types";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { connect } from "react-redux";
@@ -56,7 +56,7 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
   }, [dispatch]);
 
   if (error) {
-    return <p>Error: {error}</p>;
+    return <Message error>Error: {error}</Message>;
   }
 
   const onStationEnableChange = (id: number, enabled: boolean) => {

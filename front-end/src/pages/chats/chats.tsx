@@ -1,5 +1,5 @@
 import { FC, useEffect } from "react"
-import { Header, Segment, Table, TableBody, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
+import { Header, Message, Segment, Table, TableBody, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
 import { AllowedChatListItem, ChatRequestListItem } from "../../stores/types";
 import { connect } from "react-redux";
 import { RootState, useAppDispatch } from "../../stores/store";
@@ -10,15 +10,17 @@ type ComponentProps = {
   allowedChats: AllowedChatListItem[];
   chatRequests: ChatRequestListItem[];
   loading: boolean;
+  error: string | null;
 };
 
 const mapStateToProps = (state: RootState): ComponentProps => ({
   allowedChats: state.chats.allowedChats,
   chatRequests: state.chats.chatRequests,
   loading: state.chats.loading,
+  error: state.chats.error,
 });
 
-const Component: FC<ComponentProps> = ({ allowedChats, chatRequests, loading }) => {
+const Component: FC<ComponentProps> = ({ allowedChats, chatRequests, loading, error }) => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -32,6 +34,10 @@ const Component: FC<ComponentProps> = ({ allowedChats, chatRequests, loading }) 
 
   const rejectClick = (id: number) => {
     dispatch(rejectChatRequest(id));
+  }
+
+  if (error) {
+    return <Message error>Error: {error}</Message>;
   }
 
   return <Segment basic loading={loading}>

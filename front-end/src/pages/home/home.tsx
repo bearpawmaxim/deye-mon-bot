@@ -67,6 +67,10 @@ const Component: FC<ComponentProps> = ({ stationsData, loading, error }) => {
     setDataInterval(interval);
   };
 
+  if (error) {
+    return <Message error>Error: {error}</Message>;
+  }
+
   return <Segment loading={loading} basic>
       <Segment inverted>
         Interval: <Dropdown
