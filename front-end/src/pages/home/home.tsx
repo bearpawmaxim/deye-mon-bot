@@ -70,7 +70,6 @@ const Component: FC<ComponentProps> = ({ stationsData, loading, error }) => {
   return <Segment loading={loading} basic>
       <Segment inverted>
         Interval: <Dropdown
-          fluid
           selection
           value={dataInterval}
           options={intervalOptions}

@@ -16,7 +16,7 @@ export const PageHeader: FC<PageHeaderProps> = ({ caption, buttons }: PageHeader
     <GridRow>
       <GridColumn width={'10'}>
         <Header as='h3' color="teal" textAlign='left'>
-          <Button icon={'arrow left'} color="teal" onClick={() => navigate(-1)}/>
+          <Button icon={'arrow left'} circular color="teal" onClick={() => navigate(-1)}/>
           {caption}
         </Header>
       </GridColumn>

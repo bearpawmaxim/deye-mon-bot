@@ -1,7 +1,8 @@
 import { FC } from "react";
 import { Header, Label, Segment } from "semantic-ui-react";
 import { StationDataItem } from "../../../stores/types";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line, ComposedChart } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  ResponsiveContainer, Line, ComposedChart } from 'recharts';
 
 
 type StationChartCardProps = {
@@ -9,10 +10,11 @@ type StationChartCardProps = {
 };
 
 export const StationChartCard: FC<StationChartCardProps> = ({ data }) => {
-  const tooltipLabelFormatter = (value: Date) => new Date(value).toLocaleTimeString();
+  const formatTimeValue = (value: Date) => new Date(value).toLocaleTimeString();
+  const formatKilowattsValue = (value: number) => `${Math.abs(value / 1000)} kW`;
   const dataLength = data?.data?.length ?? 0;
   return <Segment size="large" inverted style={{width: '100%'}}>
-    <Header as="h4" content={data.name} />
+    <Header as="h4" content={data.name} textAlign="center" />
     { dataLength === 0 && <Label style={{textAlign: 'center'}} attached="bottom">No data!</Label>}
     { dataLength > 0 && <>
         <ResponsiveContainer aspect={1} maxHeight={200} >
@@ -22,28 +24,39 @@ export const StationChartCard: FC<StationChartCardProps> = ({ data }) => {
             data={data.data}
             syncId={data.id}>
             <Legend wrapperStyle={{fontSize: "12px"}} />
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" fontSize={8} tick={false}/>
-            <YAxis fontSize={8} tickFormatter={(value) => `${Math.abs(value / 1000)} kW`} />
+            <CartesianGrid strokeDasharray="3 2" opacity={0.4} />
+            <XAxis dataKey="date" fontSize={8}
+              tickFormatter={formatTimeValue}  />
+            <YAxis fontSize={8} tickFormatter={(value) => formatKilowattsValue(value) } />
             <Tooltip labelStyle={{ color: 'black' }}
-              labelFormatter={tooltipLabelFormatter}
-              formatter={(value: number, name: string) => [`${Math.abs(value / 1000)} kW`, name]} />
+              labelFormatter={formatTimeValue}
+              formatter={(value: number, name: string) => [formatKilowattsValue(value), name]} />
+            <defs>
+              <linearGradient id="chargeColor" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#1BFFC2" stopOpacity={0.8}/>
+                <stop offset="95%" stopColor="#1BFFC2" stopOpacity={0}/>
+              </linearGradient>
+              <linearGradient id="dischargeColor" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#FF3838" stopOpacity={0.8}/>
+                <stop offset="95%" stopColor="#FF3838" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
             <Area
               type="linear"
               dataKey="chargePower"
               name="Charge power"
-              stroke="#1B4DFF"
-              fill="#1B4DFF"
+              stroke="#1BFFC2"
+              fill="url(#chargeColor)"
               order={2}
-              fillOpacity={0.8} />
+              fillOpacity={1} />
             <Area
               type="linear"
-              order={3}
               dataKey="dischargePower"
               name="Discharge power"
-              stroke="#ff3838"
-              fill="#ff3838"
-              fillOpacity={0.8} />
+              stroke="#FF3838"
+              fill="url(#dischargeColor)"
+              order={3}
+              fillOpacity={1} />
             <Line
               type="linear"
               dataKey="consumptionPower"
@@ -51,8 +64,8 @@ export const StationChartCard: FC<StationChartCardProps> = ({ data }) => {
               stroke="#FFC225"
               dot={false}
               order={1}
-              strokeOpacity={1}
-              fill="#FFFFFF" />
+              strokeOpacity={0.8}
+              />
           </ComposedChart>
         </ResponsiveContainer>
         <ResponsiveContainer aspect={1} maxHeight={200} >
@@ -62,19 +75,26 @@ export const StationChartCard: FC<StationChartCardProps> = ({ data }) => {
             data={data.data}
             syncId={data.id}>
             <Legend wrapperStyle={{fontSize: "12px"}} />
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" fontSize={8} tick={false} />
-            <YAxis min={100} max={100} fontSize={8} />
+            <CartesianGrid strokeDasharray="3 2" opacity={0.4} />
+            <XAxis dataKey="date" fontSize={8}
+              tickFormatter={formatTimeValue}  />
+            <YAxis type="number" domain={[0, 100]} unit={'%'} fontSize={8} />
             <Tooltip
               labelStyle={{ color: 'black' }}
-              labelFormatter={tooltipLabelFormatter}
+              labelFormatter={formatTimeValue}
               formatter={(value: number) => `${value}%`} />
+            <defs>
+              <linearGradient id="socColor" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#67C2FE" stopOpacity={0.8}/>
+                <stop offset="95%" stopColor="#67C2FE" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
             <Area
               type="linear"
               dataKey="batterySoc"
               name="Battery SOC"
-              stroke="#67C2FE"
-              fill="#67C2FE" />
+              fill="url(#socColor)"
+              />
           </AreaChart>
         </ResponsiveContainer>
       </>

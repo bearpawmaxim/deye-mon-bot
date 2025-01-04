@@ -53,8 +53,11 @@ const Component: FC<ComponentProps> = ({ loading, error, token }) => {
   return (
     <Grid textAlign='center' style={{ height: '100vh' }} verticalAlign='middle' className='login-page'>
       <Grid.Column style={{ maxWidth: 450 }}>
+      <Header as='h2' color='teal'>
+        Deye monitoring bot control panel
+      </Header>
       <Segment stacked inverted className='login-form'>
-        <Header as='h2' color='teal' textAlign='center'>
+        <Header as='h3' color='teal' textAlign='center'>
           Log-in to your account
         </Header>
         <Form size='large' onSubmit={handleSubmit} error={Boolean(error)} loading={loading}>
