@@ -25,7 +25,7 @@ const mapStateToProps = (state: RootState): ComponentProps => ({
 const Component: FC<ComponentProps> = ({ messages, loading }: ComponentProps) => {
   const dispatch = useAppDispatch();
     const getHeaderButtons = (): PageHeaderButton[] => [
-      { text: 'Create', color: "teal", onClick: () => onCreateClick(), disabled: false, },
+      { text: 'Create', icon: "add", color: "teal", onClick: () => onCreateClick(), disabled: false, },
     ];
     const { setHeaderButtons } = useHeaderContent();
     useEffect(() => {

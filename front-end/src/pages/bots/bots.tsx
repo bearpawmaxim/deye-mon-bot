@@ -47,9 +47,9 @@ const Component: FC<ComponentProps> = ({ bots, loading, error, changed, creating
   }
 
   const getHeaderButtons = (dataChanged: boolean): PageHeaderButton[] => [
-    { text: 'Create', color: "teal", onClick: () => create(), disabled: false, },
-    { text: 'Save', color: "green", onClick: () => dispatch(saveBots()), disabled: !dataChanged, },
-    { text: 'Cancel', color: "black", onClick: () => dispatch(cancelBotsEditing()), disabled: !dataChanged, },
+    { text: 'Create', icon: "add", color: "teal", onClick: () => create(), disabled: false, },
+    { text: 'Save', icon: "save", color: "green", onClick: () => dispatch(saveBots()), disabled: !dataChanged, },
+    { text: 'Cancel', icon: "cancel", color: "black", onClick: () => dispatch(cancelBotsEditing()), disabled: !dataChanged, },
   ];
 
   const { setHeaderButtons, updateButtonAttributes } = useHeaderContent();

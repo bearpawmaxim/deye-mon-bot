@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Button, Grid, GridColumn, GridRow, Header, Segment } from "semantic-ui-react";
+import { Button, Grid, GridColumn, GridRow, Header, Icon, Segment } from "semantic-ui-react";
 import { PageHeaderButton } from "../providers";
 import { useNavigate } from "react-router-dom";
 
@@ -21,11 +21,19 @@ export const PageHeader: FC<PageHeaderProps> = ({ caption, buttons }: PageHeader
         </Header>
       </GridColumn>
       <GridColumn width={'6'} textAlign="right">
-        { buttons.map((button, i) => 
-            <Button key={`header_btn_${i}`} color={button.color} 
-              disabled={button.disabled} icon={button.icon} onClick={(_: unknown) => button.onClick()}>
-              {button.text}
-            </Button>
+        { buttons.map((button, i) => <Button
+            key={`header_btn_${i}`}
+            color={button.color}
+            disabled={button.disabled}
+            onClick={(_: unknown) => button.onClick()}
+            icon={Boolean(button.icon)}
+            circular
+            compact
+            labelPosition={button.icon ? "left" : undefined}
+          >
+            {button.icon && <Icon name={button.icon} />}
+            {button.text}
+          </Button>
         )}
       </GridColumn>
     </GridRow>

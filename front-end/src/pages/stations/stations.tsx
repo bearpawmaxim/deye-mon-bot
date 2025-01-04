@@ -42,8 +42,8 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
   const [initiallyChanged, setInitiallyChanged] = useState(false);
 
   const getHeaderButtons = (dataChanged: boolean): PageHeaderButton[] => [
-    { text: 'Save', color: "green", onClick: () => dispatch(saveStationStates()), disabled: !dataChanged, },
-    { text: 'Cancel', color: "black", onClick: () => dispatch(cancelStationsEditing()), disabled: !dataChanged, },
+    { text: 'Save', icon: "save", color: "green", onClick: () => dispatch(saveStationStates()), disabled: !dataChanged, },
+    { text: 'Cancel', icon: "cancel", color: "black", onClick: () => dispatch(cancelStationsEditing()), disabled: !dataChanged, },
   ];
   const { setHeaderButtons, updateButtonAttributes } = useHeaderContent();
   useEffect(() => {

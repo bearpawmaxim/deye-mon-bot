@@ -96,8 +96,8 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loadin
 
   const { setHeaderButtons, updateButtonAttributes, setHeaderText } = useHeaderContent();
   const getHeaderButtons = (): PageHeaderButton[] => [
-    { text: 'Save', color: "green", onClick: onSaveClick.bind(this), disabled: true, },
-    { text: 'Cancel', color: "black", onClick: () => editOrCreateMessage(), disabled: true, },
+    { text: 'Save', icon:'save', color: "green", onClick: onSaveClick.bind(this), disabled: true, },
+    { text: 'Cancel', icon: 'cancel', color: "black", onClick: () => editOrCreateMessage(), disabled: true, },
   ];
   useEffect(() => {
     setHeaderButtons(getHeaderButtons());

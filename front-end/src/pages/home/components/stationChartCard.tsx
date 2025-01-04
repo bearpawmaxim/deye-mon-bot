@@ -10,10 +10,11 @@ type StationChartCardProps = {
 
 export const StationChartCard: FC<StationChartCardProps> = ({ data }) => {
   const tooltipLabelFormatter = (value: Date) => new Date(value).toLocaleTimeString();
+  const dataLength = data?.data?.length ?? 0;
   return <Segment size="large" inverted style={{width: '100%'}}>
     <Header as="h4" content={data.name} />
-    { data.data.length === 0 && <Label style={{textAlign: 'center'}}>No data!</Label>}
-    { data.data.length > 0 && <>
+    { dataLength === 0 && <Label style={{textAlign: 'center'}} attached="bottom">No data!</Label>}
+    { dataLength > 0 && <>
         <ResponsiveContainer aspect={1} maxHeight={200} >
           <ComposedChart
             width={400}
