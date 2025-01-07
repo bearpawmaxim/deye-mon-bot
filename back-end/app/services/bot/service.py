@@ -25,7 +25,10 @@ class BotService:
     def update(self, bot_id, message):
         if 'message' in message:
             chat_id = message["message"]["chat"]["id"]
-            if (self._database.get_is_chat_allowed(chat_id)):
+            if not self._database.get_is_hook_enabled(bot_id):
+                print(f'hook processing is disabled for bot {bot_id}')
+                return
+            if self._database.get_is_chat_allowed(chat_id, bot_id):
                 text = message['message']['text']
                 self._telegram.send_message(bot_id, chat_id, f"pong '{text}'")
             else:

@@ -7,18 +7,25 @@ import { TokenEditDialog } from "./tokenEditDialog";
 type BotItemRowProps = {
   item: BotItem;
   enableChanged: (enabled: boolean) => void;
+  hookEnableChanged: (enabled: boolean) => void;
   tokenChanged: (result: boolean, token: string) => void;
 }
 
-export const BotItemRow: FC<BotItemRowProps> = ({ item, enableChanged, tokenChanged }: BotItemRowProps) => {
+export const BotItemRow: FC<BotItemRowProps> = ({ item, enableChanged, hookEnableChanged, tokenChanged }: BotItemRowProps) => {
   const [open, setOpen] = useState(false);
   const enableChange = (_: unknown, data: CheckboxProps) => {
     enableChanged(data.checked!);
+  };
+  const hookEnableChange = (_: unknown, data: CheckboxProps) => {
+    hookEnableChanged(data.checked!);
   };
   return (<TableRow>
     <TableCell>
       <Icon name="pencil" color={item.changed ? 'orange' : 'grey'}></Icon>
       {item.name}
+    </TableCell>
+    <TableCell width={"3"} textAlign="center">
+      <Checkbox checked={item.hookEnabled} onChange={hookEnableChange}></Checkbox>
     </TableCell>
     <TableCell width={"1"} textAlign="center">
       <TokenEditDialog changed={tokenChanged} create={false} opened={open} setOpened={setOpen} token={item.token} />

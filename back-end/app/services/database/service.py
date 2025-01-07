@@ -55,10 +55,21 @@ class DatabaseService:
             print(f"Error updating message: {e}")
             return None
 
-    def get_is_chat_allowed(self, chat_id: str) -> bool:
+    def get_is_hook_enabled(self, bot_id: int) -> bool:
         try:
-            first_chat = self._session.query(AllowedChat).filter_by(chat_id=chat_id).first()
-            return first_chat is not None
+            bot = self._session.query(Bot).filter_by(id=bot_id).first()
+            return bot is not None and bot.hook_enabled
+        except Exception as e:
+            print(f'Error getting bot hook_enabled for bot {bot_id}: {e}')
+            return False
+
+    def get_is_chat_allowed(self, chat_id: str, bot_id: int) -> bool:
+        try:
+            chat = self._session.query(AllowedChat).filter_by(
+                chat_id=chat_id,
+                bot_id=bot_id
+            ).first()
+            return chat is not None
         except Exception as e:
             print(f'Error getting allowed chat for {chat_id}: {e}')
             return False
@@ -76,7 +87,7 @@ class DatabaseService:
         except Exception as e:
             print(f'Error getting chat requests: {e}')
             return []
-        
+
     def add_chat_request(self, chat_id, bot_id):
         try:
             existing_request = self._session.query(ChatRequest).filter_by(chat_id=chat_id, bot_id=bot_id).first()
@@ -141,7 +152,6 @@ class DatabaseService:
                 existing_station.connection_status = station.connection_status
                 existing_station.grid_interconnection_type = station.grid_interconnection_type
                 existing_station.last_update_time = datetime.fromtimestamp(station.last_update_time, timezone.utc)
-
         except Exception as e:
             print(f"Error inserting station: {e}")
 
@@ -285,19 +295,21 @@ class DatabaseService:
         query = self._session.query(Bot)
         return query.all() if all else query.filter_by(enabled=True).all()
 
-    def save_bot(self, id: int, token: str, enabled: bool):
+    def save_bot(self, id: int, token: str, enabled: bool, hook_enabled: bool):
         try:
             bot = self._session.query(Bot).filter_by(id=id).with_for_update().first()   
             if not bot:
                 new_record = Bot(
                     bot_token = token,
-                    enabled = enabled
+                    enabled = enabled,
+                    hook_enabled = hook_enabled
                 )
                 self._session.add(new_record)
                 return new_record.id
             else:
                 bot.bot_token = token
                 bot.enabled = enabled
+                bot.hook_enabled = hook_enabled
                 return bot.id
         except Exception as e:
             self._session.rollback()

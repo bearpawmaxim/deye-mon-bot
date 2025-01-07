@@ -12,6 +12,7 @@ const initialState: BotsState = {
 export type UpdateBotActionPayload = {
   id: number;
   enabled?: boolean;
+  hookEnabled?: boolean;
   token?: string;
 };
 
@@ -23,6 +24,7 @@ export const botsSlice = createSlice({
       const bot = state.bots.find(b => b.id === payload.id);
       if (bot) {
         bot.enabled = payload.enabled ?? bot.enabled;
+        bot.hookEnabled = payload.hookEnabled ?? bot.hookEnabled;
         bot.token = payload.token ?? bot.token;
         bot.changed = true;
       }
@@ -43,6 +45,7 @@ export const botsSlice = createSlice({
       state.creating = false;
       state.bots.push({
         enabled: true,
+        hookEnabled: true,
         token: token,
         changed: true
       })

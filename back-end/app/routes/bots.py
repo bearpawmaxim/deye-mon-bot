@@ -20,7 +20,8 @@ def register(app, services: Services):
                 'id': bot.id,
                 'name': bot_name,
                 'token': bot.bot_token,
-                'enabled': bot.enabled
+                'enabled': bot.enabled,
+                'hookEnabled': bot.hook_enabled,
             }
 
         futures = [services.executor.submit(process_bot, bot) for bot in bots]
@@ -34,6 +35,9 @@ def register(app, services: Services):
         id = request.json.get("id", None)
         token = request.json.get("token", None)
         enabled = request.json.get("enabled", False)
-        bot_id = services.database.save_bot(id, token, enabled)
+        hook_enabled = request.json.get("hookEnabled", False)
+        bot_id = services.database.save_bot(id, token, enabled, hook_enabled)
         services.db.session.commit()
+        if enabled:
+            services.telegram.add_bot(bot_id, token)
         return jsonify({ 'success': True, 'id': bot_id }), 200

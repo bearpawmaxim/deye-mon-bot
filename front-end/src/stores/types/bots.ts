@@ -4,6 +4,7 @@ export type BaseServerBotItem = {
   id?: number;
   token: string;
   enabled: boolean;
+  hookEnabled: boolean;
 };
 
 export type ServerBotItem = BaseServerBotItem & {

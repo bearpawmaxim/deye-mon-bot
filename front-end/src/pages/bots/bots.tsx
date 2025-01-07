@@ -62,6 +62,9 @@ const Component: FC<ComponentProps> = ({ bots, loading, error, changed, creating
     return <Message error>Error: {error}</Message>;
   }
 
+  const onBotHookEnableChange = (id: number, enabled: boolean) => {
+    dispatch(updateBot({ id, hookEnabled: enabled }));
+  };
   const onBotEnableChange = (id: number, enabled: boolean) => {
     dispatch(updateBot({ id, enabled }));
   };
@@ -93,6 +96,7 @@ const Component: FC<ComponentProps> = ({ bots, loading, error, changed, creating
       <TableHeader>
         <TableRow>
           <TableHeaderCell>Bot</TableHeaderCell>
+          <TableHeaderCell textAlign="center">Can respond in chats</TableHeaderCell>
           <TableHeaderCell>Token</TableHeaderCell>
           <TableHeaderCell textAlign="center">Active</TableHeaderCell>
         </TableRow>
@@ -102,6 +106,7 @@ const Component: FC<ComponentProps> = ({ bots, loading, error, changed, creating
           bots.map((bot, index) => 
             <BotItemRow key={`bot_${index}`} item={bot}
               enableChanged={onBotEnableChange.bind(this, bot.id!)}
+              hookEnableChanged={onBotHookEnableChange.bind(this, bot.id!)}
               tokenChanged={onBotTokenChange.bind(this, bot.id!)} />
           )
         }
