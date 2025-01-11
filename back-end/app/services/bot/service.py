@@ -23,6 +23,7 @@ class BotService:
         self._database = database
 
     def update(self, bot_id: int, message):
+        bot_id = int(bot_id)
         if 'message' in message:
             chat_id = message["message"]["chat"]["id"]
             if not self._database.get_is_hook_enabled(bot_id):
