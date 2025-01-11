@@ -13,8 +13,8 @@ export const ChatRequestItemRow: FC<ChatRequestItemRowProps> = ({ request, appro
     <TableCell>{request.chatName}</TableCell>
     <TableCell>{request.botName}</TableCell>
     <TableCell>{request.requestDate.toString()}</TableCell>
-    <TableCell>
-      <ButtonGroup>
+    <TableCell textAlign="center">
+      <ButtonGroup size="mini">
         <Button icon="check" content='Approve' color="teal" onClick={approve} />
         <Button icon="cancel" content='Reject' color="orange" onClick={reject} />
       </ButtonGroup>

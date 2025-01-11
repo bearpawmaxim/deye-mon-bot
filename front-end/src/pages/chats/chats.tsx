@@ -3,7 +3,7 @@ import { Header, Message, Segment, Table, TableBody, TableHeader, TableHeaderCel
 import { AllowedChatListItem, ChatRequestListItem } from "../../stores/types";
 import { connect } from "react-redux";
 import { RootState, useAppDispatch } from "../../stores/store";
-import { approveChatRequest, fetchAllowedChats, fetchChatRequests, rejectChatRequest } from "../../stores/thunks";
+import { approveChatRequest, disallowChat, fetchAllowedChats, fetchChatRequests, rejectChatRequest } from "../../stores/thunks";
 import { AllowedChatItemRow, ChatRequestItemRow } from "./components";
 
 type ComponentProps = {
@@ -36,6 +36,10 @@ const Component: FC<ComponentProps> = ({ allowedChats, chatRequests, loading, er
     dispatch(rejectChatRequest(id));
   }
 
+  const disallowClick = (id: number) => {
+    dispatch(disallowChat(id));
+  }
+
   if (error) {
     return <Message error>Error: {error}</Message>;
   }
@@ -48,11 +52,16 @@ const Component: FC<ComponentProps> = ({ allowedChats, chatRequests, loading, er
           <TableHeaderCell>Chat</TableHeaderCell>
           <TableHeaderCell>Bot</TableHeaderCell>
           <TableHeaderCell>Approved on</TableHeaderCell>
+          <TableHeaderCell width={2}></TableHeaderCell>
         </TableRow>
       </TableHeader>
       <TableBody>
         { allowedChats.map((chat, index) =>
-            <AllowedChatItemRow key={`chat_${index}`} chat={chat} />) }
+            <AllowedChatItemRow
+              key={`chat_${index}`}
+              chat={chat}
+              disallow={disallowClick.bind(this, chat.id)}/>
+          )}
       </TableBody>
     </Table>
     <Header as='h4' content='Chat requests' />

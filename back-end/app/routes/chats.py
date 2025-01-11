@@ -1,9 +1,9 @@
-from flask import jsonify, request
+from flask import Flask, jsonify, request
 from flask_jwt_extended import jwt_required
 from app.services import Services
 
 
-def register(app, services: Services):
+def register(app: Flask, services: Services):
 
     def _get_bot_name(bot_id: str):
         try:
@@ -80,6 +80,16 @@ def register(app, services: Services):
         request_id = request.json.get('id')
 
         services.database.reject_chat_request(request_id)
+        services.db.session.commit()
+
+        return { "ok": True }
+    
+    @app.route('/api/chats/disallow', methods=['PATCH'])
+    @jwt_required()
+    def disallow_chat():
+        chat_id = request.json.get('id')
+
+        services.database.disallow_chat(chat_id)
         services.db.session.commit()
 
         return { "ok": True }
