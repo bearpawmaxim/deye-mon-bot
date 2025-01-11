@@ -14,6 +14,13 @@ class TelegramService:
         self._bot_tokens[id] = token
         self._register_hook(token, hook_url)
 
+    def remove_bot(self, id: int):
+        if id not in self._bot_tokens:
+            return
+        token = self._bot_tokens[id]
+        self._unregister_hook(id, token)
+        self._bot_tokens.pop(id)
+
     def _register_hook(self, bot_token: str, hook_url: str):
         url = self._get_method_url(bot_token, 'setWebhook')
         headers = {
@@ -24,6 +31,24 @@ class TelegramService:
         }
         try:
             response = requests.post(url, headers=headers, json=data)
+            response.raise_for_status()
+
+            response_data = response.json()
+            return response_data['ok'] == True and response_data['result'] == True
+        except requests.exceptions.HTTPError as err:
+            print(f"HTTP error occurred: {err}")
+            return None
+        except Exception as err:
+            print(f"Other error occurred: {err}")
+            return None
+
+    def _unregister_hook(self, bot_token: str):
+        url = self._get_method_url(bot_token, 'deleteWebhook')
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        try:
+            response = requests.post(url, headers=headers)
             response.raise_for_status()
 
             response_data = response.json()

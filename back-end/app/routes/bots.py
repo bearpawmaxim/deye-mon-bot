@@ -40,4 +40,6 @@ def register(app, services: Services):
         services.db.session.commit()
         if enabled:
             services.telegram.add_bot(bot_id, token)
+        else:
+            services.telegram.remove_bot(bot_id)
         return jsonify({ 'success': True, 'id': bot_id }), 200
