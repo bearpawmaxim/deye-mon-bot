@@ -8,7 +8,7 @@ import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkBreaks from "remark-breaks";
 
-type MessagePreviwOwnProps = {
+type MessagePreviewOwnProps = {
   shown: boolean;
   setShown: (shown: boolean) => void;
 };
@@ -19,9 +19,9 @@ type MessagePreviewStateProps = {
   error?: string;
 };
 
-type ComponentProps = MessagePreviewStateProps & MessagePreviwOwnProps;
+type ComponentProps = MessagePreviewStateProps & MessagePreviewOwnProps;
 
-const mapStateToProps = (state: RootState, ownProps: MessagePreviwOwnProps): ComponentProps => ({
+const mapStateToProps = (state: RootState, ownProps: MessagePreviewOwnProps): ComponentProps => ({
   shown: ownProps.shown,
   setShown: ownProps.setShown,
   preview: state.messages.templatePreview,
@@ -35,7 +35,7 @@ const Component: FC<ComponentProps> = ({ shown, setShown, preview, loading, erro
     if (shown) {
       dispatch(getTemplatePreview());
     }
-  }, [shown]);
+  }, [shown, dispatch]);
 
   return <Modal
     onClose={() => setShown(false)}

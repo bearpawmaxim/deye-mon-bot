@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 from functools import partial
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from app.services.database.service import DatabaseService
@@ -45,6 +45,10 @@ class BotService:
 
             data = self._database.get_station_data(station.station_id)
 
+            data['current'].last_update_time = data['current'].last_update_time.replace(tzinfo=UTC).astimezone(self._message_timezone)
+            if data['previous'] is not None:
+                data['previous'].last_update_time = data['previous'].last_update_time.replace(tzinfo=UTC).astimezone(self._message_timezone)
+
             station_data = {
                 **data,
                 'name': station.station_name,
@@ -83,10 +87,11 @@ class BotService:
         except Exception as e:
             print(f"Error sending message: {e}")
 
-    def _prepare_message(self, stations, message, force = False):
+    def _prepare_message(self, stations, message, force = False, include_data = False):
         template_data = {
             'stations': [],
-            'strftime': datetime.now(self._message_timezone).strftime
+            'now': datetime.now(self._message_timezone),
+            'timedelta': timedelta,
         }
         message_station = self._populate_stations_data(template_data, stations, message, force)
         if message.station_id is not None and message_station is None:
@@ -104,9 +109,9 @@ class BotService:
         message_content = generate_message(message.message_template, template_data)
         return MessageItem(
             message = message_content,
-            should_send=should_send,
-            timeout=timeout,
-            next_send_time=next_send_time
+            should_send = should_send,
+            timeout = timeout,
+            next_send_time = next_send_time
         )
 
     def periodic_send(self):
@@ -125,4 +130,4 @@ class BotService:
 
     def get_message(self, message):
         stations = self._database.get_stations()
-        return self._prepare_message(stations, message, True)
+        return self._prepare_message(stations, message, True, True)

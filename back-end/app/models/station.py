@@ -36,3 +36,26 @@ class Station(Base):
             f"region_timezone='{self.region_timezone}', generationPower={self.generation_power}, "
             f"lastUpdateTime={self.last_update_time}, start_operating_time={self.start_operating_time}, "
             f"order={self.order}, enabled={self.enabled})")
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'station_id': self.station_id,
+            'station_name': self.station_name,
+            'location_lat': self.location_lat,
+            'location_lng': self.location_lng,
+            'location_address': self.location_address,
+            'region_nation_id': self.region_nation_id,
+            'region_timezone': self.region_timezone,
+            'grid_interconnection_type': self.grid_interconnection_type,
+            'installed_capacity': self.installed_capacity,
+            'start_operating_time': self.start_operating_time,
+            'created_date': self.created_date,
+            'last_update_time': self.last_update_time,
+            'connection_status': self.connection_status,
+            'contact_phone': self.contact_phone,
+            'owner_name': self.owner_name,
+            'generation_power': self.generation_power,
+            'order': self.order,
+            'enabled': self.enabled
+        }

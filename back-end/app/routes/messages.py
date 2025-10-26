@@ -11,7 +11,7 @@ def register(app, services: Services):
         except:
             print(f'Cannot get bot info for bot {bot_id}')
             return 'Invalid bot identifier'
-        
+
     def _get_channel_name(channel_id: str, bot_id: str):
         try:
             chat_info = services.telegram.get_chat_info(channel_id, bot_id)
@@ -76,7 +76,7 @@ def register(app, services: Services):
             'lastSentTime': message.last_sent_time,
             'enabled': message.enabled,
         })
-    
+
     @app.route('/api/messages/getPreview', methods=['POST'])
     @jwt_required()
     def get_message_preview():
