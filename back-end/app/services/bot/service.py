@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from functools import partial
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from app.services.database.service import DatabaseService
@@ -45,9 +45,9 @@ class BotService:
 
             data = self._database.get_station_data(station.station_id)
 
-            data['current'].last_update_time = data['current'].last_update_time.replace(tzinfo=UTC).astimezone(self._message_timezone)
+            data['current'].last_update_time = data['current'].last_update_time.replace(tzinfo=timezone.utc).astimezone(self._message_timezone)
             if data['previous'] is not None:
-                data['previous'].last_update_time = data['previous'].last_update_time.replace(tzinfo=UTC).astimezone(self._message_timezone)
+                data['previous'].last_update_time = data['previous'].last_update_time.replace(tzinfo=timezone.utc).astimezone(self._message_timezone)
 
             station_data = {
                 **data,
