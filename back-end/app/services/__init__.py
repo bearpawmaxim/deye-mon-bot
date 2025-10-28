@@ -5,7 +5,7 @@ from flask_apscheduler import APScheduler
 
 from app.config import Config
 from .bot import BotConfig, BotService
-from .database import DatabaseService
+from .database import DatabaseConfig, DatabaseService
 from .deye_api import DeyeConfig, DeyeApiService
 from .telegram import TelegramConfig, TelegramService
 from .authorization import AuthorizationService
@@ -62,7 +62,12 @@ def initialize_services(config: Config):
     print(telegram_config)
     telegram = TelegramService(telegram_config)
 
-    database = DatabaseService(db)
+    database_config = DatabaseConfig(
+        db = db,
+        statistic_keep_days = config.STATISTIC_KEEP_DAYS
+    )
+    print(database_config)
+    database = DatabaseService(database_config)
 
     bot_config = BotConfig(config.BOT_TIMEZONE)
     print(bot_config)

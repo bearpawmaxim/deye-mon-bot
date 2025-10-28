@@ -43,6 +43,8 @@ class Config:
 
     HOST = '127.0.0.1'
 
+    STATISTIC_KEEP_DAYS = int(os.getenv('STATISTIC_KEEP_DAYS', 3))
+
 class ProductionConfig(Config):
     DEBUG = False
 

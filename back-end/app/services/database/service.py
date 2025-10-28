@@ -2,11 +2,13 @@ from datetime import datetime, timedelta, timezone
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Float, Integer, Numeric, func
 from app.models import Bot, AllowedChat, ChatRequest, Message, Station, StationData, DeyeStationData, DeyeStation, User
+from .models import DatabaseConfig
 
 class DatabaseService:
-    def __init__(self, db: SQLAlchemy):
-        self._db = db
-        self._session = db.session
+    def __init__(self, config: DatabaseConfig):
+        self._db = config.db
+        self._statistic_keep_days = config.statistic_keep_days
+        self._session = self._db.session
 
     def get_messages(self, all: bool = False):
         try:
@@ -287,8 +289,8 @@ class DatabaseService:
         avg_value = query.scalar()
         return avg_value if avg_value is not None else 0.0
 
-    def delete_old_station_data(self, timeout_days: int):
-        timeout = datetime.now(timezone.utc) - timedelta(days=timeout_days)
+    def delete_old_station_data(self):
+        timeout = datetime.now(timezone.utc) - timedelta(days=self._statistic_keep_days)
         self._session.query(StationData).filter(StationData.last_update_time < timeout).delete(synchronize_session=False)
 
     def get_user(self, user_name: str):
