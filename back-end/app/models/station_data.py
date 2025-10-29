@@ -1,3 +1,4 @@
+from datetime import timezone
 from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from .base import Base
@@ -45,7 +46,7 @@ class StationData(Base):
             ")"
         )
 
-    def to_dict(self):
+    def to_dict(self, tz=timezone.utc):
         return {
             'id': self.id,
             'station_id': self.station_id,
@@ -58,7 +59,7 @@ class StationData(Base):
             'generation_power': self.generation_power,
             'grid_power': self.grid_power,
             'irradiate_intensity': self.irradiate_intensity,
-            'last_update_time': self.last_update_time.isoformat() if self.last_update_time else None,
+            'last_update_time': self.last_update_time.replace(tzinfo=timezone.utc).astimezone(tz) if self.last_update_time else self.last_update_time,
             'msg': self.msg,
             'purchase_power': self.purchase_power,
             'request_id': self.request_id,

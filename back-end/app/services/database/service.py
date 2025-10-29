@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta, timezone
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Float, Integer, Numeric, func
-from app.models import Bot, AllowedChat, ChatRequest, Message, Station, StationData, DeyeStationData, DeyeStation, User
+from app.models import Bot, AllowedChat, ChatRequest, Message, Station, StationData, StationStatisticData, DeyeStationData, DeyeStation, User
 from .models import DatabaseConfig
 
 class DatabaseService:
@@ -237,10 +236,10 @@ class DatabaseService:
             )
             if stations.count() == 0:
                 return None
-            return {
-                'current': stations[0],
-                'previous': stations[1] if stations.count() == 2 else None
-            }
+            return StationStatisticData(
+                stations[0],
+                stations[1] if stations.count() == 2 else None
+            )
         except Exception as e:
             print(f"Error fetching station data: {e}")
             return None

@@ -45,12 +45,8 @@ class BotService:
 
             data = self._database.get_station_data(station.station_id)
 
-            data['current'].last_update_time = data['current'].last_update_time.replace(tzinfo=timezone.utc).astimezone(self._message_timezone)
-            if data['previous'] is not None:
-                data['previous'].last_update_time = data['previous'].last_update_time.replace(tzinfo=timezone.utc).astimezone(self._message_timezone)
-
             station_data = {
-                **data,
+                **data.to_dict(self._message_timezone),
                 'name': station.station_name,
                 'grid_interconnection_type': station.grid_interconnection_type,
                 'connection_status': station.connection_status
@@ -72,11 +68,11 @@ class BotService:
 
     def _add_average_methods(self, template_data, last_sent_time):
         for station_data in template_data['stations']:
-            station_id = station_data['current'].station_id
+            station_id = station_data['current']['station_id']
             station_data['get_average'] = self._get_average_method(station_id, last_sent_time)
             station_data['get_average_all'] = self._get_average_method(station_id)
         if 'station' in template_data and template_data['station'] is not None:
-            station_id = template_data['station']['current'].station_id
+            station_id = template_data['station']['current']['station_id']
             template_data['station']['get_average'] = self._get_average_method(station_id, last_sent_time)
             template_data['station']['get_average_all'] = self._get_average_method(station_id)
 
