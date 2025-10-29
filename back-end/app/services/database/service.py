@@ -237,8 +237,8 @@ class DatabaseService:
             if stations.count() == 0:
                 return None
             return StationStatisticData(
-                stations[0],
-                stations[1] if stations.count() == 2 else None
+                stations[1] if stations.count() == 2 else None,
+                stations[0]
             )
         except Exception as e:
             print(f"Error fetching station data: {e}")

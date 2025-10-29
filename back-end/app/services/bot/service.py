@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from functools import partial
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -46,7 +45,7 @@ class BotService:
             data = self._database.get_station_data(station.station_id)
 
             station_data = {
-                **data.to_dict(self._message_timezone),
+                **(data.to_dict(self._message_timezone) if data is not None else {}),
                 'name': station.station_name,
                 'grid_interconnection_type': station.grid_interconnection_type,
                 'connection_status': station.connection_status
@@ -68,10 +67,11 @@ class BotService:
 
     def _add_average_methods(self, template_data, last_sent_time):
         for station_data in template_data['stations']:
-            station_id = station_data['current']['station_id']
-            station_data['get_average'] = self._get_average_method(station_id, last_sent_time)
-            station_data['get_average_all'] = self._get_average_method(station_id)
-        if 'station' in template_data and template_data['station'] is not None:
+            if 'current' in station_data:
+                station_id = station_data['current']['station_id']
+                station_data['get_average'] = self._get_average_method(station_id, last_sent_time)
+                station_data['get_average_all'] = self._get_average_method(station_id)
+        if 'station' in template_data and template_data['station'] is not None and 'current' in template_data['station']:
             station_id = template_data['station']['current']['station_id']
             template_data['station']['get_average'] = self._get_average_method(station_id, last_sent_time)
             template_data['station']['get_average_all'] = self._get_average_method(station_id)
