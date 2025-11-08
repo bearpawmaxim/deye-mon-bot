@@ -64,6 +64,16 @@ class BotService:
             datetime.now(timezone.utc),
             station_id
         )
+    
+    def _get_average_minutes_method(self, station_id):
+        return (
+            lambda column_name,minutes: self._database.get_station_data_average_column(
+                datetime.now(timezone.utc) - timedelta(minutes=minutes),
+                datetime.now(timezone.utc),
+                station_id,
+                column_name
+            )
+        )
 
     def _add_average_methods(self, template_data, last_sent_time):
         for station_data in template_data['stations']:
@@ -71,10 +81,12 @@ class BotService:
                 station_id = station_data['current']['station_id']
                 station_data['get_average'] = self._get_average_method(station_id, last_sent_time)
                 station_data['get_average_all'] = self._get_average_method(station_id)
+                station_data['get_average_minutes'] = self._get_average_minutes_method(station_id)
         if 'station' in template_data and template_data['station'] is not None and 'current' in template_data['station']:
             station_id = template_data['station']['current']['station_id']
             template_data['station']['get_average'] = self._get_average_method(station_id, last_sent_time)
             template_data['station']['get_average_all'] = self._get_average_method(station_id)
+            template_data['station']['get_average_minutes'] = self._get_average_minutes_method(station_id)
 
     def _send_message(self, message, message_content):
         try:
