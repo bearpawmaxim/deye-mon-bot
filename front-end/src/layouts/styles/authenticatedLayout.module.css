@@ -1,0 +1,69 @@
+:global(.mantine-AppShell-root).root {
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+}
+
+:global(.mantine-AppShell-navbar).navbar {
+  height: 100%;
+  overflow-y: auto;
+  background-color: light-dark(
+    var(--mantine-color-white),
+    var(--mantine-color-dark-6)
+  );
+
+  border: 0;
+  box-shadow: var(--mantine-shadow-xs);
+  padding: var(--mantine-spacing-lg) var(--mantine-spacing-md);
+
+  @media (max-width: $mantine-breakpoint-md) {
+    top: var(--app-header-height);
+  }
+
+  transition: all 0.3s cubic-bezier(0.075, 0.82, 0.165, 1);
+
+  white-space: normal;
+  word-break: break-word;
+  min-width: 0;
+
+  &[data-collpased="true"] {
+    padding: var(--mantine-spacing-lg) var(--mantine-spacing-xs);
+  } 
+}
+
+:global(.mantine-AppShell-header).header {
+  position: absolute;
+  left: var(--app-shell-navbar-width);
+  width: calc(100% - var(--app-shell-navbar-width));
+  height: rem(80);
+  border: 0;
+  background-color: transparent;
+
+  @media (max-width: $mantine-breakpoint-md) {
+    width: 100%;
+    left: 0;
+    height: rem(60);
+  }
+}
+
+:global(.mantine-AppShell-main).main {
+  background-color: light-dark(
+    var(--sns-background),
+    var(--sns-background-dark)
+  );
+
+  padding-top: calc(var(--app-header-height) + rem(25));
+  padding-bottom: rem(20);
+
+  padding-left: calc(var(--app-shell-navbar-width) + var(--mantine-spacing-md));
+  padding-right: var(--mantine-spacing-md);
+
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+
+  @media (max-width: $mantine-breakpoint-md) {
+    padding-top: calc(var(--app-header-height) + rem(25));
+    padding-left: rem(20);
+    padding-right: rem(20);
+  }
+}

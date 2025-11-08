@@ -1,7 +1,6 @@
 import { FC, useState } from "react";
 import CodeMirror, { basicSetup } from '@uiw/react-codemirror';
 import { langs } from '@uiw/codemirror-extensions-langs';
-import { Button, Form, Modal, ModalActions, ModalContent, ModalDescription, ModalHeader, TextArea } from "semantic-ui-react";
 import { autocompletion } from "@codemirror/autocomplete";
 import { jinja2Autocomplete } from "../../../utils";
 
