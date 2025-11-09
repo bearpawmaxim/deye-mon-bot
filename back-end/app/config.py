@@ -27,6 +27,7 @@ class Config:
     DEYE_EMAIL = os.getenv('DEYE_EMAIL')
     DEYE_PASSWORD = os.getenv('DEYE_PASSWORD')
     DEYE_FETCH_INTERVAL = os.getenv('DEYE_FETCH_INTERVAL', default=120)
+    DEYE_SYNC_STATIONS_ON_POLL = os.getenv('DEYE_SYNC_STATIONS_ON_POLL', 'False').lower() in ('true', '1', 't', 'yes')
 
     TG_BOT_TOKEN = os.getenv('TG_BOT_TOKEN')
     TG_HOOK_BASE_URL = os.getenv('TG_HOOK_BASE_URL')

@@ -51,7 +51,8 @@ def initialize_services(config: Config):
         app_secret = config.DEYE_APP_SECRET,
         base_url = config.DEYE_BASE_URL,
         email = config.DEYE_EMAIL,
-        password = config.DEYE_PASSWORD
+        password = config.DEYE_PASSWORD,
+        sync_stations_on_poll = config.DEYE_SYNC_STATIONS_ON_POLL
     )
     print(deye_api_config)
     deye_api = DeyeApiService(deye_api_config)

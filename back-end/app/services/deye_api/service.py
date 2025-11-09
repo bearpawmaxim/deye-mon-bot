@@ -43,7 +43,7 @@ class DeyeApiService:
         except Exception as err:
             print(f"Other error occurred: {err}")
             return None
-        
+
     def refresh_token(self):
         self._token = self.refresh_token()
 
