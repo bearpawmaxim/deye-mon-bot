@@ -23,9 +23,7 @@ export const AuthHeaderInjector: FC = () => {
       (response) => response,
       async (error) => {
         if (error.response && error.response.status === 401) {
-          if (!token) {
-            dispatch(resetAuthData());
-          }
+          dispatch(resetAuthData());
         }
         return Promise.reject(error);
       }

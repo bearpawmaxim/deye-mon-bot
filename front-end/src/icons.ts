@@ -7,7 +7,10 @@ import {
   faHome,
   faLeftLong,
   faMoon,
-  faSun
+  faSun,
+  faUserMd,
+  faSignOut,
+  faKey
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add([
@@ -19,6 +22,9 @@ library.add([
   faHome,
   faMoon,
   faSun,
+  faUserMd,
+  faSignOut,
+  faKey,
 ]);
 
 export default library;

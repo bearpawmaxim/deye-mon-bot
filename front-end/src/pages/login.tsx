@@ -8,6 +8,7 @@ import { useFormHandler } from '../hooks';
 import { loginSchema, LoginType } from '../schemas';
 import { useLoading } from '../providers';
 import { ErrorMessage } from '../components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 type ComponentProps = {
   loading: boolean;
@@ -70,6 +71,7 @@ const Component: FC<ComponentProps> = ({ loading, error, token }) => {
         placeholder={'User name'}
         required
         radius="md"
+        leftSection={<FontAwesomeIcon icon={'user-md'} />}
         {...registerControl('username')}
       />
       <PasswordInput
@@ -77,6 +79,7 @@ const Component: FC<ComponentProps> = ({ loading, error, token }) => {
         required
         mt="md"
         radius="md"
+        leftSection={<FontAwesomeIcon icon={'key'} />}
         {...registerControl('password')}
       />
       <ErrorMessage content={error} ta="center" size="sm" />

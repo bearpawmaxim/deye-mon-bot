@@ -1,7 +1,7 @@
 import { FC, useMemo } from "react";
 import { StationDataItem } from "../../../stores/types";
 import { Card, Text, Box } from "@mantine/core";
-import { LineChart, AreaChart } from "@mantine/charts";
+import { AreaChart } from "@mantine/charts";
 
 type StationChartCardProps = {
   data: StationDataItem;
@@ -29,7 +29,7 @@ export const StationChartCard: FC<StationChartCardProps> = ({ data }) => {
       {
         name: "consumptionPower",
         label: "Consumption power",
-        color: "orange",
+        color: "#FFC225",
       },
     ],
     []
@@ -57,7 +57,7 @@ export const StationChartCard: FC<StationChartCardProps> = ({ data }) => {
       ) : (
         <div>
           <Box style={{ height: 240 }}>
-            <LineChart
+            <AreaChart
               data={processedData}
               dataKey="time"
               series={powerSeries}
@@ -69,7 +69,7 @@ export const StationChartCard: FC<StationChartCardProps> = ({ data }) => {
               strokeWidth={2}
               withDots={false}
               gridProps={{ strokeDasharray: "3 2" }}
-              lineChartProps={{ syncId: String(data.id) }}
+              areaChartProps={{ syncId: String(data.id) }}
             />
           </Box>
 

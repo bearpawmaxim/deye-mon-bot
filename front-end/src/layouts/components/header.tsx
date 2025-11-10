@@ -1,7 +1,7 @@
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { RootState, useAppDispatch } from "../../stores/store";
-import { logout } from "../../stores/thunks/auth";
+import { fetchUser, logout } from "../../stores/thunks/auth";
 import { UserData } from "../../stores/types";
 import { connect } from "react-redux";
 import { Burger, Button, Menu, Text, Box, Flex, Divider, Group, Transition  } from "@mantine/core";
@@ -32,6 +32,12 @@ const mapStateToProps = (state: RootState, ownProps: ComponentOwnProps): Compone
 const Component: FC<ComponentProps> = ({ user, opened, toggle, caption, buttons }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch()
+
+  useEffect(() => {
+    if (!user) {
+      dispatch(fetchUser());
+    };
+  }, [user, dispatch]);
 
   const onLogoutClick = () => {
     dispatch(logout());
@@ -106,10 +112,17 @@ const Component: FC<ComponentProps> = ({ user, opened, toggle, caption, buttons 
               </Button>
             </Menu.Target>
             <Menu.Dropdown>
-              <Menu.Item leftSection={<FontAwesomeIcon icon='user-md' />} onClick={onProfileEditClick}>
+              <Menu.Item
+                disabled
+                leftSection={<FontAwesomeIcon icon='user-md' />}
+                onClick={onProfileEditClick}
+              >
                 Profile
               </Menu.Item>
-              <Menu.Item leftSection={<FontAwesomeIcon icon='sign-out' />} onClick={onLogoutClick}>
+              <Menu.Item
+                leftSection={<FontAwesomeIcon icon='sign-out' />}
+                onClick={onLogoutClick}
+              >
                 Log out
               </Menu.Item>
             </Menu.Dropdown>
