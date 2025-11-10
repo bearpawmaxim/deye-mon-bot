@@ -34,7 +34,7 @@ const Component: FC<ComponentProps> = ({ loading, error, token }) => {
     if (token) {
       navigate('/');
     }
-  }, [token]);
+  }, [token, navigate]);
 
   useEffect(() => {
     if (token) {
