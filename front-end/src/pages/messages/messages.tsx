@@ -1,6 +1,5 @@
 import { FC, useEffect } from "react"
 import { connect } from "react-redux";
-import { Message, Segment, Table, TableBody, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
 import { RootState, useAppDispatch } from "../../stores/store";
 import { fetchMessages } from "../../stores/thunks";
 import { ServerMessageListItem } from "../../stores/types";

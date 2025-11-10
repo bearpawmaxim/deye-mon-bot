@@ -1,8 +1,5 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button, CheckboxProps, Divider, DropdownItemProps,
-  DropdownProps, Form, Header, Icon, InputOnChangeData,
-  Label, MenuItem, Message, Segment, Tab, TabPane } from "semantic-ui-react";
 import { PageHeaderButton, useHeaderContent } from "../../providers";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { editMessage, fetchBots, fetchStations, getChannel, saveMessage } from "../../stores/thunks";

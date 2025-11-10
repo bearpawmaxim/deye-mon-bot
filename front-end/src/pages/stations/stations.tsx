@@ -1,5 +1,4 @@
 import { FC, useEffect, useState } from "react"
-import { Message, Segment, Table, TableBody, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
 import { StationItem } from "../../stores/types";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { connect } from "react-redux";

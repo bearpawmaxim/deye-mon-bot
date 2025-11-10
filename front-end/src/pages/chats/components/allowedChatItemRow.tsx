@@ -1,4 +1,3 @@
-import { Button, TableCell, TableRow } from "semantic-ui-react";
 import { AllowedChatListItem } from "../../../stores/types";
 import { FC } from "react";
 

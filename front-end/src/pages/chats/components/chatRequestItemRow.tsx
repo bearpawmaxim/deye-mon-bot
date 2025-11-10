@@ -1,6 +1,5 @@
 import { FC } from "react";
 import { ChatRequestListItem } from "../../../stores/types";
-import { Button, ButtonGroup, TableCell, TableRow } from "semantic-ui-react";
 
 type ChatRequestItemRowProps = {
   request: ChatRequestListItem;

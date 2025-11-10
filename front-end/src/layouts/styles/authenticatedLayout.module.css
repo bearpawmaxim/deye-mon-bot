@@ -47,8 +47,8 @@
 
 :global(.mantine-AppShell-main).main {
   background-color: light-dark(
-    var(--sns-background),
-    var(--sns-background-dark)
+    var(--dmb-background),
+    var(--dmb-background-dark)
   );
 
   padding-top: calc(var(--app-header-height) + rem(25));

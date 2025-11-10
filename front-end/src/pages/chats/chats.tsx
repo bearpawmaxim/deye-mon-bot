@@ -1,5 +1,4 @@
 import { FC, useEffect } from "react"
-import { Header, Message, Segment, Table, TableBody, TableHeader, TableHeaderCell, TableRow } from "semantic-ui-react"
 import { AllowedChatListItem, ChatRequestListItem } from "../../stores/types";
 import { connect } from "react-redux";
 import { RootState, useAppDispatch } from "../../stores/store";

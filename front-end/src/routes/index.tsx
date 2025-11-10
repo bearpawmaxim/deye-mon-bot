@@ -5,10 +5,13 @@ import { LoginPage, HomePage, StationsPage, BotsPage,
 import { FC } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../stores/store";
+import { IconName } from "@fortawesome/fontawesome-svg-core";
+import { AnonymousLayout } from "../layouts/anonymousLayout";
 
 export type MenuItem = RouteObject & {
   children?: MenuItem[];
   name?: string;
+  icon?: IconName;
   skipForMenu?: boolean;
 }
 
@@ -16,21 +19,25 @@ export const RootRoutes: MenuItem[] = [
   {
     path: "/",
     name: "Home",
+    icon: "home",
     Component: HomePage,
   },
   {
     path: "/bots",
     name: "Bots",
+    icon: "robot",
     Component: BotsPage,
   },
   {
     path: "/stations",
     name: "Stations",
+    icon: "tower-broadcast",
     Component: StationsPage,
   },
   {
     path: "/messages",
     name: "Messages",
+    icon: "envelope",
     Component: MessagesPage,
   },
   {
@@ -48,6 +55,7 @@ export const RootRoutes: MenuItem[] = [
   {
     path: "/chats",
     name: "Chats",
+    icon: "comments",
     Component: ChatsPage,
   }
 ];
@@ -57,7 +65,9 @@ const Routes: FC = () => {
 
   const loginRoute = {
     path: "/login",
-    Component: LoginPage,
+    element: (<AnonymousLayout caption="Log in to your account">
+      <LoginPage/>
+    </AnonymousLayout>),
   } as RouteObject;
 
   const routesForAuthenticatedOnly: MenuItem[] = [

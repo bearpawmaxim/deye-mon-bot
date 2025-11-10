@@ -1,6 +1,5 @@
 import { FC, useState } from "react";
 import { BotItem } from "../../../stores/types";
-import { Checkbox, CheckboxProps, Icon, Label, TableCell, TableRow } from "semantic-ui-react";
 import { TokenEditDialog } from "./tokenEditDialog";
 
 

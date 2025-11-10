@@ -1,5 +1,4 @@
 import { FC } from "react";
-import { TableRow, TableCell, Icon, Checkbox, CheckboxProps, ButtonGroup, Button } from "semantic-ui-react";
 import { StationItem } from "../../../stores/types";
 
 type StationItemRowProps = {

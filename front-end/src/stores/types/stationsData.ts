@@ -4,6 +4,7 @@ export type StationDataRecord = {
   batterySoc: number;
   dischargePower: number;
   chargePower: number;
+  consumptionPower: number;
   date: Date;
 };
 
