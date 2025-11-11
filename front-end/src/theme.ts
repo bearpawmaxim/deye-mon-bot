@@ -29,8 +29,9 @@ export default createTheme({
   },
   primaryColor: "orange",
   defaultRadius: "md",
+  fontFamily: "Roboto, sans-serif",
   headings: {
-    fontFamily: "Greycliff",
+    fontFamily: "Roboto, sans-serif",
   },
   components: {
     Button: Button.extend({
