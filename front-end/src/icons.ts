@@ -23,7 +23,8 @@ import {
   faUpDown,
   faAdd,
   faCancel,
-  faSave
+  faSave,
+  faCheck
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add([
@@ -51,6 +52,7 @@ library.add([
   faAdd,
   faSave,
   faCancel,
+  faCheck,
 ]);
 
 export default library;

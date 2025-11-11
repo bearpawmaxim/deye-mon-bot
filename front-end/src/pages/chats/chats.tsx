@@ -1,9 +1,11 @@
-import { FC, useEffect } from "react"
+import { FC, useCallback, useEffect } from "react"
 import { AllowedChatListItem, ChatRequestListItem } from "../../stores/types";
 import { connect } from "react-redux";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { approveChatRequest, disallowChat, fetchAllowedChats, fetchChatRequests, rejectChatRequest } from "../../stores/thunks";
-import { AllowedChatItemRow, ChatRequestItemRow } from "./components";
+import { DataTable, ErrorMessage, Page } from "../../components";
+import { Title } from "@mantine/core";
+import { ColumnDataType } from "../../types";
 
 type ComponentProps = {
   allowedChats: AllowedChatListItem[];
@@ -22,10 +24,19 @@ const mapStateToProps = (state: RootState): ComponentProps => ({
 const Component: FC<ComponentProps> = ({ allowedChats, chatRequests, loading, error }) => {
   const dispatch = useAppDispatch();
 
+  const fetchChats = useCallback(
+    () => dispatch(fetchAllowedChats()),
+    [dispatch],
+  );
+  const fetchRequests = useCallback(
+    () => dispatch(fetchChatRequests()),
+    [dispatch],
+  );
+
   useEffect(() => {
-    dispatch(fetchAllowedChats());
-    dispatch(fetchChatRequests());
-  }, [dispatch]);
+    fetchChats();
+    fetchRequests();
+  }, [dispatch, fetchChats, fetchRequests]);
 
   const approveClick = (id: number) => {
     dispatch(approveChatRequest(id));
@@ -40,47 +51,107 @@ const Component: FC<ComponentProps> = ({ allowedChats, chatRequests, loading, er
   }
 
   if (error) {
-    return <Message error>Error: {error}</Message>;
+    return <ErrorMessage content={error} />;
   }
 
-  return <Segment basic loading={loading}>
-    <Header as='h4' content='Allowed chats' />
-    <Table striped celled inverted selectable compact>
-      <TableHeader>
-        <TableRow>
-          <TableHeaderCell>Chat</TableHeaderCell>
-          <TableHeaderCell>Bot</TableHeaderCell>
-          <TableHeaderCell>Approved on</TableHeaderCell>
-          <TableHeaderCell width={2}></TableHeaderCell>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        { allowedChats.map((chat, index) =>
-            <AllowedChatItemRow
-              key={`chat_${index}`}
-              chat={chat}
-              disallow={disallowClick.bind(this, chat.id)}/>
-          )}
-      </TableBody>
-    </Table>
-    <Header as='h4' content='Chat requests' />
-    <Table striped celled inverted selectable compact>
-      <TableHeader>
-        <TableRow>
-          <TableHeaderCell>Chat</TableHeaderCell>
-          <TableHeaderCell>Bot</TableHeaderCell>
-          <TableHeaderCell>Requested on</TableHeaderCell>
-          <TableHeaderCell width={3} />
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        { chatRequests.map((request, index) =>
-            <ChatRequestItemRow key={`request_${index}`} request={request}
-              approve={approveClick.bind(this, request.id)}
-              reject={rejectClick.bind(this, request.id)}/>) }
-      </TableBody>
-    </Table>
-  </Segment>
+  return <>
+    <Page loading={loading}>
+      <Title mt='sm' ta='center' order={4}>Allowed chats</Title>
+      <DataTable<AllowedChatListItem>
+        data={allowedChats}
+        fetchAction={fetchChats}
+        columns={[
+          {
+            id: 'chat',
+            header: 'Chat',
+            accessorKey: 'chatName',
+            enableSorting: true,
+          },
+          {
+            id: 'bot',
+            header: 'Bot',
+            accessorKey: 'botName',
+            enableSorting: true,
+          },
+          {
+            id: 'approveDate',
+            header: 'Approved on',
+            accessorKey: 'approveDate',
+            enableSorting: true,
+            meta: {
+              dataType: ColumnDataType.DateTime,
+            },
+          },
+          {
+            id: 'actions',
+            meta: {
+              dataType: 'actions',
+              actions: [
+                {
+                  text: 'Disallow',
+                  icon: 'cancel',
+                  color: 'red',
+                  clickHandler: (row) => disallowClick(row.id!),
+                }
+              ]
+            }
+          }
+        ]}
+        tableKey="allowedChats"
+      />
+    </Page>
+    <Page loading={loading} mt='sm'>
+      <Title mt='sm' ta='center' order={4}>Chat requests</Title>
+      <DataTable<ChatRequestListItem>
+        data={chatRequests}
+        fetchAction={fetchRequests}
+        columns={[
+          {
+            id: 'chat',
+            header: 'Chat',
+            accessorKey: 'chatName',
+            enableSorting: true,
+          },
+          {
+            id: 'bot',
+            header: 'Bot',
+            accessorKey: 'botName',
+            enableSorting: true,
+          },
+          {
+            id: 'requestDate',
+            header: 'Requested on',
+            accessorKey: 'requestDate',
+            enableSorting: true,
+            meta: {
+              dataType: ColumnDataType.DateTime,
+            },
+          },
+          {
+            id: 'actions',
+            meta: {
+              dataType: 'actions',
+              actions: [
+                {
+                  text: 'Approve',
+                  icon: 'check',
+                  color: 'green',
+                  clickHandler: (row) => approveClick(row.id!),
+                },
+                {
+                  text: 'Reject',
+                  icon: 'cancel',
+                  color: 'red',
+                  clickHandler: (row) => rejectClick(row.id!),
+                }
+              ]
+            }
+          }
+        ]}
+        tableKey="chatRequests"
+      />
+    </Page>
+  </>
 };
 
 export const ChatsPage = connect(mapStateToProps)(Component);
