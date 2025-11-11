@@ -1,13 +1,14 @@
 import { FC, useMemo } from "react";
 import { StationDataItem } from "../../../stores/types";
-import { Card, Text, Box } from "@mantine/core";
+import { Card, Text, Box, LoadingOverlay } from "@mantine/core";
 import { AreaChart } from "@mantine/charts";
 
 type StationChartCardProps = {
   data: StationDataItem;
+  loading: boolean;
 };
 
-export const StationChartCard: FC<StationChartCardProps> = ({ data }) => {
+export const StationChartCard: FC<StationChartCardProps> = ({ data, loading }) => {
   const formatTimeValue = (value: Date) => new Date(value).toLocaleTimeString("uk-UA");
   const dataArray = useMemo(() => data?.data ?? [], [data]);
   const dataLength = dataArray.length;
@@ -46,6 +47,7 @@ export const StationChartCard: FC<StationChartCardProps> = ({ data }) => {
 
   return (
     <Card withBorder radius="md" p="sm" mt="sm" style={{ width: "100%" }}>
+      <LoadingOverlay visible={loading} />
       <Box style={{ marginBottom: 8 }}>
         <Text style={{ fontWeight: 600 }}>{data.name}</Text>
       </Box>

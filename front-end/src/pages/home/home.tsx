@@ -4,8 +4,8 @@ import { RootState, useAppDispatch } from "../../stores/store";
 import { StationChartCard } from "./components";
 import { connect } from "react-redux";
 import { fetchStationsData } from "../../stores/thunks";
-import { ErrorMessage, Page } from "../../components";
-import { ComboboxItem, Select, SimpleGrid, Text } from "@mantine/core";
+import { ErrorMessage } from "../../components";
+import { ComboboxItem, Select, SimpleGrid } from "@mantine/core";
 
 type ComponentProps = {
   stationsData: Array<StationDataItem>;
@@ -44,6 +44,10 @@ const intervalOptions: ComboboxItem[] = [
     label: 'Last day',
     value: (3600 * 12).toString(),
   },
+  {
+    label: 'Last two days',
+    value: (3600 * 24).toString(),
+  },
 ];
 
 const Component: FC<ComponentProps> = ({ stationsData, loading, error }) => {
@@ -65,18 +69,18 @@ const Component: FC<ComponentProps> = ({ stationsData, loading, error }) => {
     return <ErrorMessage content={error} />;
   }
 
-  return <Page loading={loading}>
-      <SimpleGrid cols={{ base: 1, sm: 2, md: 2, lg: 4 }}>
+  return <>
+    <SimpleGrid cols={{ base: 1, sm: 2, md: 2, lg: 4 }}>
       <Select
         label={'Interval:'}
         value={dataInterval}
         data={intervalOptions}
         onChange={onDataIntervalChange}
       />
-      </SimpleGrid>
-      { !error && stationsData.map(data => <StationChartCard key={`st_data_${data.id}`} data={data} />)}
-      { error && <ErrorMessage content={error} />}
-    </Page>;
+    </SimpleGrid>
+    { !error && stationsData.map(data => <StationChartCard loading={loading} key={`st_data_${data.id}`} data={data} />)}
+    { error && <ErrorMessage content={error} />}
+  </>;
 }
 
 export const HomePage = connect(mapStateToProps)(Component);
