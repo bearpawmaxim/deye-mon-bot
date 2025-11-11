@@ -1,7 +1,7 @@
 import { RouteObject, RouterProvider, createBrowserRouter } from "react-router-dom";
 import { ProtectedRoute } from "./protectedRoute";
 import { LoginPage, HomePage, StationsPage, BotsPage,
-  ChatsPage, MessagesPage, MessageEditPage } from "../pages";
+  ChatsPage, MessagesPage, MessageEditPage, PublicPage } from "../pages";
 import { FC } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../stores/store";
@@ -80,7 +80,11 @@ const Routes: FC = () => {
   ];
 
   const routesForNotAuthenticated: RouteObject[] = [
-    loginRoute
+    loginRoute,
+    {
+      path: "/public",
+      element: <PublicPage />,
+    }
   ];
 
   const router = createBrowserRouter([
