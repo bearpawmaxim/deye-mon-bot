@@ -17,6 +17,8 @@ import {
 } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ThemePicker } from "../components";
+import { useSelector } from "react-redux";
+import { RootState } from "../stores/store";
 
 type BuildingData = {
   name: string;
@@ -67,7 +69,7 @@ const buildingsData: BuildingData[] = [
     autonomousPowerTime: "~39:19",
     gridPowerStatus: "Connected",
     headerBgColor: "#A7C7E7",
-    headerTextColor: "#1e3a5f", 
+    headerTextColor: "#1e3a5f",
   },
   {
     name: "Building 2",
@@ -75,7 +77,7 @@ const buildingsData: BuildingData[] = [
     autonomousPowerTime: "~120:00",
     gridPowerStatus: "Disconnected",
     headerBgColor: "#F6C8A2",
-    headerTextColor: "#8b4513", 
+    headerTextColor: "#8b4513",
   },
   {
     name: "Building 3",
@@ -83,7 +85,7 @@ const buildingsData: BuildingData[] = [
     autonomousPowerTime: "~15:00",
     gridPowerStatus: "Connected",
     headerBgColor: "#B6E3B5",
-    headerTextColor: "#2d5016", 
+    headerTextColor: "#2d5016",
   },
 ];
 
@@ -405,13 +407,16 @@ const PublicHeader: FC = () => {
 };
 
 export const PublicPage: FC = () => {
+  const token = useSelector((state: RootState) => state.auth.token);
+  const isLoggedIn = !!token;
+
   return (
     <>
-      <PublicHeader />
+      {!isLoggedIn && <PublicHeader />}
       <Container size="xl" px="xl" py={48}>
         <Stack gap={48}>
           <Title order={1} ta="center" c="blue">
-            SVITLO PARK 
+            SVITLO PARK
           </Title>
 
           <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="xl">
@@ -424,15 +429,15 @@ export const PublicPage: FC = () => {
                 padding={0}
               >
                 {/* Card Header */}
-                <Card.Section 
-                  withBorder 
-                  py="xl" 
+                <Card.Section
+                  withBorder
+                  py="xl"
                   px="xl"
                   style={{ backgroundColor: building.headerBgColor }}
                 >
-                  <Title 
-                    order={2} 
-                    ta="center" 
+                  <Title
+                    order={2}
+                    ta="center"
                     style={{ color: building.headerTextColor }}
                   >
                     {building.name}
