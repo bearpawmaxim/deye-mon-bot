@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react"
+import { FC, useCallback, useEffect, useState } from "react"
 import { StationItem } from "../../stores/types";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { connect } from "react-redux";
@@ -6,7 +6,10 @@ import { PageHeaderButton, useHeaderContent } from "../../providers";
 import { cancelStationsEditing, fetchStations, saveStationStates } from "../../stores/thunks";
 import { createSelector } from "@reduxjs/toolkit";
 import { updateStationOrder, updateStationState } from "../../stores/slices";
-import { StationItemRow } from "./components";
+import { DataTable, ErrorMessage, Page } from "../../components";
+import { ColumnDataType } from "../../types";
+import { Button, Group } from "@mantine/core";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 
 type ComponentProps = {
@@ -40,22 +43,24 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
   const dispatch = useAppDispatch();
   const [initiallyChanged, setInitiallyChanged] = useState(false);
 
-  const getHeaderButtons = (dataChanged: boolean): PageHeaderButton[] => [
+  const getHeaderButtons = useCallback((dataChanged: boolean): PageHeaderButton[] => [
     { text: 'Save', icon: "save", color: "green", onClick: () => dispatch(saveStationStates()), disabled: !dataChanged, },
     { text: 'Cancel', icon: "cancel", color: "black", onClick: () => dispatch(cancelStationsEditing()), disabled: !dataChanged, },
-  ];
+  ], [dispatch]);
   const { setHeaderButtons, updateButtonAttributes } = useHeaderContent();
   useEffect(() => {
     setHeaderButtons(getHeaderButtons(changed));
     return () => setHeaderButtons([]);
-  }, [setHeaderButtons]);  
+  }, [setHeaderButtons, getHeaderButtons, changed]);  
+
+  const fetchData = useCallback(() => dispatch(fetchStations()), [dispatch]);
 
   useEffect(() => {
-    dispatch(fetchStations());
-  }, [dispatch]);
+    fetchData();
+  }, [fetchData]);
 
   if (error) {
-    return <Message error>Error: {error}</Message>;
+    return <ErrorMessage content={error} />;
   }
 
   const onStationEnableChange = (id: number, enabled: boolean) => {
@@ -73,30 +78,83 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
     }, 1);
   }
 
-  return <Segment basic loading={loading}>
-    <Table striped celled inverted selectable compact>
-      <TableHeader>
-        <TableRow>
-          <TableHeaderCell>Station</TableHeaderCell>
-          <TableHeaderCell>Connection status</TableHeaderCell>
-          <TableHeaderCell>Mode</TableHeaderCell>
-          <TableHeaderCell>Last update</TableHeaderCell>
-          <TableHeaderCell width={1} textAlign="center">Enabled</TableHeaderCell>
-          <TableHeaderCell width={1} textAlign="center">Order</TableHeaderCell>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
+  return <Page loading={loading}>
+    <DataTable<StationItem>
+      data={stations}
+      fetchAction={fetchData}
+      tableKey="stations"
+      manualSorting={true}
+      columns={[
         {
-          (stations ?? []).map((station, index) =>
-            <StationItemRow key={`station_${index}`}
-              loading={loading} station={station}
-              maxOrder={maxOrder}
-              onStationEnableChange={onStationEnableChange.bind(this, station.id)} 
-              onStationOrderChange={onStationOrderChange.bind(this, station.id, station.order)} />)
+          id: 'stationName',
+          header: 'Name',
+          accessorKey: "stationName"
+        },
+        {
+          id: 'connectionStatus',
+          header: 'Connection status',
+          accessorKey: 'connectionStatus',
+        },
+        {
+          id: 'mode',
+          header: 'Mode',
+          accessorKey: 'gridInterconnectionType',
+        },
+        {
+          id: 'lastUpdate',
+          header: 'Last updated',
+          accessorKey: 'lastUpdateTime',
+          meta: {
+            dataType: ColumnDataType.DateTime,
+          },
+        },
+        {
+          id: 'enabled',
+          header: 'Enabled',
+          accessorKey: 'enabled',
+          meta: {
+            dataType: ColumnDataType.Boolean,
+            textAlign: 'center',
+            checkedChange: (row, state) => onStationEnableChange(row.id, state),
+          },
+        },
+        {
+          id: 'order',
+          header: 'Order',
+          accessorKey: 'order',
+          meta: {
+            dataType: ColumnDataType.Number,
+            textAlign: 'center',
+          },
+          cell: ({ row }) => {
+            return <Group p={0} justify="center">
+              <Button.Group>
+                <Button 
+                  disabled={row.original.order === 1}
+                  onClick={onStationOrderChange.bind(this, row.original.id, row.original.order, -1)}
+                >
+                  <FontAwesomeIcon icon='up-long'/>
+                </Button>
+                <Button
+                  variant="default"
+                  disabled
+                  style={{ cursor: 'default' }}
+                >
+                  {row.original.order}
+                </Button>
+                <Button 
+                  disabled={row.original.order === maxOrder}
+                  onClick={onStationOrderChange.bind(this, row.original.id, row.original.order, 1)}
+                >
+                  <FontAwesomeIcon icon='down-long'/>
+                </Button>
+              </Button.Group>
+            </Group>
+          },
         }
-      </TableBody>
-    </Table>
-  </Segment>
+      ]}
+    />
+  </Page>
 };
 
 export const StationsPage = connect(mapStateToProps)(Component);
