@@ -23,6 +23,7 @@
     "@mantine/hooks": "^8.3.6",
     "@mantine/modals": "^8.3.6",
     "@reduxjs/toolkit": "^2.9.2",
+    "@tanstack/react-table": "^8.21.3",
     "@uiw/codemirror-extensions-langs": "^4.25.2",
     "@uiw/react-codemirror": "^4.25.2",
     "@valibot/i18n": "^1.0.0",

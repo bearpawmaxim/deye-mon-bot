@@ -10,7 +10,10 @@ import {
   faSun,
   faUserMd,
   faSignOut,
-  faKey
+  faKey,
+  faUpLong,
+  faDownLong,
+  faRefresh
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add([
@@ -25,6 +28,9 @@ library.add([
   faUserMd,
   faSignOut,
   faKey,
+  faUpLong,
+  faDownLong,
+  faRefresh,
 ]);
 
 export default library;
