@@ -13,7 +13,17 @@ import {
   faKey,
   faUpLong,
   faDownLong,
-  faRefresh
+  faRefresh,
+  faTrash,
+  faEdit,
+  faArrowDownAZ,
+  faArrowUpAZ,
+  faArrowDown19,
+  faArrowUp19,
+  faUpDown,
+  faAdd,
+  faCancel,
+  faSave
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add([
@@ -31,6 +41,16 @@ library.add([
   faUpLong,
   faDownLong,
   faRefresh,
+  faEdit,
+  faTrash,
+  faArrowDownAZ,
+  faArrowUpAZ,
+  faArrowDown19,
+  faArrowUp19,
+  faUpDown,
+  faAdd,
+  faSave,
+  faCancel,
 ]);
 
 export default library;

@@ -16,9 +16,10 @@ const getSortingIcon = <T,>(
     switch (dataType) {
       case ColumnDataType.Number:
       case ColumnDataType.DateTime:
+      case ColumnDataType.Boolean:
+      case ColumnDataType.Id:
         return sorting ? (sorting === 'ascending' ? 'arrow-down-1-9' : 'arrow-up-1-9') : 'up-down';
       case ColumnDataType.Text:
-      case ColumnDataType.Lookup:
       default:
         return textSortingIcon;
     }
