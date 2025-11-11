@@ -1,13 +1,14 @@
-import { FC, useEffect, useState } from "react"
+import { FC, useCallback, useEffect, useState } from "react"
 import { connect } from "react-redux";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { cancelBotsEditing, fetchBots, saveBots } from "../../stores/thunks";
 import { cancelCreatingBot, createBot, startCreatingBot, updateBot } from "../../stores/slices";
-import { BotItemRow } from "./components";
 import { PageHeaderButton, useHeaderContent } from "../../providers";
 import { createSelector } from "@reduxjs/toolkit";
 import { BotItem } from "../../stores/types";
-import { TokenEditDialog } from "./components/tokenEditDialog";
+import { openTokenEditDialog } from "./components/tokenEditDialog";
+import { DataTable, ErrorMessage, Page } from "../../components";
+import { ColumnDataType } from "../../types";
 
 
 type ComponentProps = {
@@ -33,32 +34,45 @@ const mapStateToProps = (state: RootState): ComponentProps => ({
   creating: state.bots.creating,
 });
 
-const Component: FC<ComponentProps> = ({ bots, loading, error, changed, creating }: ComponentProps) => {
+const Component: FC<ComponentProps> = ({ bots, loading, error, changed }: ComponentProps) => {
   const dispatch = useAppDispatch();
   const [initiallyChanged, setInitiallyChanged] = useState(false);
 
+  const fetchData = useCallback(() => dispatch(fetchBots()), [dispatch]);
+
   useEffect(() => {
-    dispatch(fetchBots());
+    fetchData();
+  }, [fetchData]);
+  
+  const create = useCallback(() => {
+    dispatch(startCreatingBot());
+    openTokenEditDialog({
+      create: true,
+      token: '',
+      onClose: (result: boolean, token: string) => {
+        if (result) {
+          dispatch(createBot(token));
+        } else {
+          dispatch(cancelCreatingBot());
+        }
+      },
+    });
   }, [dispatch]);
 
-  const create = () => {
-    dispatch(startCreatingBot());
-  }
-
-  const getHeaderButtons = (dataChanged: boolean): PageHeaderButton[] => [
+  const getHeaderButtons = useCallback((dataChanged: boolean): PageHeaderButton[] => [
     { text: 'Create', icon: "add", color: "teal", onClick: () => create(), disabled: false, },
     { text: 'Save', icon: "save", color: "green", onClick: () => dispatch(saveBots()), disabled: !dataChanged, },
     { text: 'Cancel', icon: "cancel", color: "black", onClick: () => dispatch(cancelBotsEditing()), disabled: !dataChanged, },
-  ];
+  ], [create, dispatch]);
 
   const { setHeaderButtons, updateButtonAttributes } = useHeaderContent();
   useEffect(() => {
     setHeaderButtons(getHeaderButtons(false));
     return () => setHeaderButtons([]);
-  }, [setHeaderButtons]);
+  }, [setHeaderButtons, getHeaderButtons]);
 
   if (error) {
-    return <Message error>Error: {error}</Message>;
+    return <ErrorMessage content={error}/>;
   }
 
   const onBotHookEnableChange = (id: number, enabled: boolean) => {
@@ -66,20 +80,6 @@ const Component: FC<ComponentProps> = ({ bots, loading, error, changed, creating
   };
   const onBotEnableChange = (id: number, enabled: boolean) => {
     dispatch(updateBot({ id, enabled }));
-  };
-
-  const onBotTokenChange = (id: number, result: boolean, token: string) => {
-    if (result) {
-      dispatch(updateBot({ id, token }));
-    }
-  };
-
-  const onBotCreate = (result: boolean, token: string) => {
-    if (result) {
-      dispatch(createBot(token));
-    } else {
-      dispatch(cancelCreatingBot());
-    }
   };
 
   if (changed != initiallyChanged) {
@@ -90,29 +90,48 @@ const Component: FC<ComponentProps> = ({ bots, loading, error, changed, creating
     }, 1);
   }
 
-  return <Segment basic loading={loading}>
-    <Table striped celled inverted selectable compact>
-      <TableHeader>
-        <TableRow>
-          <TableHeaderCell>Bot</TableHeaderCell>
-          <TableHeaderCell textAlign="center">Can respond in chats</TableHeaderCell>
-          <TableHeaderCell>Token</TableHeaderCell>
-          <TableHeaderCell textAlign="center">Active</TableHeaderCell>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
+  return <Page loading={loading}>
+    <DataTable<BotItem>
+      data={bots}
+      fetchAction={fetchData}
+      columns={[
         {
-          bots.map((bot, index) => 
-            <BotItemRow key={`bot_${index}`} item={bot}
-              enableChanged={onBotEnableChange.bind(this, bot.id!)}
-              hookEnableChanged={onBotHookEnableChange.bind(this, bot.id!)}
-              tokenChanged={onBotTokenChange.bind(this, bot.id!)} />
-          )
-        }
-      </TableBody>
-    </Table>
-    <TokenEditDialog opened={creating} setOpened={() => {}} changed={onBotCreate} create={true} token='' />
-  </Segment>
+          id: 'bot',
+          header: 'Name',
+          enableSorting: true,
+          accessorKey: 'name',
+        },
+        {
+          id: 'canRespondInChat',
+          accessorKey: 'hookEnabled',
+          header: 'Can respond in chat',
+          enableSorting: true,
+          meta: {
+            dataType: ColumnDataType.Boolean,
+            readOnly: false,
+            checkedChange: (row, state) => onBotHookEnableChange(row.id!, state),
+          },
+        },
+        {
+          id: 'token',
+          header: 'Token',
+          accessorKey: 'token',
+        },
+        {
+          id: 'enabled',
+          header: 'Active',
+          enableSorting: true,
+          accessorKey: 'enabled',
+          meta: {
+            dataType: ColumnDataType.Boolean,
+            readOnly: false,
+            checkedChange: (row, state) => onBotEnableChange(row.id!, state),
+          },
+        },
+      ]}
+      tableKey={"bots"}
+    />
+  </Page>
 }
 
 export const BotsPage = connect(mapStateToProps)(Component);
