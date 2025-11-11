@@ -11,18 +11,20 @@ import {
   Box,
   Flex,
   useMantineColorScheme,
-  Switch,
   Loader,
   Alert,
   ActionIcon,
 } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ThemePicker } from "../components";
 
 type BuildingData = {
   name: string;
   autonomousPowerPercent: number;
   autonomousPowerTime: string;
   gridPowerStatus: "Connected" | "Disconnected";
+  headerBgColor: string;
+  headerTextColor: string;
 };
 
 type TimeSlot = {
@@ -64,18 +66,24 @@ const buildingsData: BuildingData[] = [
     autonomousPowerPercent: 64.0,
     autonomousPowerTime: "~39:19",
     gridPowerStatus: "Connected",
+    headerBgColor: "#A7C7E7",
+    headerTextColor: "#1e3a5f", 
   },
   {
     name: "Building 2",
     autonomousPowerPercent: 98.5,
     autonomousPowerTime: "~120:00",
     gridPowerStatus: "Disconnected",
+    headerBgColor: "#F6C8A2",
+    headerTextColor: "#8b4513", 
   },
   {
     name: "Building 3",
     autonomousPowerPercent: 25.0,
     autonomousPowerTime: "~15:00",
     gridPowerStatus: "Connected",
+    headerBgColor: "#B6E3B5",
+    headerTextColor: "#2d5016", 
   },
 ];
 
@@ -378,8 +386,6 @@ const PlannedOutages: FC = () => {
 };
 
 const PublicHeader: FC = () => {
-  const { setColorScheme, colorScheme } = useMantineColorScheme();
-
   return (
     <Box
       style={{
@@ -391,39 +397,7 @@ const PublicHeader: FC = () => {
       <Container size="xl" px="xl">
         <Flex justify="space-between" align="center">
           <Title order={2}>Power Monitoring</Title>
-          <Flex align="center" gap="md">
-            <FontAwesomeIcon
-              icon="sun"
-              color={
-                colorScheme === "light"
-                  ? "var(--mantine-color-gray-8)"
-                  : "var(--mantine-color-gray-3)"
-              }
-            />
-            <Switch
-              checked={colorScheme === "dark"}
-              onChange={() =>
-                setColorScheme(colorScheme === "dark" ? "light" : "dark")
-              }
-              styles={{
-                track: {
-                  cursor: "pointer",
-                  border: 0,
-                  background:
-                    "linear-gradient(90deg, var(--mantine-color-orange-6) 0%, var(--mantine-color-yellow-4) 100%)",
-                },
-              }}
-              size="md"
-            />
-            <FontAwesomeIcon
-              icon="moon"
-              color={
-                colorScheme === "light"
-                  ? "var(--mantine-color-gray-8)"
-                  : "var(--mantine-color-gray-3)"
-              }
-            />
-          </Flex>
+          <ThemePicker isNavbarCollapsed={false} size="md" />
         </Flex>
       </Container>
     </Box>
@@ -450,8 +424,17 @@ export const PublicPage: FC = () => {
                 padding={0}
               >
                 {/* Card Header */}
-                <Card.Section withBorder py="xl" px="xl">
-                  <Title order={2} ta="center" c="blue">
+                <Card.Section 
+                  withBorder 
+                  py="xl" 
+                  px="xl"
+                  style={{ backgroundColor: building.headerBgColor }}
+                >
+                  <Title 
+                    order={2} 
+                    ta="center" 
+                    style={{ color: building.headerTextColor }}
+                  >
                     {building.name}
                   </Title>
                 </Card.Section>
