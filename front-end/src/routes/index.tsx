@@ -15,6 +15,12 @@ export type MenuItem = RouteObject & {
   skipForMenu?: boolean;
 }
 
+const publicPage = {
+  path: "/public",
+  element: <PublicPage />,
+};
+
+// eslint-disable-next-line react-refresh/only-export-components
 export const RootRoutes: MenuItem[] = [
   {
     path: "/",
@@ -57,6 +63,11 @@ export const RootRoutes: MenuItem[] = [
     name: "Chats",
     icon: "comments",
     Component: ChatsPage,
+  },
+  {
+    ...publicPage,
+    icon: "building",
+    name: "Buildings",
   }
 ];
 
@@ -81,10 +92,7 @@ const Routes: FC = () => {
 
   const routesForNotAuthenticated: RouteObject[] = [
     loginRoute,
-    {
-      path: "/public",
-      element: <PublicPage />,
-    }
+    publicPage,
   ];
 
   const router = createBrowserRouter([
