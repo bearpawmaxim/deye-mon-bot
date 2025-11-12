@@ -1,5 +1,7 @@
 export * from './authHeaderInjector';
 export * from './backButton';
+export * from './formPage';
+export * from './formSubmitButtons';
 export * from './dataTable';
 export * from './errorMessage';
 export * from './userAvatar';

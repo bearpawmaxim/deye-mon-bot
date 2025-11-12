@@ -219,5 +219,6 @@ export const useFormHandler = <T extends FieldValues>({
     getFieldChanged,
     setValidationErrors,
     renderField,
+    trigger,
   };
 };

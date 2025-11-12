@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { MessagesState, ServerMessageItem, ServerMessageListItem, TemplatePreviewResponse } from "../types";
+import { MessagesState, ServerMessageListItem, TemplatePreviewResponse } from "../types";
 import { editMessage, fetchMessages, getChannel, getTemplatePreview, saveMessage } from "../thunks";
+import { MessageType } from "../../schemas";
 
 
 const initialState: MessagesState = {
@@ -21,16 +22,16 @@ export const messagesSlice = createSlice({
     name: 'messages',
     initialState: initialState,
     reducers: {
-      updateMessage(state, { payload }: PayloadAction<{ name: string, value: unknown }>) {
-        state.editingMessage = { ...state.editingMessage, [payload.name]: payload.value } as ServerMessageItem;
+      updateMessage(state, { payload }: PayloadAction<MessageType>) {
+        state.editingMessage = payload;
         state.changed = true;
       },
       createMessage(state) {
         const messageNumber = state.messages?.length ?? 0;
         state.editingMessage = {
           name: `New message ${messageNumber + 1}`,
-          enabled: true,
-        } as ServerMessageItem;
+          enabled: false,
+        } as MessageType;
       },
       finishEditingMessage(state) {
         delete state.editingMessage;
@@ -47,24 +48,24 @@ export const messagesSlice = createSlice({
           state.loading = false;
           state.creating = false;
         })
-        .addCase(fetchMessages.rejected, (state, action: PayloadAction<any>) => {
+        .addCase(fetchMessages.rejected, (state, action: PayloadAction<unknown>) => {
           state.loading = false;
-          state.error = action.payload;
+          state.error = action.payload as string;
         });
       builder
         .addCase(editMessage.pending, (state) => {
           state.loading = true;
           state.error = null;
         })
-        .addCase(editMessage.fulfilled, (state, action: PayloadAction<ServerMessageItem>) => {
+        .addCase(editMessage.fulfilled, (state, action: PayloadAction<MessageType>) => {
           state.loading = false;
           state.creating = false;
           state.changed = false;
           state.editingMessage = action.payload;
         })
-        .addCase(editMessage.rejected, (state, action: PayloadAction<any>) => {
+        .addCase(editMessage.rejected, (state, action: PayloadAction<unknown>) => {
           state.loading = false;
-          state.error = action.payload;
+          state.error = action.payload as string;
         });
       builder
         .addCase(getChannel.pending, (state) => {
@@ -73,9 +74,9 @@ export const messagesSlice = createSlice({
         .addCase(getChannel.fulfilled, (state, action: PayloadAction<string>) => {
           state.editingMessage!.channelName = action.payload;
         })
-        .addCase(getChannel.rejected, (state, action: PayloadAction<any>) => {
-          state.error = action.payload;
-          state.editingMessage!.channelName = action.payload;
+        .addCase(getChannel.rejected, (state, action: PayloadAction<unknown>) => {
+          state.error = action.payload as string;
+          state.editingMessage!.channelName = null;
         });
       builder
         .addCase(getTemplatePreview.pending, (state) => {
@@ -92,9 +93,9 @@ export const messagesSlice = createSlice({
             timeout: preview.timeout,
           };
         })
-        .addCase(getTemplatePreview.rejected, (state, action: PayloadAction<any>) => {
+        .addCase(getTemplatePreview.rejected, (state, action: PayloadAction<unknown>) => {
           state.loadingPreview = false;
-          state.previewError = action.payload;
+          state.previewError = action.payload as string;
         });
       builder
         .addCase(saveMessage.pending, (state) => {
@@ -106,9 +107,9 @@ export const messagesSlice = createSlice({
           state.creating = false;
           state.changed = false;
         })
-        .addCase(saveMessage.rejected, (state, action: PayloadAction<any>) => {
+        .addCase(saveMessage.rejected, (state, action: PayloadAction<unknown>) => {
           state.loading = false;
-          state.error = action.payload;
+          state.error = action.payload as string;
         });
     },
   });

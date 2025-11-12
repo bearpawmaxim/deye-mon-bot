@@ -24,7 +24,10 @@ import {
   faAdd,
   faCancel,
   faSave,
-  faCheck
+  faCheck,
+  faBuilding,
+  faExclamationCircle,
+  faSearch
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add([
@@ -53,6 +56,9 @@ library.add([
   faSave,
   faCancel,
   faCheck,
+  faBuilding,
+  faExclamationCircle,
+  faSearch,
 ]);
 
 export default library;

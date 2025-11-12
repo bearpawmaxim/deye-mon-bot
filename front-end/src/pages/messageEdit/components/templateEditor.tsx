@@ -1,50 +1,48 @@
-import { FC, useState } from "react";
+import { FC } from "react";
 import CodeMirror, { basicSetup } from '@uiw/react-codemirror';
 import { langs } from '@uiw/codemirror-extensions-langs';
 import { autocompletion } from "@codemirror/autocomplete";
 import { jinja2Autocomplete } from "../../../utils";
+import { MessageType } from "../../../schemas";
+import { Control, Controller, UseFormTrigger } from "react-hook-form";
+import { ErrorMessage } from "../../../components";
 
 type ComponentProps = {
-  template?: string;
-  onChange: (template: string) => void;
-  renderTemplate: () => string;
+  name: 'messageTemplate' | 'timeoutTemplate' | 'shouldSendTemplate';
+  control: Control<MessageType>;
+  trigger: UseFormTrigger<MessageType>;
 };
 
-const Component: FC<ComponentProps> = ({ template, onChange }: ComponentProps) => {
-  const [opened, setOpened] = useState(false);
-
+const Component: FC<ComponentProps> = ({ name, control, trigger }: ComponentProps) => {
   return <>
-    <Form.Field>
-      <CodeMirror
-        value={template}
-        theme={"dark"}
-        spellCheck={true}
-        extensions={[
-          basicSetup(),
-          langs.jinja2(),
-          langs.markdown(),
-          autocompletion({
-            override: [jinja2Autocomplete],
-          }),
-        ]}
-        onChange={(value) => onChange(value)}
-      />
-    </Form.Field>
-    {/* <Form.Button content='Test' color='orange' onClick={() => setOpened(true)} /> */}
-    <Modal open={opened}>
-      <ModalHeader>Template test</ModalHeader>
-      <ModalContent>
-        <ModalDescription>
-          <Form>
-            <TextArea readOnly style={{ minHeight: 150, width: '100%' }}
-            />
-          </Form>
-        </ModalDescription>
-      </ModalContent>
-      <ModalActions>
-        <Button color='black' content='Close' onClick={() => setOpened(false)} />
-      </ModalActions>
-    </Modal>
+    <Controller<MessageType>
+      control={control}
+      name={name}
+      render={({ field, fieldState: { error } }) => 
+        <>
+        <CodeMirror
+          className={error ? "cm-error" : undefined}
+          theme={"dark"}
+          onChange={(value) => {
+            field.onChange(value);
+            trigger(name);
+          }}
+          ref={field.ref}
+          value={field.value as string}
+          spellCheck={true}
+          extensions={[
+            basicSetup(),
+            langs.jinja2(),
+            langs.markdown(),
+            autocompletion({
+              override: [jinja2Autocomplete],
+            }),
+          ]}
+        />
+        {error && <ErrorMessage pt={'xs'} content={error?.message} />}
+        </>
+      }
+    />
   </>
 }
 

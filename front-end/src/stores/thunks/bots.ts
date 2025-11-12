@@ -3,14 +3,15 @@ import { BaseServerBotItem, BaseSaveDataResponse, ServerBotItem } from "../types
 import { botSaved } from "../slices";
 import { RootState } from "../store";
 import apiClient from "../../utils/apiClient";
+import { getErrorMessage } from "../../utils";
 
 
 export const fetchBots = createAsyncThunk('bots/fetchBots', async (_, thunkAPI) => {
     try {
       const response = await apiClient.post<Array<ServerBotItem>>('/bots/bots');
       return response.data;
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(error.message || 'Failed to fetch bots');
+    } catch (error: unknown) {
+      return thunkAPI.rejectWithValue(getErrorMessage(error) || 'Failed to fetch bots');
     }
   });
 
@@ -30,7 +31,7 @@ export const saveBots = createAsyncThunk('bots/saveBot', async (_, { getState, d
     });
     await Promise.all(promises);
     dispatch(fetchBots());
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(error);
   }
 });

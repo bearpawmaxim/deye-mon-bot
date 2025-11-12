@@ -1,13 +1,19 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { ChangeEvent, FC, useCallback, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { PageHeaderButton, useHeaderContent } from "../../providers";
+import { useHeaderContent } from "../../providers";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { editMessage, fetchBots, fetchStations, getChannel, saveMessage } from "../../stores/thunks";
 import { createMessage, finishEditingMessage, updateMessage } from "../../stores/slices";
-import { BotItem, ServerMessageItem, ServerStationItem } from "../../stores/types";
+import { BotItem, ServerStationItem } from "../../stores/types";
 import { connect } from "react-redux";
-import { MessagePreview, TemplateEditor } from "./components";
 import { createSelector } from "@reduxjs/toolkit";
+import { FormPage, FormSubmitButtons } from "../../components";
+import { ActionIcon, Badge, ComboboxItem, Divider, Select, SimpleGrid, Switch, Tabs, TextInput, Title, Button } from "@mantine/core";
+import { useFormHandler } from "../../hooks";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { messageSchema, MessageType } from "../../schemas";
+import { Controller } from "react-hook-form";
+import { openMessagePreviewDialog, TemplateEditor } from "./components";
 
 type ComponentOwnProps = {
   isEdit: boolean;
@@ -16,9 +22,8 @@ type ComponentOwnProps = {
 type ComponentProps = {
   bots: BotItem[];
   stations: ServerStationItem[];
-  message?: ServerMessageItem;
+  message?: MessageType;
   loading: boolean;
-  changed: boolean;
   isEdit: boolean;
 };
 
@@ -36,19 +41,14 @@ const mapStateToProps = (state: RootState, ownProps: ComponentOwnProps): Compone
   stations: state.stations.stations,
   message: state.messages.editingMessage,
   loading: selectLoading(state),
-  changed: state.messages.changed,
   isEdit: ownProps.isEdit
 });
 
-const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loading, changed }: ComponentProps) => {
+const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loading }: ComponentProps) => {
   const dispatch = useAppDispatch();
   const { messageId } = useParams();
   const messageIdInt = parseInt(messageId!);
-  const [initiallyChanged, setInitiallyChanged] = useState(false);
-  const [formErrors, setFormErrors] = useState<Record<string, string | null>>({});
-  const hasError = (name: string) => formErrors[name]?.trim() ?? '' !== '';
-  const getError = (name: string) => formErrors[name];
-  const [previewShown, setPreviewShown] = useState(false);
+  
 
   const messageRef = useRef(message);
   useEffect(() => {
@@ -56,197 +56,234 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loadin
   }, [message]);
 
   const navigate = useNavigate();
-  const editOrCreateMessage = () => dispatch(isEdit ? editMessage(messageIdInt) : createMessage());
+  const editOrCreateMessage = useCallback(
+    () => dispatch(isEdit ? editMessage(messageIdInt) : createMessage()),
+    [dispatch, isEdit, messageIdInt],
+  );
 
   useEffect(() => {
     dispatch(fetchBots());
     dispatch(fetchStations());
-    editOrCreateMessage();
-    return () => { dispatch(finishEditingMessage()); };
   }, [dispatch]);
 
+  const getBotOptions = (): ComboboxItem[] => (bots ?? []).map((bot, index) => ({
+    key: `bot_${index}`,
+    value: bot.id?.toString(),
+    label: bot.name,
+  } as ComboboxItem));
+
+  const getStationOptions = (): ComboboxItem[] => ([
+    {
+      label: 'All stations',
+      value: '0',
+    },
+    ...(stations ?? []).map((station, index) => ({
+      key: `station_${index}`,
+      value: station.id.toString(),
+      label: station.stationName,
+    } as ComboboxItem)),
+  ]);
+
+  const handleSave = (data: MessageType) => {
+    dispatch(updateMessage(data));
+    dispatch(saveMessage())
+      .unwrap()
+      .then(() => navigate(-1))
+  };
+
+  const {
+    handleFormSubmit,
+    hasFieldError,
+    renderField,
+    registerFormButtons,
+    control,
+    trigger,
+    getControlValue,
+    isValid,
+  } = useFormHandler<MessageType>({
+    formKey: 'message',
+    isEdit: isEdit,
+    cleanupAction: () => dispatch(finishEditingMessage()),
+    fetchDataAction: editOrCreateMessage,
+    saveAction: handleSave,
+    validationSchema: messageSchema,
+    loading: loading,
+    initialData: message,
+    fields: [
+      {
+        name: 'name',
+        title: 'Name',
+        required: true,
+      },
+      {
+        name: 'enabled',
+        title: 'Enabled',
+        render: (context) => {
+          const cbProps = {
+            ...context.helpers.registerControl('enabled'),
+            onChange: (e: ChangeEvent<HTMLInputElement>) =>
+              context.helpers.setControlValue('enabled', e.target.checked, true),
+            checked: context.helpers.getControlValue('enabled') as boolean ?? false,
+          };
+          return <Switch
+            pb="xs"
+            label={context.title}
+            {...cbProps}
+          />;
+        }
+      },
+      {
+        name: 'botId',
+        title: 'Bot',
+        required: true,
+        render: (context) => {
+          return <Controller
+            name="botId"
+            control={context.helpers.control}
+            defaultValue={0}
+            render={({ field }) => (
+              <Select
+                required
+                data={getBotOptions()}
+                {...field}
+                label={context.title}
+                value={field.value?.toString() ?? ''}
+                error={context.helpers.getFieldError('botId')}
+                onChange={(value) => context.helpers.setControlValue('botId', value!, true, false)}
+              />
+            )}
+          />;
+        }
+      },
+      {
+        name: 'stationId',
+        title: 'Station',
+        required: true,
+        render: (context) => {
+          return <Controller
+            name="stationId"
+            control={context.helpers.control}
+            defaultValue={0}
+            render={({ field }) => (
+              <Select
+                required
+                data={getStationOptions()}
+                {...field}
+                label={context.title}
+                value={field.value?.toString() ?? ''}
+                error={context.helpers.getFieldError('stationId')}
+                onChange={(value) => context.helpers.setControlValue('stationId', parseInt(value!), true, false)}
+              />
+            )}
+          />;
+        }
+      },
+      {
+        name: 'channelId',
+        title: "Channel",
+        required: true,
+        render: (context) => 
+          <TextInput
+            mt='sm'
+            {...context.helpers.registerControl('channelId')}
+            label={context.title}
+            rightSection={<ActionIcon onClick={() => dispatch(getChannel())}>
+                <FontAwesomeIcon icon='search' />
+              </ActionIcon>}
+          />
+      }
+    ],
+    defaultRender: (name, title, context) =>
+      <TextInput {...context.helpers.registerControl(name)} label={title} pb="sm" />,
+  });
+
+  const { setHeaderText } = useHeaderContent();
+  
   useEffect(() => {
     setHeaderText(`${isEdit ? 'Editing' : 'Creating'} message ${message?.name ?? ''}`);
     return () => setHeaderText('');
-  }, [message?.name]);
+  }, [isEdit, message?.name, setHeaderText]);
 
-  const validate = (): boolean => {
-    const newErrors: Record<string, string> = {};
-    if (!messageRef?.current) {
-      return true;
-    }
-    Object.entries(messageRef.current as Record<string, any>).forEach(([key, value]) => {
-      const error = validateField(key, value);
-      if (error) {
-        newErrors[key] = error;
-      }
+
+  const createTemplateTab = useCallback((
+      name: 'messageTemplate' | 'timeoutTemplate' | 'shouldSendTemplate',
+      title: string,
+    ) => {
+      return <Tabs.Tab value={name}
+        rightSection={
+          hasFieldError(name) 
+            ? <FontAwesomeIcon icon="exclamation-circle" color="red" /> 
+            : null 
+        }
+      >
+        {title}
+      </Tabs.Tab>;
+    }, [hasFieldError]);
+
+  const createTemplateTabPanel = useCallback((
+      name: 'messageTemplate' | 'timeoutTemplate' | 'shouldSendTemplate',
+    ) => {
+      return <Tabs.Panel value={name}>
+        <TemplateEditor name={name} control={control} trigger={trigger} />
+      </Tabs.Panel>;
+    }, [control, trigger]);
+
+  const tabs = useMemo(
+    () => [
+      createTemplateTab('shouldSendTemplate', 'Should send template'),
+      createTemplateTab('timeoutTemplate', 'Timeout template'),
+      createTemplateTab('messageTemplate', 'Message template'),
+    ], [createTemplateTab],
+  );
+  const tabPanels = useMemo(
+    () => [
+      createTemplateTabPanel('shouldSendTemplate'),
+      createTemplateTabPanel('timeoutTemplate'),
+      createTemplateTabPanel('messageTemplate'),
+    ], [createTemplateTabPanel]
+  );
+
+  const onOpenPreview = () => {
+    const name = getControlValue('name') as string;
+    const stationId = getControlValue('stationId') as number | null;
+    const shouldSendTemplate = getControlValue('shouldSendTemplate') as string;
+    const timeoutTemplate = getControlValue('timeoutTemplate') as string;
+    const messageTemplate = getControlValue('messageTemplate') as string;
+    openMessagePreviewDialog({
+      name,
+      stationId,
+      shouldSendTemplate,
+      timeoutTemplate,
+      messageTemplate,
     });
-    setFormErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
 
-  const onSaveClick = () => {
-    if (validate()) {
-      dispatch(saveMessage()).then(() => navigate(-1));
-    }
-  };
-
-  const { setHeaderButtons, updateButtonAttributes, setHeaderText } = useHeaderContent();
-  const getHeaderButtons = (): PageHeaderButton[] => [
-    { text: 'Save', icon:'save', color: "green", onClick: onSaveClick.bind(this), disabled: true, },
-    { text: 'Cancel', icon: 'cancel', color: "black", onClick: () => editOrCreateMessage(), disabled: true, },
-  ];
-  useEffect(() => {
-    setHeaderButtons(getHeaderButtons());
-    return () => setHeaderButtons([]);
-  }, [setHeaderButtons]);
-
-  const getBotOptions = (): DropdownItemProps[] => bots.map((bot, index) => ({
-    key: `bot_${index}`,
-    value: bot.id,
-    text: bot.name,
-  } as DropdownItemProps));
-
-  const getStationOptions = (): DropdownItemProps[] => ([
-    { key:'station_all', text: 'All stations', value: 0 },
-    ...stations.map((station, index) => ({
-      key: `station_${index}`,
-      value: station.id,
-      text: station.stationName,
-    } as DropdownItemProps)),
-  ]);
-
-  const validateField = (name: string, value: unknown) => {
-    switch (name) {
-      case "name":
-        return ((value as string)?.trim() ?? "") === "" ? "Name is required." : null;
-      case "channelId":
-        return ((value as string)?.trim() ?? "") === "" ? "Channel is required." : null;
-      case "shouldSendTemplate":
-        return ((value as string)?.trim() ?? "") === "" ? "Should Send Template is required" : null
-      case "messageTemplate":
-        return ((value as string)?.trim() ?? "") === "" ? "Message Template is required." : null
-      case "timeoutTemplate":
-        return ((value as string)?.trim() ?? "") === "" ? "Timeout Template is required." : null
-      default:
-        return "";
-    }
-  };
-
-  if (changed != initiallyChanged) {
-    setInitiallyChanged(!initiallyChanged);
-    setTimeout(() => {
-      updateButtonAttributes(0, { disabled: !changed });
-      updateButtonAttributes(1, { disabled: !changed });
-    }, 1);
-  }
-
-  const dispatchChange = (name: string, value: unknown) => {
-    dispatch(updateMessage({
-      name: name,
-      value: value
-    }));
-    const error = validateField(name, value);
-    setFormErrors((prevErrors) => ({ ...prevErrors, [name]: error }));
-  }
-
-  const panes = [
-    {
-      menuItem: (<MenuItem key='tab0menu0'>
-        Should send
-        { hasError('shouldSendTemplate') && <Icon name="exclamation circle" color="red" /> }
-      </MenuItem>),
-      pane: (<TabPane key='tab0'>
-        <Form.Field error={hasError('shouldSendTemplate')}>
-          <TemplateEditor renderTemplate={() => 'foo'} template={message?.shouldSendTemplate ?? ''}
-            onChange={(template) => dispatchChange('shouldSendTemplate', template)} />
-          <Message error size="tiny" content={getError('shouldSendTemplate')} />
-        </Form.Field>
-      </TabPane>)
-    },
-    {
-      menuItem: (<MenuItem key='tab1menu0'>
-        Timeout template
-        { hasError('timeoutTemplate') && <Icon name="exclamation circle" color="red" /> }
-      </MenuItem>),
-      pane: (<TabPane key='tab1'>
-        <Form.Field>
-          <TemplateEditor renderTemplate={() => 'foo'} template={message?.timeoutTemplate ?? ''}
-            onChange={(template) => dispatchChange('timeoutTemplate', template)} />
-          <Message error size="tiny" content={getError('timeoutTemplate')} />
-        </Form.Field>
-      </TabPane>)
-    },
-    {
-      menuItem: (<MenuItem key='tab2menu0'>
-        Message template
-        { hasError('messageTemplate') && <Icon name="exclamation circle" color="red" /> }
-      </MenuItem>),
-      pane: (<TabPane key='tab2'>
-        <Form.Field>
-          <TemplateEditor renderTemplate={() => 'foo'} template={message?.messageTemplate ?? ''}
-            onChange={(template) => dispatchChange('messageTemplate', template)} />
-          <Message error size="tiny" content={getError('messageTemplate')} />
-        </Form.Field>
-      </TabPane>)
-    },
-  ];
-
-  const onFormCheckboxChange = (_: unknown, data: CheckboxProps) => {
-    dispatchChange(data.name!, data.checked);
-  };
-
-  const onFormInputChange = (event: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) => {
-    dispatchChange(event.target.name!, data.value);
-  };
-
-  const onFormDropdownChange = (_: unknown, data: DropdownProps) => {
-    dispatchChange(data.name, data.value);
-  };
-
-  return <Segment loading={loading} >
-    <Form error>
-      <Form.Checkbox name='enabled' label='Enabled' checked={message?.enabled ?? false} onChange={onFormCheckboxChange} />
-      <Form.Input name='name' label='Name' value={message?.name ?? ''} onChange={onFormInputChange} error={hasError('name')} />
+  return <FormPage loading={loading} >
+    <form onSubmit={handleFormSubmit}>
+      {renderField('enabled')}
+      {renderField('name')}
       <Divider />
-      <Form.Group>
-        <Form.Dropdown
-          width={'8'}
-          label='Bot'
-          value={message?.botId ?? getBotOptions()?.[0]?.value}
-          name='botId'
-          onChange={onFormDropdownChange}
-          options={getBotOptions()}
-        />
-        <Form.Dropdown
-          width={'8'}
-          label='Station'
-          value={message?.stationId ?? 0}
-          name='stationId'
-          onChange={onFormDropdownChange}
-          options={getStationOptions()}
-        />
-      </Form.Group>
+      <SimpleGrid cols={{ xs: 1, sm: 2, }} mt='xs' mb='xs'>
+        {renderField('botId')}
+        {renderField('stationId')}
+      </SimpleGrid>
       <Divider />
-      <Form.Input
-        width={'8'}
-        name='channelId'
-        label='Channel id'
-        value={message?.channelId ?? ''}
-        onChange={onFormInputChange}
-        error={hasError('channelId')}>
-        <input />
-        <Button content='Check' color='orange' onClick={() => dispatch(getChannel())} />
-      </Form.Input>
-      Channel name: <Label basic>{message?.channelName ?? ''}</Label>
-      <Divider />
-      <Header as='h4'>
-        Templates&nbsp;&nbsp;
-        <MessagePreview shown={previewShown} setShown={setPreviewShown} />
-      </Header>
-      <Tab panes={panes} renderActiveOnly={false} />
-    </Form>
-  </Segment>;
+      {renderField('channelId')}
+      <Badge>{message?.channelName ?? ''}</Badge>
+      <Divider mt='xs' mb='xs'/>
+      <Title order={4}>
+        Templates
+        <Button ml='md' size="xs" color="orange" onClick={onOpenPreview} disabled={!isValid}>Preview</Button>
+      </Title>
+      <Tabs defaultValue={`messageTemplate`} mb='xs'>
+        <Tabs.List mb='xs'>
+          {...tabs}
+        </Tabs.List>
+        {...tabPanels}
+      </Tabs>
+      <FormSubmitButtons {...registerFormButtons()} />
+    </form>
+  </FormPage>;
 };
 
 export const MessageEditPage = connect(mapStateToProps)(Component);

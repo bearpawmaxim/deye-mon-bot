@@ -3,14 +3,15 @@ import { BaseSaveDataResponse, BaseServerStationItem, ServerStationItem } from "
 import { RootState } from "../store";
 import { stationStateSaved } from "../slices";
 import apiClient from "../../utils/apiClient";
+import { getErrorMessage } from "../../utils";
 
 
 export const fetchStations = createAsyncThunk('stations/fetchStations', async (_, thunkAPI) => {
   try {
     const response = await apiClient.post<Array<ServerStationItem>>('/stations/stations');
     return response.data;
-  } catch (error: any) {
-    return thunkAPI.rejectWithValue(error.message || 'Failed to fetch stations');
+  } catch (error: unknown) {
+    return thunkAPI.rejectWithValue(getErrorMessage(error) || 'Failed to fetch stations');
   }
 });
 
@@ -29,7 +30,7 @@ export const saveStationStates = createAsyncThunk('stations/saveStationState', a
     });
     await Promise.all(promises);
     dispatch(fetchStations());
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(error);
   }
 });

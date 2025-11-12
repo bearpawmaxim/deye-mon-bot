@@ -2,62 +2,80 @@ import { FC, useEffect } from "react";
 import { RootState, useAppDispatch } from "../../../stores/store";
 import { getTemplatePreview } from "../../../stores/thunks";
 import { TemplatePreview } from "../../../stores/types";
-import { connect } from "react-redux";
+import { useSelector } from 'react-redux'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkBreaks from "remark-breaks";
+import { Button, Paper, Text, Group, Badge, Loader, Stack, ScrollArea } from '@mantine/core'
+import { modals } from '@mantine/modals'
 
-type MessagePreviewOwnProps = {
-  shown: boolean;
-  setShown: (shown: boolean) => void;
+type OpenMessagePreviewOptions = {
+  name: string,
+  stationId: number | null;
+  shouldSendTemplate: string;
+  timeoutTemplate: string;
+  messageTemplate: string;
 };
 
-type MessagePreviewStateProps = {
-  preview?: TemplatePreview;
-  loading: boolean;
-  error?: string;
-};
+export function openMessagePreviewDialog({
+  name,
+  stationId,
+  shouldSendTemplate,
+  timeoutTemplate,
+  messageTemplate,
+}: OpenMessagePreviewOptions) {
+  const Inner: FC = () => {
+    const dispatch = useAppDispatch();
+    const preview = useSelector((s: RootState) => s.messages.templatePreview) as TemplatePreview | undefined;
+    const loading = useSelector((s: RootState) => s.messages.loadingPreview) as boolean;
+    const error = useSelector((s: RootState) => s.messages.previewError) as string | undefined;
 
-type ComponentProps = MessagePreviewStateProps & MessagePreviewOwnProps;
+    useEffect(() => {
+      dispatch(getTemplatePreview({ stationId, shouldSendTemplate, timeoutTemplate, messageTemplate }));
+    }, [dispatch]);
 
-const mapStateToProps = (state: RootState, ownProps: MessagePreviewOwnProps): ComponentProps => ({
-  shown: ownProps.shown,
-  setShown: ownProps.setShown,
-  preview: state.messages.templatePreview,
-  loading: state.messages.loadingPreview,
-  error: state.messages.previewError,
-});
+    const handleClose = () => {
+      if (id) {
+        modals.close(id);
+      }
+    };
 
-const Component: FC<ComponentProps> = ({ shown, setShown, preview, loading, error }) => {
-  const dispatch = useAppDispatch();
-  useEffect(() => {
-    if (shown) {
-      dispatch(getTemplatePreview());
-    }
-  }, [shown, dispatch]);
+    return (
+      <Stack gap="xs">
+        {loading ? (
+          <Group justify="center"><Loader /></Group>
+        ) : (
+          <Stack gap="xs">
+            {error && <Text color="red">{error}</Text>}
+            <Group>
+              <Text fw={500}>Should send:</Text>
+              <Badge color={(preview?.shouldSend ?? false) ? 'teal' : 'orange'}>{(preview?.shouldSend ?? false) ? 'YES' : 'NO'}</Badge>
+            </Group>
+            <Group>
+              <Text fw={500}>Timeout (seconds):</Text>
+              <Badge>{preview?.timeout}</Badge>
+            </Group>
+            <div>
+              <Text fw={500} mb="xs">Message:</Text>
+              <Paper withBorder radius="md" p="sm">
+                <ScrollArea style={{ maxHeight: 400 }}>
+                  <Markdown remarkPlugins={[remarkGfm, remarkBreaks]}>{preview?.message ?? ''}</Markdown>
+                </ScrollArea>
+              </Paper>
+            </div>
+            <Group justify="flex-end">
+              <Button variant="default" onClick={handleClose}>Close</Button>
+            </Group>
+          </Stack>
+        )}
+      </Stack>
+    );
+  };
 
-  return <Modal
-    onClose={() => setShown(false)}
-    onOpen={() => setShown(true)}
-    open={shown}
-    trigger={<Button size="tiny" color='orange' content='Preview' />}
-    >
-    <ModalHeader>Message preview</ModalHeader>
-    <ModalContent>
-      <Segment basic loading={loading}>
-        {Boolean(error) && <Message error>{error}</Message>}
-        Should send: <Label color={(preview?.shouldSend ?? false) ? 'teal' : 'orange'} content={(preview?.shouldSend ?? false) ? 'YES' : 'NO'} /><br/>
-        Timeout (seconds): <Label content={preview?.timeout} /><br/>
-        Message:
-        <Segment inverted>
-          <Markdown remarkPlugins={[remarkGfm, remarkBreaks]}>{preview?.message}</Markdown>
-        </Segment>
-      </Segment>
-    </ModalContent>
-    <ModalActions>
-      <Button color='black' onClick={() => setShown(false)} content='Close'/>
-    </ModalActions>
-  </Modal>
-};
-
-export const MessagePreview = connect(mapStateToProps)(Component);
+  const id: string | undefined = modals.open({
+    title: `Message '${name}' preview`,
+    centered: true,
+    size: 'lg',
+    children: <Inner />,
+  });
+}

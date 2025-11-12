@@ -1,7 +1,7 @@
 import { FC, forwardRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Flex, Grid, Group, Image, rem, Stack , Switch, Text, Tooltip } from "@mantine/core";
+import { Flex, Grid, Group, rem, Stack , Switch, Text, Tooltip } from "@mantine/core";
 import classes from "./styles/navbar.module.css"
 import { MenuItem, RootRoutes } from "../../routes";
 import { ThemePicker } from "../../components";
