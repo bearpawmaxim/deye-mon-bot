@@ -2,13 +2,14 @@ import { createAsyncThunk } from '@reduxjs/toolkit'
 import { BaseResponse, UserData } from '../types';
 import { AxiosError } from 'axios';
 import apiClient from '../../utils/apiClient';
+import { getErrorMessage } from '../../utils';
 
 export const fetchUser = createAsyncThunk('auth/fetchUserData', async (_, {rejectWithValue}) => {
   try {
     const response = await apiClient.get<UserData>('/auth/profile');
     return response.data;
-  } catch(e) {
-    return rejectWithValue('');
+  } catch(error: unknown) {
+    return rejectWithValue(getErrorMessage(error));
   }
 });
 
@@ -27,11 +28,11 @@ export const login = createAsyncThunk<string, LoginRequest>('auth/login', async 
     const response = await apiClient.post<LoginResponse>('/auth/login', payload);
     const token = response.data.access_token!;
     return fulfillWithValue(token);
-  } catch(error: any) {
+  } catch(error: unknown) {
     if (error instanceof AxiosError) {
       return rejectWithValue(error.response?.data?.error);
     }
-    return rejectWithValue(error.message);
+    return rejectWithValue(getErrorMessage(error));
   }
 });
 

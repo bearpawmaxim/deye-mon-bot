@@ -1,23 +1,28 @@
-.login-page {
-    background-color: #1F1F1F !important;
+:root {
+  --app-header-z-index: 200;
+  --app-header-height: rem(60);
+  --app-header-horizontal-padding: calc(var(--mantine-spacing-md) * 4);
+  --app-header-horizontal-padding-mobile: var(--mantine-spacing-md);
+
+  --dmb-background: #f3f4f6;
+  --dmb-background-dark: #0f0f0f;
 }
 
-.login-form {
-    border: 1px solid #00b5ad !important;
+html,
+body {
+  scroll-behavior: smooth;
 }
 
-.header-item {
-    color: #00b5ad !important;
+a {
+  text-decoration: none;
+  appearance: none;
 }
 
-.header-row {
-    border-radius: 0 !important;
-}
+.hideScrollbar {
+  ms-overflow-style: none !important /* IE and Edge */;
+  scrollbar-width: none !important /* Firefox */;
 
-.content-container {
-    min-height: calc(100vh - 66px) !important;
-}
-
-.with-sidebar {
-    width: calc(100vw - 150px) !important;
+  &::-webkit-scrollbar {
+    display: none !important;
+  }
 }

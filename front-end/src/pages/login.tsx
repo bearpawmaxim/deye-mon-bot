@@ -1,9 +1,14 @@
-import { FC, FormEvent, useEffect, useState } from 'react'
-import { Button, Form, Grid, Header, InputOnChangeData, Message, Segment } from 'semantic-ui-react';
+import { FC, useEffect } from 'react'
 import { login } from '../stores/thunks';
 import { RootState, useAppDispatch } from '../stores/store';
 import { connect } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Button, PasswordInput, TextInput } from '@mantine/core';
+import { useFormHandler } from '../hooks';
+import { loginSchema, LoginType } from '../schemas';
+import { useLoading } from '../providers';
+import { ErrorMessage } from '../components';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 type ComponentProps = {
   loading: boolean;
@@ -19,74 +24,70 @@ const mapStateToProps = (state: RootState): ComponentProps => ({
 
 const Component: FC<ComponentProps> = ({ loading, error, token }) => {
   const dispatch = useAppDispatch();
-  const [loginForm, setloginForm] = useState({
-    username: "",
-    password: ""
-  });
   const navigate = useNavigate();
+  const location = useLocation();
+  const { setLoading } = useLoading();
+
+  const returnUrl = new URLSearchParams(location.search).get("returnUrl") || "/";
 
   useEffect(() => {
     if (token) {
       navigate('/');
     }
-  }, [token]);
+  }, [token, navigate]);
 
-  function handleChange(_: unknown, data: InputOnChangeData) { 
-    const { value, name } = data;
-    setloginForm(prevNote => ({
-      ...prevNote, [name]: value
-    }));
-  }
+  useEffect(() => {
+    if (token) {
+      navigate(returnUrl.endsWith('notAllowed') ? "/" : returnUrl, { replace: true });
+    }
+  }, [token, returnUrl, navigate]);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    setLoading(loading);
+  }, [loading, setLoading]);
+
+  const changePassword = async (data: LoginType) => {
     dispatch(login({
-      username: loginForm.username,
-      password: loginForm.password,
+      username: data.username,
+      password: data.password,
     }));
-    setloginForm({
-      username: loginForm.username,
-      password: ""
-    });
-    event.preventDefault();
-  }
+  };
 
-  return (
-    <Grid textAlign='center' style={{ height: '100vh' }} verticalAlign='middle' className='login-page'>
-      <Grid.Column style={{ maxWidth: 450 }}>
-      <Header as='h2' color='teal'>
-        Deye monitoring bot control panel
-      </Header>
-      <Segment stacked inverted className='login-form'>
-        <Header as='h3' color='teal' textAlign='center'>
-          Log-in to your account
-        </Header>
-        <Form size='large' onSubmit={handleSubmit} error={Boolean(error)} loading={loading}>
-          <Form.Input
-            fluid
-            icon='user'
-            value={loginForm.username}
-            onChange={handleChange}
-            iconPosition='left'
-            name='username'
-            placeholder='User name'
-          />
-          <Form.Input
-            fluid
-            icon='lock'
-            iconPosition='left'
-            placeholder='Password'
-            type='password'
-            onChange={handleChange}
-            name='password'
-            value={loginForm.password}
-          />
-          <Message size='tiny' error content={error} />
-          <Button color='teal' fluid size='large'>Login</Button>
-        </Form>
-      </Segment>
-    </Grid.Column>
-  </Grid>
-  );
+  const {
+    handleFormSubmit,
+    registerControl,
+    isValid,
+  } = useFormHandler<LoginType>({
+    formKey: 'login',
+    isEdit: false,
+    cleanupAction: () => {},
+    fetchDataAction: () => {},
+    saveAction: changePassword,
+    validationSchema: loginSchema,
+  });
+
+  return <form onSubmit={handleFormSubmit}>
+      <TextInput
+        placeholder={'User name'}
+        required
+        radius="md"
+        leftSection={<FontAwesomeIcon icon={'user-md'} />}
+        {...registerControl('username')}
+      />
+      <PasswordInput
+        placeholder={'Password'}
+        required
+        mt="md"
+        radius="md"
+        leftSection={<FontAwesomeIcon icon={'key'} />}
+        {...registerControl('password')}
+      />
+      <ErrorMessage content={error} ta="center" size="sm" />
+
+      <Button type='submit' fullWidth mt="xl" radius="md" disabled={!isValid}>
+        {'Log in'}
+      </Button>
+    </form>;
 };
 
 export const LoginPage = connect(mapStateToProps)(Component);

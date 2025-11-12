@@ -11,7 +11,14 @@ const initialState: AuthState = {
 export const authSlice = createSlice({
   name: 'auth',
   initialState,
-  reducers: {},
+  reducers: {
+    updateAuthData: (state, action: PayloadAction<string>) => {
+      state.token = action.payload;
+    },
+    resetAuthData: (state) => {
+      state.token = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(logout.fulfilled, (state) => {
@@ -27,6 +34,7 @@ export const authSlice = createSlice({
         state.token = payload!;
         state.loading = false;
       })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .addCase(login.rejected, (state, action: PayloadAction<any>) => {
         state.loading = false;
         state.error = action.payload;
@@ -48,5 +56,5 @@ export const authSlice = createSlice({
 });
 
 
-export const {} = authSlice.actions;
+export const { updateAuthData, resetAuthData } = authSlice.actions;
 export const authReducer = authSlice.reducer;

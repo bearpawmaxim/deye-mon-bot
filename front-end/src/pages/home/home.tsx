@@ -1,11 +1,11 @@
 import { FC, useEffect, useState } from "react"
-import { Dropdown, DropdownItemProps, DropdownProps, Message, Segment } from "semantic-ui-react"
 import { StationDataItem } from "../../stores/types";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { StationChartCard } from "./components";
 import { connect } from "react-redux";
 import { fetchStationsData } from "../../stores/thunks";
-
+import { ErrorMessage } from "../../components";
+import { ComboboxItem, Select, SimpleGrid } from "@mantine/core";
 
 type ComponentProps = {
   stationsData: Array<StationDataItem>;
@@ -19,70 +19,68 @@ const mapStateToProps = (state: RootState): ComponentProps => ({
   loading: state.stationsData.loading,
 });
 
-const intervalOptions: DropdownItemProps[] = [
+const intervalOptions: ComboboxItem[] = [
   {
-    key: 'last_15_m',
-    text: 'Last 15 minutes',
-    value: 900,
+    label: 'Last 15 minutes',
+    value: '900',
   },
   {
-    key: 'last_30_m',
-    text: 'Last 30 minutes',
-    value: 1800,
+    label: 'Last 30 minutes',
+    value: '1800',
   },
   {
-    key: 'last_1_h',
-    text: 'Last 1 hour',
-    value: 3600,
+    label: 'Last 1 hour',
+    value: '3600',
   },
   {
-    key: 'last_3_h',
-    text: 'Last 3 hours',
-    value: 3600 * 3,
+    label: 'Last 3 hours',
+    value: (3600 * 3).toString(),
   },
   {
-    key: 'last_6_h',
-    text: 'Last 6 hours',
-    value: 3600 * 6,
+    label: 'Last 6 hours',
+    value: (3600 * 6).toString(),
   },
   {
-    key: 'last_1_d',
-    text: 'Last day',
-    value: 3600 * 12,
+    label: 'Last day',
+    value: (3600 * 12).toString(),
+  },
+  {
+    label: 'Last two days',
+    value: (3600 * 24).toString(),
   },
 ];
 
 const Component: FC<ComponentProps> = ({ stationsData, loading, error }) => {
   const dispatch = useAppDispatch();
-  const [dataInterval, setDataInterval] = useState(1800);
+  const [dataInterval, setDataInterval] = useState('1800');
 
   useEffect(() => {
-    dispatch(fetchStationsData(dataInterval));
-    const interval = setInterval(() => dispatch(fetchStationsData(dataInterval)), 30000);
+    dispatch(fetchStationsData(parseInt(dataInterval)));
+    const interval = setInterval(() => dispatch(fetchStationsData(parseInt(dataInterval))), 30000);
     return () => clearInterval(interval);
   }, [dispatch, dataInterval]);
 
-  const onDataIntervalChange = (_: unknown, data: DropdownProps) => {
-    const interval = Number(data.value!);
-    setDataInterval(interval);
+  const onDataIntervalChange = (_: unknown, option: ComboboxItem) => {
+    const interval = parseInt(option.value);
+    setDataInterval(interval.toString());
   };
 
   if (error) {
-    return <Message error>Error: {error}</Message>;
+    return <ErrorMessage content={error} />;
   }
 
-  return <Segment loading={loading} basic>
-      <Segment inverted>
-        Interval: <Dropdown
-          selection
-          value={dataInterval}
-          options={intervalOptions}
-          onChange={onDataIntervalChange}
-        />
-      </Segment>
-      { !error && stationsData.map(data => <StationChartCard key={`st_data_${data.id}`} data={data} />)}
-      { error && <Message color="black" error>{error}</Message>}
-    </Segment>;
+  return <>
+    <SimpleGrid cols={{ base: 1, sm: 2, md: 2, lg: 4 }}>
+      <Select
+        label={'Interval:'}
+        value={dataInterval}
+        data={intervalOptions}
+        onChange={onDataIntervalChange}
+      />
+    </SimpleGrid>
+    { !error && stationsData.map(data => <StationChartCard loading={loading} key={`st_data_${data.id}`} data={data} />)}
+    { error && <ErrorMessage content={error} />}
+  </>;
 }
 
 export const HomePage = connect(mapStateToProps)(Component);

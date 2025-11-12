@@ -1,0 +1,42 @@
+.cardHover:hover .iconBox,
+.cardHover:hover .innerCircleBox,
+.cardHover:hover .outerCircleBox {
+  transform: scale(1.5);
+}
+
+.iconBox,
+.innerCircleBox,
+.outerCircleBox {
+  transition: transform 150ms ease;
+}
+
+.iconBox {
+  display: "flex";
+  width: 31;
+  justify-content: "center";
+  align-items: "center";
+  height: 31;
+  border: "dashed 1px";
+  border-radius: "50%";
+}
+
+.innerCircleBox {
+  position: absolute;
+  top: -55px;
+  right: -55px;
+  display: inline-block;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+}
+
+.outerCircleBox {
+  position: absolute;
+  top: -70px;
+  right: -70px;
+  display: inline-block;
+  opacity: 40%;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+}

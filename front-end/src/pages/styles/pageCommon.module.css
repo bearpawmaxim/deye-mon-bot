@@ -1,0 +1,13 @@
+.centeredBox {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.errorCode {
+  position: absolute;
+  color: rgba(0,0,0,0.1);
+  z-index: 0;
+}

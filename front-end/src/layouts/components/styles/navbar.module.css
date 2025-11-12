@@ -1,0 +1,68 @@
+.appTitle {
+  color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
+}
+
+.navTitle {
+  color: light-dark(var(--mantine-color-dark-3), var(--mantine-color-dark-1));
+}
+
+.navlink {
+  width: 100%;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  gap: rem(10);
+
+  padding: rem(10) rem(12);
+  border-radius: var(--mantine-radius-md);
+
+  svg {
+    color: light-dark(var(--mantine-color-dark-2), var(--mantine-color-dark-2));
+  }
+
+  @mixin hover {
+    background-color: light-dark(
+      var(--mantine-color-gray-1),
+      var(--mantine-color-dark-4)
+    );
+  }
+
+  &[data-active="true"] {
+    background-color: light-dark(
+      var(--mantine-color-gray-1),
+      var(--mantine-color-white)
+    );
+
+    p {
+      color: light-dark(
+        var(--mantine-color-dark-9),
+        var(--mantine-color-dark-9)
+      );
+    }
+
+    svg {
+      color: light-dark(
+        var(--mantine-color-dark-9),
+        var(--mantine-color-dark-9)
+      );
+    }
+  }
+  &[data-collapse="true"] {
+    padding: rem(10);
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.nav_title {
+  font-size: rem(14);
+  font-weight: 500;
+  letter-spacing: rem(-0.6);
+  color: light-dark(var(--mantine-color-dark-3), var(--mantine-color-dark-1));
+}
+
+.appImage {
+  filter: drop-shadow(
+    0 0 6px light-dark(rgba(0, 0, 0, 0.6), rgba(255, 255, 255, 0.4))
+  );
+}

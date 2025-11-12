@@ -1,15 +1,17 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { BaseSaveDataResponse, ServerMessageItem, ServerMessageListItem, 
+import { BaseSaveDataResponse, ServerMessageListItem, 
   TemplatePreviewRequest, TemplatePreviewResponse } from "../types";
 import { RootState } from "../store";
 import apiClient from "../../utils/apiClient";
+import { MessageType } from "../../schemas";
+import { getErrorMessage } from "../../utils";
 
 export const fetchMessages = createAsyncThunk('messages/fetchMessages', async (_, thunkAPI) => {
   try {
     const response = await apiClient.post<Array<ServerMessageListItem>>('/messages/messages');
     return response.data;
-  } catch (error: any) {
-    return thunkAPI.rejectWithValue(error.message || 'Failed to fetch messages');
+  } catch (error: unknown) {
+    return thunkAPI.rejectWithValue(getErrorMessage(error) || 'Failed to fetch messages');
   }
 });
 
@@ -23,23 +25,30 @@ export const getChannel = createAsyncThunk<string, void>('messages/getChannel', 
     };
     const response = await apiClient.post('/messages/getChannel', data);
     return response.data['channelName'];
-  } catch (error: any) {
-    return Promise.reject(error.message || 'Failed to fetch messages');
+  } catch (error: unknown) {
+    return Promise.reject(getErrorMessage(error) || 'Failed to fetch messages');
   }
 });
 
-export const editMessage = createAsyncThunk<ServerMessageItem, number>('messages/editMessage',
-    async (message_id: number): Promise<ServerMessageItem> => {
+export const editMessage = createAsyncThunk<MessageType, number>('messages/editMessage',
+    async (message_id: number): Promise<MessageType> => {
   try {
-    const response = await apiClient.post<ServerMessageItem>(`/messages/message/${message_id}`);
+    const response = await apiClient.post<MessageType>(`/messages/message/${message_id}`);
     return response.data;
-  } catch (error: any) {
-    return Promise.reject(error.message || 'Failed to fetch messages');
+  } catch (error: unknown) {
+    return Promise.reject(getErrorMessage(error) || 'Failed to fetch messages');
   }
 });
 
-export const getTemplatePreview = createAsyncThunk<TemplatePreviewResponse, void>(
-    'messages/templatePreview', async (_, { getState, rejectWithValue, fulfillWithValue }) => {
+type TemplatePreviewArgs = {
+  stationId: number | null;
+  shouldSendTemplate: string;
+  timeoutTemplate: string;
+  messageTemplate: string;
+};
+
+export const getTemplatePreview = createAsyncThunk<TemplatePreviewResponse, TemplatePreviewArgs>(
+    'messages/templatePreview', async (args, { getState, rejectWithValue, fulfillWithValue }) => {
   try {
     const state = getState() as RootState;
     const message = state.messages.editingMessage;
@@ -49,10 +58,10 @@ export const getTemplatePreview = createAsyncThunk<TemplatePreviewResponse, void
     const request = {
       botId: message.botId,
       channelId: message.channelId,
-      messageTemplate: message.messageTemplate,
-      shouldSendTemplate: message.shouldSendTemplate,
-      timeoutTemplate: message.timeoutTemplate,
-      stationId: message.stationId
+      messageTemplate: args.messageTemplate,
+      shouldSendTemplate: args.shouldSendTemplate,
+      timeoutTemplate: args.timeoutTemplate,
+      stationId: args.stationId,
     } as TemplatePreviewRequest;
     const response = await apiClient.post<TemplatePreviewResponse>('/messages/getPreview', request);
     if (response.data.success) {
@@ -60,8 +69,8 @@ export const getTemplatePreview = createAsyncThunk<TemplatePreviewResponse, void
     } else {
       return rejectWithValue(response.data.error);
     }
-  } catch (error: any) {
-    return rejectWithValue(error.message || 'Failed to generate template preview');
+  } catch (error: unknown) {
+    return rejectWithValue(getErrorMessage(error) || 'Failed to generate template preview');
   }
 });
 
@@ -75,7 +84,7 @@ export const saveMessage = createAsyncThunk('messages/saveMessage', async (_,
     const response = await apiClient.patch<BaseSaveDataResponse>('/messages/save', data);
     dispatch(fetchMessages());
     return fulfillWithValue(response.data.id);
-  } catch (error: any) {
-    return rejectWithValue(error.message || 'Failed to save message');
+  } catch (error: unknown) {
+    return rejectWithValue(getErrorMessage(error) || 'Failed to save message');
   }
 });

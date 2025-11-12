@@ -1,36 +1,49 @@
 import { RouteObject, RouterProvider, createBrowserRouter } from "react-router-dom";
 import { ProtectedRoute } from "./protectedRoute";
 import { LoginPage, HomePage, StationsPage, BotsPage,
-  ChatsPage, MessagesPage, MessageEditPage } from "../pages";
+  ChatsPage, MessagesPage, MessageEditPage, PublicPage } from "../pages";
 import { FC } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../stores/store";
+import { IconName } from "@fortawesome/fontawesome-svg-core";
+import { AnonymousLayout } from "../layouts/anonymousLayout";
 
 export type MenuItem = RouteObject & {
   children?: MenuItem[];
   name?: string;
+  icon?: IconName;
   skipForMenu?: boolean;
 }
 
+const publicPage = {
+  path: "/public",
+  element: <PublicPage />,
+};
+
+// eslint-disable-next-line react-refresh/only-export-components
 export const RootRoutes: MenuItem[] = [
   {
     path: "/",
     name: "Home",
+    icon: "home",
     Component: HomePage,
   },
   {
     path: "/bots",
     name: "Bots",
+    icon: "robot",
     Component: BotsPage,
   },
   {
     path: "/stations",
     name: "Stations",
+    icon: "tower-broadcast",
     Component: StationsPage,
   },
   {
     path: "/messages",
     name: "Messages",
+    icon: "envelope",
     Component: MessagesPage,
   },
   {
@@ -48,7 +61,13 @@ export const RootRoutes: MenuItem[] = [
   {
     path: "/chats",
     name: "Chats",
+    icon: "comments",
     Component: ChatsPage,
+  },
+  {
+    ...publicPage,
+    icon: "building",
+    name: "Buildings",
   }
 ];
 
@@ -57,7 +76,9 @@ const Routes: FC = () => {
 
   const loginRoute = {
     path: "/login",
-    Component: LoginPage,
+    element: (<AnonymousLayout caption="Log in to your account">
+      <LoginPage/>
+    </AnonymousLayout>),
   } as RouteObject;
 
   const routesForAuthenticatedOnly: MenuItem[] = [
@@ -70,7 +91,8 @@ const Routes: FC = () => {
   ];
 
   const routesForNotAuthenticated: RouteObject[] = [
-    loginRoute
+    loginRoute,
+    publicPage,
   ];
 
   const router = createBrowserRouter([

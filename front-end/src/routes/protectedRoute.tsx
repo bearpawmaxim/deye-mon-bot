@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "../stores/store";
-import AuthenticatedLayout from "../layouts/authenticatedLayout";
+import { AuthenticatedLayout } from "../layouts/authenticatedLayout";
 import { PageHeaderContentProvider } from "../providers";
 
 export const ProtectedRoute = () => {
@@ -9,6 +9,10 @@ export const ProtectedRoute = () => {
 
   if (!token) {
     return <Navigate to="/login" />;
+  }
+
+  if (!token) {
+    return <Navigate to={`/login?returnUrl=${encodeURIComponent(location.pathname)}`} />;
   }
 
   return <PageHeaderContentProvider>
