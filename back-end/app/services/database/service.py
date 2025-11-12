@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from sqlalchemy import Float, Integer, Numeric, func
-from app.models import Bot, AllowedChat, ChatRequest, Message, Station, StationData, StationStatisticData, DeyeStationData, DeyeStation, User
+from app.models import Bot, Building, AllowedChat, ChatRequest, Message, Station, StationData, StationStatisticData, DeyeStationData, DeyeStation, User
 from .models import DatabaseConfig
 
 class DatabaseService:
@@ -328,3 +328,7 @@ class DatabaseService:
             self._session.rollback()
             print(f"Error updating bot: {e}")
             return None
+        
+    def get_buildings(self):
+        query = self._session.query(Building)
+        return query.all()

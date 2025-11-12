@@ -25,9 +25,9 @@ export const chatsSlice = createSlice({
         state.allowedChats = action.payload;
         state.loading = false;
       })
-      .addCase(fetchAllowedChats.rejected, (state, action: PayloadAction<any>) => {
+      .addCase(fetchAllowedChats.rejected, (state, action: PayloadAction<unknown>) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload as string;
       });
     builder
       .addCase(fetchChatRequests.pending, (state) => {
@@ -38,9 +38,9 @@ export const chatsSlice = createSlice({
         state.chatRequests = action.payload;
         state.loading = false;
       })
-      .addCase(fetchChatRequests.rejected, (state, action: PayloadAction<any>) => {
+      .addCase(fetchChatRequests.rejected, (state, action: PayloadAction<unknown>) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload as string;
       });
     builder
       .addCase(approveChatRequest.pending, (state) => {
@@ -50,9 +50,9 @@ export const chatsSlice = createSlice({
       .addCase(approveChatRequest.fulfilled, (state) => {
         state.loading = false;
       })
-      .addCase(approveChatRequest.rejected, (state, action: PayloadAction<any>) => {
+      .addCase(approveChatRequest.rejected, (state, action: PayloadAction<unknown>) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload as string;
       });
   },
 });

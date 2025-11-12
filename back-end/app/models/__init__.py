@@ -8,9 +8,12 @@ from .deye import DeyeStationData, DeyeStation, DeyeStationList
 from .user import User
 from .bot import Bot
 from .base import Base
+from .building import Building
+from .building_data import BuildingData
 
 __all__ = [
-    AllowedChat, ChatRequest, Bot, Base, User, 
-    Message, Station, StationData, StationStatisticData,
+    AllowedChat, ChatRequest, Bot, Base, Building, 
+    BuildingData, User, Message, Station,
+    StationData, StationStatisticData,
     DeyeStation, DeyeStationData, DeyeStationList
 ]

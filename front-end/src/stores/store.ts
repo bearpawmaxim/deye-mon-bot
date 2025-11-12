@@ -1,4 +1,3 @@
-// import logger from 'redux-logger';
 import { rootReducer } from './rootReducer';
 import { configureStore } from '@reduxjs/toolkit';
 import { useDispatch } from 'react-redux';
