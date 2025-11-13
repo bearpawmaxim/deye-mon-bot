@@ -6,3 +6,4 @@ export * from './messageEdit/messageEdit';
 export * from './chats/chats'
 export * from './stations/stations';
 export * from './public';
+export * from './users/users';

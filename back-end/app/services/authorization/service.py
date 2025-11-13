@@ -18,6 +18,8 @@ class AuthorizationService():
         user = self._database.get_user(username)
         if not user:
             raise ValueError(f"User '{username}' not found or inactive")
+        if user.is_reporter:
+            raise ValueError(f"Reporter users cannot login through UI, sorry :(")
         if not self._bcrypt.check_password_hash(user.password, password):
             raise ValueError(f"Invalid password")
 

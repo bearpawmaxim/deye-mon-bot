@@ -332,3 +332,69 @@ class DatabaseService:
     def get_buildings(self):
         query = self._session.query(Building)
         return query.all()
+    
+    def get_users(self, all: bool = False):
+        query = self._session.query(User)
+        return query.all() if all else query.filter_by(is_active=True).all()
+    
+    def save_user(self, id: int, name: str, password: str | None, is_active: bool, is_reporter: bool):
+        try:
+            user = self._session.query(User).filter_by(id=id).with_for_update().first()   
+            if not user:
+                hashed_password = password if password else ''
+                new_record = User(
+                    name = name,
+                    password = hashed_password,
+                    is_active = is_active,
+                    is_reporter = is_reporter
+                )
+                self._session.add(new_record)
+                self._session.flush()
+                return new_record.id
+            else:
+                user.name = name
+                user.is_active = is_active
+                user.is_reporter = is_reporter
+                if password:
+                    user.password = password
+                return user.id
+        except Exception as e:
+            self._session.rollback()
+            print(f"Error updating user: {e}")
+            return None
+    
+    def delete_user(self, id: int):
+        try:
+            user = self._session.query(User).filter_by(id=id).first()
+            if user:
+                self._session.delete(user)
+                return True
+            return False
+        except Exception as e:
+            self._session.rollback()
+            print(f"Error deleting user: {e}")
+            return False
+    
+    def generate_user_api_token(self, id: int, token: str):
+        try:
+            user = self._session.query(User).filter_by(id=id).with_for_update().first()
+            if user:
+                user.api_key = token
+                return token
+            return None
+        except Exception as e:
+            self._session.rollback()
+            print(f"Error generating API token for user: {e}")
+            return None
+    
+    def delete_user_api_token(self, id: int):
+        try:
+            user = self._session.query(User).filter_by(id=id).with_for_update().first()
+            if user:
+                user.api_key = None
+                return True
+            return False
+        except Exception as e:
+            self._session.rollback()
+            print(f"Error deleting API token for user: {e}")
+            return False
