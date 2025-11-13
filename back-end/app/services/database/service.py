@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from sqlalchemy import Float, Integer, Numeric, func
-from app.models import Bot, Building, AllowedChat, ChatRequest, Message, Station, StationData, StationStatisticData, DeyeStationData, DeyeStation, User
+from app.models import Bot, Building, AllowedChat, ChatRequest, Message, Station, StationData, StationStatisticData, DeyeStationData, DeyeStation, User, ExtData
 from .models import DatabaseConfig
 
 class DatabaseService:
@@ -295,6 +295,9 @@ class DatabaseService:
     def get_user(self, user_name: str):
         return self._session.query(User).filter_by(is_active=True, name=user_name).first()
     
+    def get_user_by_id(self, user_id: int):
+        return self._session.query(User).filter_by(id=user_id, is_active=True).first()
+    
     def create_user(self, user_name: str, password: str):
         existing_user = self.get_user(user_name)
         if not existing_user:
@@ -332,3 +335,95 @@ class DatabaseService:
     def get_buildings(self):
         query = self._session.query(Building)
         return query.all()
+    
+    def get_users(self, all: bool = False):
+        query = self._session.query(User)
+        return query.all() if all else query.filter_by(is_active=True).all()
+    
+    def save_user(self, id: int, name: str, password: str | None, is_active: bool, is_reporter: bool):
+        try:
+            user = self._session.query(User).filter_by(id=id).with_for_update().first()   
+            if not user:
+                hashed_password = password if password else ''
+                new_record = User(
+                    name = name,
+                    password = hashed_password,
+                    is_active = is_active,
+                    is_reporter = is_reporter
+                )
+                self._session.add(new_record)
+                self._session.flush()
+                return new_record.id
+            else:
+                user.name = name
+                user.is_active = is_active
+                user.is_reporter = is_reporter
+                if password:
+                    user.password = password
+                return user.id
+        except Exception as e:
+            self._session.rollback()
+            print(f"Error updating user: {e}")
+            return None
+    
+    def delete_user(self, id: int):
+        try:
+            user = self._session.query(User).filter_by(id=id).first()
+            if user:
+                self._session.delete(user)
+                return True
+            return False
+        except Exception as e:
+            self._session.rollback()
+            print(f"Error deleting user: {e}")
+            return False
+    
+    def generate_user_api_token(self, id: int, token: str):
+        try:
+            user = self._session.query(User).filter_by(id=id).with_for_update().first()
+            if user:
+                user.api_key = token
+                return token
+            return None
+        except Exception as e:
+            self._session.rollback()
+            print(f"Error generating API token for user: {e}")
+            return None
+    
+    def delete_user_api_token(self, id: int):
+        try:
+            user = self._session.query(User).filter_by(id=id).with_for_update().first()
+            if user:
+                user.api_key = None
+                return True
+            return False
+        except Exception as e:
+            self._session.rollback()
+            print(f"Error deleting API token for user: {e}")
+            return False
+
+    def get_ext_data(self):
+        try:
+            return self._session.query(ExtData).all()
+        except Exception as e:
+            print(f'Error getting ext data: {e}')
+            return []
+
+    def update_ext_data_grid_state(self, user: str, grid_state: bool):
+        try:
+            new_data = ExtData(
+                user = user,
+                grid_state = grid_state,
+                received_at = datetime.now(timezone.utc)
+            )
+            self._session.add(new_data)
+            self._session.flush()
+            return new_data.id
+        except Exception as e:
+            self._session.rollback()
+            print(f"Error saving ext data: {e}")
+            return None
+
+    def delete_old_ext_data(self):
+        timeout = datetime.now(timezone.utc) - timedelta(days=self._statistic_keep_days)
+        self._session.query(ExtData).filter(ExtData.received_at < timeout).delete(synchronize_session=False)

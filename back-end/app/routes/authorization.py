@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 from flask import json, jsonify, request
 from flask_jwt_extended import create_access_token, get_jwt, get_jwt_identity, jwt_required, unset_jwt_cookies
 from app.services import Services
+from app.utils.jwt_decorators import jwt_required
 
 
 def register(app, services: Services):

@@ -51,7 +51,7 @@ class DeyeApiService:
         url = self._base_url + '/station/list'
         headers = {
             'Content-Type': 'application/json',
-            'Authorization': 'bearer ' + self._token
+            'Authorization': 'bearer ' + (self._token or '')
         }
         data = {
             "page": 1,
@@ -106,7 +106,7 @@ class DeyeApiService:
         url = self._base_url + '/station/latest'
         headers = {
             'Content-Type': 'application/json',
-            'Authorization': 'bearer ' + self._token
+            'Authorization': 'bearer ' + (self._token or '')
         }
         data = {
             "stationId": station_id

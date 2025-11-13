@@ -1,7 +1,7 @@
 import { RouteObject, RouterProvider, createBrowserRouter } from "react-router-dom";
 import { ProtectedRoute } from "./protectedRoute";
 import { LoginPage, HomePage, StationsPage, BotsPage,
-  ChatsPage, MessagesPage, MessageEditPage, PublicPage } from "../pages";
+  ChatsPage, MessagesPage, MessageEditPage, PublicPage, UsersPage } from "../pages";
 import { FC } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../stores/store";
@@ -63,6 +63,12 @@ export const RootRoutes: MenuItem[] = [
     name: "Chats",
     icon: "comments",
     Component: ChatsPage,
+  },
+  {
+    path: "/users",
+    name: "Users",
+    icon: "user-md",
+    Component: UsersPage,
   },
   {
     ...publicPage,

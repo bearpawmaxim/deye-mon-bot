@@ -18,10 +18,15 @@ class AuthorizationService():
         user = self._database.get_user(username)
         if not user:
             raise ValueError(f"User '{username}' not found or inactive")
+        if user.is_reporter:
+            raise ValueError(f"Reporter users cannot login through UI, sorry :(")
         if not self._bcrypt.check_password_hash(user.password, password):
             raise ValueError(f"Invalid password")
 
         return create_access_token(identity=user.name)
+    
+    def create_reporter_token(self, username: str):
+        return create_access_token(identity=username, additional_claims={"is_reporter": True})
 
     def add_user(self, username: str, password: str):
         hashed_password = self._bcrypt.generate_password_hash(password)

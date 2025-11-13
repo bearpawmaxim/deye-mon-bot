@@ -2,6 +2,7 @@ from flask import jsonify, request
 from flask_jwt_extended import jwt_required
 from app.services import Services
 from app.models import Message
+from app.utils.jwt_decorators import jwt_required
 
 
 def register(app, services: Services):
