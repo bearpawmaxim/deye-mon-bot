@@ -27,7 +27,15 @@ import {
   faCheck,
   faBuilding,
   faExclamationCircle,
-  faSearch
+  faSearch,
+  faLightbulb,
+  faSlash,
+  faBattery4,
+  faBattery5,
+  faBattery3,
+  faBattery2,
+  faBolt,
+  faBattery0
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add([
@@ -59,6 +67,14 @@ library.add([
   faBuilding,
   faExclamationCircle,
   faSearch,
+  faLightbulb,
+  faSlash,
+  faBattery5,
+  faBattery4,
+  faBattery3,
+  faBattery2,
+  faBattery0,
+  faBolt,
 ]);
 
 export default library;

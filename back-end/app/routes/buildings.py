@@ -6,7 +6,6 @@ from app.services import Services
 def register(app, services: Services):
 
     @app.route('/api/buildings/buildings', methods=['POST'])
-    @jwt_required()
     def get_buildings():
         buildings = services.database.get_buildings()
 
