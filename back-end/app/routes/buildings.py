@@ -7,7 +7,6 @@ from app.utils.jwt_decorators import jwt_required
 def register(app, services: Services):
 
     @app.route('/api/buildings/buildings', methods=['POST'])
-    @jwt_required()
     def get_buildings():
         buildings = services.database.get_buildings()
 

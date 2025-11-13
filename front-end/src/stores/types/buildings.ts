@@ -5,8 +5,10 @@ export type BuildingListItem = {
   id?: number;
   name: string;
   color: MantineColor;
-  station_name: string;
-  report_user_name: string;
+  batteryPercent?: number;
+  batteryDischargeTime?: string;
+  consumptionPower: number;
+  isGridAvailable: boolean;
 };
 
 export type BuildingsState = BaseState & {

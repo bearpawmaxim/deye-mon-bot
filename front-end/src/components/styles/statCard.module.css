@@ -1,3 +1,9 @@
+.cardHover {
+  filter: drop-shadow(
+    0 0 5px light-dark(rgba(0, 0, 0, 0.6), rgba(255, 255, 255, 0.2))
+  );
+}
+
 .cardHover:hover .iconBox,
 .cardHover:hover .innerCircleBox,
 .cardHover:hover .outerCircleBox {
@@ -18,6 +24,9 @@
   height: 31;
   border: "dashed 1px";
   border-radius: "50%";
+  filter: drop-shadow(
+    0 0 6px light-dark(rgba(0, 0, 0, 1), rgba(255, 255, 255, 1))
+  );
 }
 
 .innerCircleBox {

@@ -3,7 +3,7 @@ import apiClient from "../../utils/apiClient";
 import { getErrorMessage } from "../../utils";
 import { BuildingListItem } from "../types";
 
-export const fetchBuildings = createAsyncThunk('chats/fetchAllowedChats', async (_, thunkAPI) => {
+export const fetchBuildings = createAsyncThunk('buildings/fetchBuildings', async (_, thunkAPI) => {
   try {
     const response = await apiClient.post<Array<BuildingListItem>>('/buildings/buildings');
     return response.data;
