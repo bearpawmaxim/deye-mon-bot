@@ -2,6 +2,7 @@ from flask import jsonify, request
 from flask_jwt_extended import jwt_required
 from app.services import Services
 from app.utils.key_generation import generate_api_token
+from app.utils.jwt_decorators import jwt_required
 
 
 def register(app, services: Services):
@@ -48,12 +49,24 @@ def register(app, services: Services):
     @app.route('/api/users/generate-token/<int:user_id>', methods=['POST'])
     @jwt_required()
     def generate_token(user_id: int):
-        token = generate_api_token()
-        result = services.database.generate_user_api_token(user_id, token)
-        services.db.session.commit()
-        if result:
-            return jsonify({ 'success': True, 'token': result }), 200
-        return jsonify({ 'success': False, 'error': 'User not found' }), 404
+        user = services.database.get_user_by_id(user_id)
+        if not user:
+            return jsonify({ 'success': False, 'error': 'User not found' }), 404
+        
+        if user.is_reporter:
+            jwt_token = services.authorization.create_reporter_token(user.name)
+            result = services.database.generate_user_api_token(user_id, jwt_token)
+            services.db.session.commit()
+            if result:
+                return jsonify({ 'success': True, 'token': result }), 200
+        else:
+            token = generate_api_token()
+            result = services.database.generate_user_api_token(user_id, token)
+            services.db.session.commit()
+            if result:
+                return jsonify({ 'success': True, 'token': result }), 200
+        
+        return jsonify({ 'success': False, 'error': 'Failed to generate token' }), 500
     
     @app.route('/api/users/delete-token/<int:user_id>', methods=['DELETE'])
     @jwt_required()

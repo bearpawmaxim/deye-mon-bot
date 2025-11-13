@@ -10,10 +10,12 @@ from .bot import Bot
 from .base import Base
 from .building import Building
 from .building_data import BuildingData
+from .ext_data import ExtData
 
 __all__ = [
     AllowedChat, ChatRequest, Bot, Base, Building, 
     BuildingData, User, Message, Station,
     StationData, StationStatisticData,
-    DeyeStation, DeyeStationData, DeyeStationList
+    DeyeStation, DeyeStationData, DeyeStationList,
+    ExtData
 ]

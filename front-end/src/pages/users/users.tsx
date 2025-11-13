@@ -8,10 +8,11 @@ import { createSelector } from "@reduxjs/toolkit";
 import { UserItem } from "../../stores/types";
 import { DataTable, ErrorMessage, Page } from "../../components";
 import { ColumnDataType } from "../../types";
-import { Badge, Button, CopyButton, Group, Modal, PasswordInput, Stack, Switch, TextInput } from "@mantine/core";
+import { Badge, Button, Code, CopyButton, Group, Modal, PasswordInput, Stack, Switch, Tabs, Text, TextInput } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { getCurlExample, getCurlExampleOneLine, getHomeAssistantExample, integrationNotes } from "../../utils";
 
 
 type ComponentProps = {
@@ -42,6 +43,7 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
   const [initiallyChanged, setInitiallyChanged] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
   const [tokenModalOpened, { open: openTokenModal, close: closeTokenModal }] = useDisclosure(false);
+  const [integrationModalOpened, { open: openIntegrationModal, close: closeIntegrationModal }] = useDisclosure(false);
   const [editingUser, setEditingUser] = useState<UserItem | null>(null);
   const [viewingToken, setViewingToken] = useState<string | null>(null);
   const [viewingTokenUser, setViewingTokenUser] = useState<UserItem | null>(null);
@@ -137,6 +139,10 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
     }
   }, [viewingTokenUser, closeTokenModal, handleDeleteToken]);
 
+  const handleShowIntegration = useCallback(() => {
+    openIntegrationModal();
+  }, [openIntegrationModal]);
+
   const getHeaderButtons = useCallback((dataChanged: boolean): PageHeaderButton[] => [
     { text: 'Create', icon: "add", color: "teal", onClick: () => openCreateDialog(), disabled: false, },
     { text: 'Save', icon: "save", color: "green", onClick: () => dispatch(saveUsers()), disabled: !dataChanged, },
@@ -209,6 +215,18 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
             accessorKey: 'apiKey',
             cell: ({ row }) => {
               const user = row.original;
+              
+              if (!user.isReporter) {
+                return (
+                  <Badge 
+                    variant="light"
+                    color="gray"
+                  >
+                    N/A
+                  </Badge>
+                );
+              }
+              
               if (!user.apiKey) {
                 return (
                   <Badge 
@@ -322,6 +340,14 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
             >
               Delete
             </Button>
+            <Button
+              leftSection={<FontAwesomeIcon icon="code" />}
+              color="violet"
+              variant="light"
+              onClick={handleShowIntegration}
+            >
+              Show Integration
+            </Button>
           </Group>
           <Group>
             <CopyButton value={viewingToken || ''}>
@@ -339,6 +365,74 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
           </Group>
         </Group>
       </Stack>
+    </Modal>
+
+    <Modal opened={integrationModalOpened} onClose={closeIntegrationModal} title="API Integration Examples" size="xl">
+      <Tabs defaultValue="curl">
+        <Tabs.List>
+          <Tabs.Tab value="curl" leftSection={<FontAwesomeIcon icon="terminal" />}>
+            cURL
+          </Tabs.Tab>
+          <Tabs.Tab value="homeassistant" leftSection={<FontAwesomeIcon icon="home" />}>
+            Home Assistant
+          </Tabs.Tab>
+        </Tabs.List>
+
+        <Tabs.Panel value="curl" pt="md">
+          <Stack gap="md">
+            <Text size="sm" c="dimmed">
+              {integrationNotes.curl.description}
+            </Text>
+            <Code block style={{ position: 'relative' }}>
+              {getCurlExample(viewingToken || 'YOUR_API_TOKEN')}
+            </Code>
+            <CopyButton value={getCurlExampleOneLine(viewingToken || 'YOUR_API_TOKEN')}>
+              {({ copied, copy }) => (
+                <Button
+                  fullWidth
+                  leftSection={<FontAwesomeIcon icon={copied ? 'check' : 'copy'} />}
+                  color={copied ? 'teal' : 'blue'}
+                  onClick={copy}
+                >
+                  {copied ? 'Copied!' : 'Copy cURL Command'}
+                </Button>
+              )}
+            </CopyButton>
+            <Text size="xs" c="dimmed">
+              Note: {integrationNotes.curl.note}
+            </Text>
+          </Stack>
+        </Tabs.Panel>
+
+        <Tabs.Panel value="homeassistant" pt="md">
+          <Stack gap="md">
+            <Text size="sm" c="dimmed">
+              {integrationNotes.homeAssistant.description}
+            </Text>
+            <Code block>
+              {getHomeAssistantExample(viewingToken || 'YOUR_API_TOKEN')}
+            </Code>
+            <CopyButton value={getHomeAssistantExample(viewingToken || 'YOUR_API_TOKEN')}>
+              {({ copied, copy }) => (
+                <Button
+                  fullWidth
+                  leftSection={<FontAwesomeIcon icon={copied ? 'check' : 'copy'} />}
+                  color={copied ? 'teal' : 'blue'}
+                  onClick={copy}
+                >
+                  {copied ? 'Copied!' : 'Copy Home Assistant Configuration'}
+                </Button>
+              )}
+            </CopyButton>
+            <Text size="xs" c="dimmed">
+              Note: {integrationNotes.homeAssistant.note}
+            </Text>
+          </Stack>
+        </Tabs.Panel>
+      </Tabs>
+      <Group justify="flex-end" mt="xl">
+        <Button variant="default" onClick={closeIntegrationModal}>Close</Button>
+      </Group>
     </Modal>
   </>
 }

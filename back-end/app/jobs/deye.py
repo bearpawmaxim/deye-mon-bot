@@ -95,6 +95,7 @@ def remove_old_data(services: Services):
         try:
             services.scheduler.pause()
             services.database.delete_old_station_data()
+            services.database.delete_old_ext_data()
             services.db.session.commit()
         finally:
             services.scheduler.resume()

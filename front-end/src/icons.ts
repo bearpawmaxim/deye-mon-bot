@@ -27,7 +27,10 @@ import {
   faCheck,
   faBuilding,
   faExclamationCircle,
-  faSearch
+  faSearch,
+  faCode,
+  faTerminal,
+  faCopy
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add([
@@ -59,6 +62,9 @@ library.add([
   faBuilding,
   faExclamationCircle,
   faSearch,
+  faCode,
+  faTerminal,
+  faCopy,
 ]);
 
 export default library;
