@@ -1,12 +1,14 @@
 import { RouteObject, RouterProvider, createBrowserRouter } from "react-router-dom";
 import { ProtectedRoute } from "./protectedRoute";
 import { LoginPage, HomePage, StationsPage, BotsPage,
-  ChatsPage, MessagesPage, MessageEditPage, PublicPage, UsersPage } from "../pages";
+  ChatsPage, MessagesPage, MessageEditPage, UsersPage, 
+  BuildingsPage} from "../pages";
 import { FC } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../stores/store";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 import { AnonymousLayout } from "../layouts/anonymousLayout";
+import { PublicLayout } from "../layouts/publicLayout";
 
 export type MenuItem = RouteObject & {
   children?: MenuItem[];
@@ -14,11 +16,6 @@ export type MenuItem = RouteObject & {
   icon?: IconName;
   skipForMenu?: boolean;
 }
-
-const publicPage = {
-  path: "/public",
-  element: <PublicPage />,
-};
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const RootRoutes: MenuItem[] = [
@@ -71,9 +68,10 @@ export const RootRoutes: MenuItem[] = [
     Component: UsersPage,
   },
   {
-    ...publicPage,
-    icon: "building",
+    path: '/buildings',
     name: "Buildings",
+    icon: "building",
+    Component: BuildingsPage,
   }
 ];
 
@@ -98,7 +96,12 @@ const Routes: FC = () => {
 
   const routesForNotAuthenticated: RouteObject[] = [
     loginRoute,
-    publicPage,
+    {
+      path: "/public",
+      element: <PublicLayout>
+          <BuildingsPage />
+        </PublicLayout>,
+    },
   ];
 
   const router = createBrowserRouter([

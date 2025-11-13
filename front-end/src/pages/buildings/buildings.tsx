@@ -5,10 +5,9 @@ import {
   SimpleGrid,
   Stack
 } from "@mantine/core";
-import { useSelector } from "react-redux";
-import { RootState, useAppDispatch } from "../../stores/store";
+import { useAppDispatch } from "../../stores/store";
 import { fetchBuildings } from "../../stores/thunks";
-import { BuildingCard, PlannedOutages, PublicHeader } from "./components";
+import { BuildingCard, PlannedOutages } from "./components";
 import { BuildingListItem } from "../../stores/types";
 
 const buildingsData: BuildingListItem[] = [
@@ -113,10 +112,7 @@ const buildingsData: BuildingListItem[] = [
   },
 ];
 
-export const PublicPage: FC = () => {
-  const token = useSelector((state: RootState) => state.auth.token);
-  const isLoggedIn = !!token;
-
+export const BuildingsPage: FC = () => {
   const dispatch = useAppDispatch();
   useEffect(() => {
     dispatch(fetchBuildings());
@@ -124,7 +120,6 @@ export const PublicPage: FC = () => {
 
   return (
     <>
-      {!isLoggedIn && <PublicHeader />}
       <Container size="xl" px="xl" py={48}>
         <Stack gap={48}>
           <Title order={1} ta="center" c="blue">

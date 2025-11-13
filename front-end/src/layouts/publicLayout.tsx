@@ -1,9 +1,13 @@
+import { FC, ReactNode } from "react";
 import { Box, Container, Flex, Title } from "@mantine/core";
-import { ThemePicker } from "../../../components";
-import { FC } from "react";
+import { ThemePicker } from "../components";
 
-export const PublicHeader: FC = () => {
-  return (
+type PublicLayoutProps = {
+  children: ReactNode;
+}
+
+export const PublicLayout: FC<PublicLayoutProps> = ({ children }) => {
+  return <>
     <Box
       style={{
         borderBottom: "1px solid var(--mantine-color-default-border)",
@@ -18,5 +22,6 @@ export const PublicHeader: FC = () => {
         </Flex>
       </Container>
     </Box>
-  );
+    {children}
+  </>;
 };
