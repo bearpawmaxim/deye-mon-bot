@@ -16,3 +16,9 @@
 0. if there is no `db.sqlite3` file in `back-end` folder, create an empty file
 1. in `.env` file, set `DEBUG` to `False`
 2. execute `sudo docker compose up -d`
+
+### Development
+
+## Database
+
+When the database changes are required to be made, always create a migration using the following command: `python.exe -m flask db migrate -m "Migration message"`
