@@ -20,6 +20,7 @@ class Config:
 
     sqlite_path = os.path.abspath(os.path.join(basedir, '../', 'db.sqlite3'))
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + sqlite_path
+    print(f"db path={SQLALCHEMY_DATABASE_URI}")
 
     DEYE_BASE_URL = os.getenv('DEYE_BASE_URL')
     DEYE_APP_ID = os.getenv('DEYE_APP_ID')
@@ -45,6 +46,8 @@ class Config:
     HOST = '127.0.0.1'
 
     STATISTIC_KEEP_DAYS = int(os.getenv('STATISTIC_KEEP_DAYS', 3))
+
+    IS_MIGRATION_RUN = False
 
 class ProductionConfig(Config):
     DEBUG = False

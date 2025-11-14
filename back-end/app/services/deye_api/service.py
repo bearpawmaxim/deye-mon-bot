@@ -38,10 +38,10 @@ class DeyeApiService:
             return data.accessToken
 
         except requests.exceptions.HTTPError as err:
-            print(f"HTTP error occurred: {err}")
+            print(f"HTTP error occurred during the token retrieval: {err}")
             return None
         except Exception as err:
-            print(f"Other error occurred: {err}")
+            print(f"Other error occurred during the token retrieval: {err}")
             return None
 
     def refresh_token(self):
@@ -73,6 +73,10 @@ class DeyeApiService:
                 success=data['success'],
                 total=data['total']
             )
+
+            if data['stationList'] is None:
+                return response
+
             for station in data['stationList']:
                 station_item = DeyeStation(
                     battery_soc = station['batterySOC'],
@@ -96,10 +100,10 @@ class DeyeApiService:
                 response.station_list.append(station_item)
             return response
         except requests.exceptions.HTTPError as err:
-            print(f"HTTP error occurred: {err}")
+            print(f"HTTP error occurred while fetching the stations list: {err}")
             return None
         except Exception as err:
-            print(f"Other error occurred: {err}")
+            print(f"Other error occurred while fetching the stations list: {err}")
             return None
 
     def get_station_data(self, station_id):
@@ -138,8 +142,8 @@ class DeyeApiService:
                 wire_power = data['wirePower']
             )
         except requests.exceptions.HTTPError as err:
-            print(f"HTTP error occurred: {err}")
+            print(f"HTTP error occurred while fetching the stations data: {err}")
             return None
         except Exception as err:
-            print(f"Other error occurred: {err}")
+            print(f"Other error occurred while fetching the stations data: {err}")
             return None

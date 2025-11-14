@@ -36,10 +36,10 @@ class TelegramService:
             response_data = response.json()
             return response_data['ok'] == True and response_data['result'] == True
         except requests.exceptions.HTTPError as err:
-            print(f"HTTP error occurred: {err}")
+            print(f"HTTP error occurred during webhook registration: {err}")
             return None
         except Exception as err:
-            print(f"Other error occurred: {err}")
+            print(f"Other error occurred during webhook registration: {err}")
             return None
 
     def _unregister_hook(self, bot_token: str):
@@ -54,10 +54,10 @@ class TelegramService:
             response_data = response.json()
             return response_data['ok'] == True and response_data['result'] == True
         except requests.exceptions.HTTPError as err:
-            print(f"HTTP error occurred: {err}")
+            print(f"HTTP error occurred during webhook removal: {err}")
             return None
         except Exception as err:
-            print(f"Other error occurred: {err}")
+            print(f"Other error occurred during webhook removal: {err}")
             return None
 
     def __init__(self, config: TelegramConfig):
@@ -76,10 +76,10 @@ class TelegramService:
             response = requests.post(url, data=data)
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
-            print(f"HTTP error occurred: {err}")
+            print(f"HTTP error occurred while sending the message: {err}")
             return None
         except Exception as err:
-            print(f"Other error occurred: {err}")
+            print(f"Other error occurred while sending the message: {err}")
             return None
 
     def get_bot_info(self, bot_id):
@@ -95,10 +95,10 @@ class TelegramService:
                 return TelegramUserInfo.from_json(data['result'])
             return None
         except requests.exceptions.HTTPError as err:
-            print(f"HTTP error occurred: {err}")
+            print(f"HTTP error occurred during the bot info retrieval: {err}")
             return None
         except Exception as err:
-            print(f"Other error occurred: {err}")
+            print(f"Other error occurred during the bot info retrieval: {err}")
             return None
     
     def get_chat_info(self, chat_id, bot_id):
@@ -116,8 +116,8 @@ class TelegramService:
                 return TelegramChatInfo.from_json(data['result'])
             return None
         except requests.exceptions.HTTPError as err:
-            print(f"HTTP error occurred: {err}")
+            print(f"HTTP error occurred during the chat info retrieval: {err}")
             return None
         except Exception as err:
-            print(f"Other error occurred: {err}")
+            print(f"Other error occurred during the chat info retrieval: {err}")
             return None

@@ -17,6 +17,7 @@ def register(app, services: Services):
                 'connectionStatus': station.connection_status,
                 'gridInterconnectionType': station.grid_interconnection_type,
                 'lastUpdateTime': station.last_update_time,
+                'batteryCapacity': station.battery_capacity if station.battery_capacity is not None else 0.0,
                 'enabled': station.enabled,
                 'order': station.order,
             })
@@ -28,6 +29,7 @@ def register(app, services: Services):
         id = request.json.get("id", None)
         enabled = request.json.get("enabled", False)
         order = request.json.get("order", 1)
-        station_id = services.database.save_station_state(id, enabled, order)
+        battery_capacity = request.json.get("batteryCapacity", None)
+        station_id = services.database.save_station_state(id, enabled, order, battery_capacity)
         services.db.session.commit()
         return jsonify({ 'success': True, 'id': station_id }), 200

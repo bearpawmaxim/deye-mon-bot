@@ -4,6 +4,7 @@ from .base import Base
 
 class Station(Base):
     __tablename__ = 'station'
+
     id                        = Column(Integer, primary_key=True, autoincrement=True)
     station_id                = Column(String(64))
     station_name              = Column(String(128))
@@ -14,13 +15,14 @@ class Station(Base):
     region_timezone           = Column(String(64))
     grid_interconnection_type = Column(String(64))
     installed_capacity        = Column(Float)
-    start_operating_time      = Column(Integer)
+    start_operating_time      = Column(DateTime)
     created_date              = Column(DateTime)
     last_update_time          = Column(DateTime)
     connection_status         = Column(String(64))
     contact_phone             = Column(String(64))
     owner_name                = Column(String(256))
     generation_power          = Column(Float)
+    battery_capacity          = Column(Integer, nullable=True)
     order                     = Column(Integer, default=1)
     enabled                   = Column(Boolean, default=True)
 
@@ -35,7 +37,7 @@ class Station(Base):
             f"owner_name='{self.owner_name}', region_nation_id={self.region_nation_id}, "
             f"region_timezone='{self.region_timezone}', generationPower={self.generation_power}, "
             f"lastUpdateTime={self.last_update_time}, start_operating_time={self.start_operating_time}, "
-            f"order={self.order}, enabled={self.enabled})")
+            f"battery_capacity={self.battery_capacity}, order={self.order}, enabled={self.enabled})")
 
     def to_dict(self):
         return {
@@ -56,6 +58,7 @@ class Station(Base):
             'contact_phone': self.contact_phone,
             'owner_name': self.owner_name,
             'generation_power': self.generation_power,
+            'battery_capacity': self.battery_capacity,
             'order': self.order,
             'enabled': self.enabled
         }
