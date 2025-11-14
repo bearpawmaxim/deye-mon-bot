@@ -13,7 +13,7 @@ def register(app, services: Services):
         result = []
         for data in data_list:
             result.append({
-                'user': data.user,
+                'user': data.user.name if data.user else None,
                 'grid_state': data.grid_state,
                 'received_at': data.received_at.isoformat() if data.received_at else None
             })

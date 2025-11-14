@@ -228,6 +228,18 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
               }
               
               if (!user.apiKey) {
+                if (changed) {
+                  return (
+                    <Badge 
+                      variant="light"
+                      color="orange"
+                      style={{ cursor: 'not-allowed' }}
+                      title="Please save changes before generating a token"
+                    >
+                      Save First
+                    </Badge>
+                  );
+                }
                 return (
                   <Badge 
                     variant="light"

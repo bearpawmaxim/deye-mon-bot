@@ -358,6 +358,8 @@ class DatabaseService:
             else:
                 user.name = name
                 user.is_active = is_active
+                if not is_reporter and user.api_key:
+                    user.api_key = None
                 user.is_reporter = is_reporter
                 if password:
                     user.password = password
@@ -412,8 +414,13 @@ class DatabaseService:
 
     def update_ext_data_grid_state(self, user: str, grid_state: bool):
         try:
+            user_obj = self.get_user(user)
+            if not user_obj:
+                print(f"User not found: {user}")
+                return None
+            
             new_data = ExtData(
-                user = user,
+                user_id = user_obj.id,
                 grid_state = grid_state,
                 received_at = datetime.now(timezone.utc)
             )
