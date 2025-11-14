@@ -9,6 +9,7 @@ import { HeaderCell } from "./headerCell";
 import { ActionsCell, BooleanCell } from "./cell";
 import useLocalStorage from "../../hooks/useLocalStorage";
 import { ColumnDataType } from "../../types";
+import { FilterCell } from "./filterCell";
 
 export type DataTableColumnDef<T, TValue> = ColumnDef<T, TValue> & {
   meta?: TypedColumnMeta<T, TValue>;
@@ -24,6 +25,7 @@ export type DataTableProps<T> = {
   refreshKey?: number;
   hideToolbar?: boolean;
   manualSorting?: boolean;
+  useFilters?: boolean;
 };
 
 export const DataTable = <T,>({
@@ -35,6 +37,7 @@ export const DataTable = <T,>({
     refreshKey,
     hideToolbar,
     manualSorting,
+    useFilters,
   }: DataTableProps<T>) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const stableFetchAction = useCallback(fetchAction, []);
@@ -126,6 +129,14 @@ export const DataTable = <T,>({
                   />
                 ))}
               </Table.Tr>
+              { useFilters && <Table.Tr key={`${headerGroup.id}_fltg`}>
+                {headerGroup.headers.map(header => {
+                  const enableFilter = header.column.columnDef.enableColumnFilter;
+                  return <Table.Th key={`${header.id}_flt`}>
+                    {enableFilter && <FilterCell<T> header={header} /> }
+                  </Table.Th>
+                })}
+              </Table.Tr> }
             </Fragment>
           ))}
         </Table.Thead>

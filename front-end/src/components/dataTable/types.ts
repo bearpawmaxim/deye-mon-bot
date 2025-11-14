@@ -46,18 +46,13 @@ declare module '@tanstack/react-table' {
       dataType: ColumnDataType.Text;
     }
 
-  interface DateTimeColumnMetaFilterOptions<TData extends RowData, TValue> 
-    extends ColumnMetaFilterOptions<TData, TValue> {
-      withMacroses?: boolean;
-    }
-
   interface DateTimeColumnMeta<TData extends RowData, TValue>
-    extends ColumnMeta<TData, TValue, DateTimeColumnMetaFilterOptions<TData, TValue>> {
+    extends ColumnMeta<TData, TValue, ColumnMetaFilterOptions<TData, TValue>> {
       dataType: ColumnDataType.DateTime;
     }
 
   interface BooleanColumnMeta<TData extends RowData, TValue>
-    extends ColumnMeta<TData, TValue, DateTimeColumnMetaFilterOptions<TData, TValue>> {
+    extends ColumnMeta<TData, TValue, ColumnMetaFilterOptions<TData, TValue>> {
       dataType: ColumnDataType.Boolean;
       readOnly?: boolean;
       checkedChange?: (row: TData, state: boolean) => void;

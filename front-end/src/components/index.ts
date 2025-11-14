@@ -3,6 +3,7 @@ export * from './backButton';
 export * from './formPage';
 export * from './formSubmitButtons';
 export * from './dataTable';
+export * from './dateRangePicker';
 export * from './errorMessage';
 export * from './userAvatar';
 export * from './statCard';

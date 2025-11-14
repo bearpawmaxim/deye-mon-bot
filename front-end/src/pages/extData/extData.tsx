@@ -152,18 +152,27 @@ const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
         data={filteredData}
         fetchAction={fetchData}
         defSort={[{ id: 'received_at', desc: true }]}
+        useFilters={true}
         columns={[
           {
             id: 'user',
             header: 'User',
             accessorKey: 'user',
             enableSorting: true,
+            enableColumnFilter: true,
+            meta: {
+              dataType: ColumnDataType.Text,
+            },
           },
           {
             id: 'grid_state',
             header: 'Grid State',
             accessorKey: 'grid_state',
+            enableColumnFilter: true,
             enableSorting: true,
+            meta: {
+              dataType: ColumnDataType.Text,
+            },
             cell: ({ row }) => {
               const gridState = row.original.grid_state;
               return (
@@ -187,6 +196,7 @@ const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
             header: 'Received At',
             accessorKey: 'received_at',
             enableSorting: true,
+            enableColumnFilter: true,
             cell: ({ row }) => {
               const receivedAt = row.original.received_at;
               if (!receivedAt) return '-';
@@ -196,6 +206,8 @@ const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
             },
             meta: {
               dataType: ColumnDataType.DateTime,
+              filterOptions: {
+              }
             },
           },
         ]}
