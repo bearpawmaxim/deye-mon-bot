@@ -3,6 +3,7 @@ export * from './base';
 export * from './bots';
 export * from './buildings';
 export * from './chats';
+export * from './extData';
 export * from './messages';
 export * from './stations';
 export * from './stationsData';
