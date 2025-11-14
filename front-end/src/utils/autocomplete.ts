@@ -1,9 +1,9 @@
 import { Completion, CompletionContext, CompletionResult } from "@codemirror/autocomplete";
 
 const variables: Record<string, Array<string>> = {
-  "station": ["current", "previous", "name",
+  "station": ["current", "previous", "name", "battery_capacity",
     "grid_interconnection_type", "connection_status"],
-  "stations": ["current", "previous", "name",
+  "stations": ["current", "previous", "name", "battery_capacity",
     "grid_interconnection_type", "connection_status"],
   "current": ["station_id", "battery_power", "battery_soc", "charge_power", 
     "code", "consumption_power", "discharge_power", "generation_power", 
@@ -35,6 +35,7 @@ export function jinja2Autocomplete(context: CompletionContext): CompletionResult
 
   const matchArray = line.match(/(\w+)\.(\w*)$/);
   if (matchArray) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_, variable, partialMember] = matchArray;
     if (variables[variable]) {
       variables[variable].forEach((member) => {
@@ -50,6 +51,7 @@ export function jinja2Autocomplete(context: CompletionContext): CompletionResult
 
   const matchLoop = line.match(/for\s+(\w+)\s+in\s+(\w+)/);
   if (matchLoop) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_, loopVar, arrayVar] = matchLoop;
     if (variables[arrayVar]) {
       variables[arrayVar].forEach((member) => {

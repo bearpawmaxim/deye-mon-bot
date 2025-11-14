@@ -15,7 +15,7 @@ export const fetchStations = createAsyncThunk('stations/fetchStations', async (_
   }
 });
 
-export const saveStationStates = createAsyncThunk('stations/saveStationState', async (_, { getState, dispatch }) => {
+export const saveStations = createAsyncThunk('stations/saveStationData', async (_, { getState, dispatch }) => {
   try {
     const state = getState() as RootState;
     const stationsState = state.stations;
@@ -24,6 +24,7 @@ export const saveStationStates = createAsyncThunk('stations/saveStationState', a
         id: station.id,
         enabled: station.enabled,
         order: station.order,
+        batteryCapacity: station.batteryCapacity,
       } as BaseServerStationItem;
       const response = await apiClient.put<BaseSaveDataResponse>('/stations/save', serverDto);
       dispatch(stationStateSaved(response.data.id));

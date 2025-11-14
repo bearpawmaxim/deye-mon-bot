@@ -48,7 +48,8 @@ class BotService:
                 **(data.to_dict(self._message_timezone) if data is not None else {}),
                 'name': station.station_name,
                 'grid_interconnection_type': station.grid_interconnection_type,
-                'connection_status': station.connection_status
+                'connection_status': station.connection_status,
+                'battery_capacity': station.battery_capacity
             }
             template_data['stations'].append(station_data)
 

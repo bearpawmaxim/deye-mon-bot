@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ServerStationItem, StationsState } from "../types";
-import { fetchStations, saveStationStates } from "../thunks";
+import { fetchStations, saveStations } from "../thunks";
 
 const initialState: StationsState = {
   stations: [],
@@ -11,6 +11,11 @@ const initialState: StationsState = {
 export type UpdateStationActionPayload = {
   id: number;
   enabled: boolean;
+};
+
+export type UpdateStationBatteryCapacityActionPayload = {
+  id: number;
+  batteryCapacity: number;
 };
 
 export type ChangeStationOrderPayload = {
@@ -30,6 +35,16 @@ export const stationsSlice = createSlice({
       }
       if (station.enabled !== payload.enabled) {
         station.enabled = payload.enabled;
+        station.changed = true;
+      }
+    },
+    updateStationBatteryCapacity(state, { payload }: PayloadAction<UpdateStationBatteryCapacityActionPayload>) {
+      const station = state.stations.find(s => s.id === payload.id);
+      if (!station) {
+        return;
+      }
+      if (station.batteryCapacity !== payload.batteryCapacity) {
+        station.batteryCapacity = payload.batteryCapacity;
         station.changed = true;
       }
     },
@@ -67,24 +82,29 @@ export const stationsSlice = createSlice({
         state.stations = action.payload.map(channel => ({ ...channel, changed: false}));
         state.loading = false;
       })
-      .addCase(fetchStations.rejected, (state, action: PayloadAction<any>) => {
+      .addCase(fetchStations.rejected, (state, action: PayloadAction<unknown>) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload as string;
       });
     builder
-      .addCase(saveStationStates.pending, (state) => {
+      .addCase(saveStations.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(saveStationStates.fulfilled, (state) => {
+      .addCase(saveStations.fulfilled, (state) => {
         state.loading = false;
       })
-      .addCase(saveStationStates.rejected, (state, action: PayloadAction<any>) => {
+      .addCase(saveStations.rejected, (state, action: PayloadAction<unknown>) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload as string;
       });
   },
 });
   
-export const { updateStationState, updateStationOrder, stationStateSaved } = stationsSlice.actions;
+export const {
+  updateStationState,
+  updateStationOrder,
+  updateStationBatteryCapacity,
+  stationStateSaved,
+} = stationsSlice.actions;
 export const stationsReducer = stationsSlice.reducer;

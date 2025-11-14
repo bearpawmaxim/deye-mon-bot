@@ -4,6 +4,7 @@ export type BaseServerStationItem = {
   id: number;
   enabled: boolean;
   order: number;
+  batteryCapacity: number;
 };
 
 export type ServerStationItem = BaseServerStationItem & {

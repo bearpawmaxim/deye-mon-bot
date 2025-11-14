@@ -3,13 +3,14 @@ import { StationItem } from "../../stores/types";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { connect } from "react-redux";
 import { PageHeaderButton, useHeaderContent } from "../../providers";
-import { cancelStationsEditing, fetchStations, saveStationStates } from "../../stores/thunks";
+import { cancelStationsEditing, fetchStations, saveStations } from "../../stores/thunks";
 import { createSelector } from "@reduxjs/toolkit";
-import { updateStationOrder, updateStationState } from "../../stores/slices";
+import { updateStationBatteryCapacity, updateStationOrder, updateStationState } from "../../stores/slices";
 import { DataTable, ErrorMessage, Page } from "../../components";
 import { ColumnDataType } from "../../types";
-import { Button, Group } from "@mantine/core";
+import { ActionIcon, Button, Group, Text, Tooltip } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { openBatteryCapacityEditDialog } from "./components";
 
 
 type ComponentProps = {
@@ -44,7 +45,7 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
   const [initiallyChanged, setInitiallyChanged] = useState(false);
 
   const getHeaderButtons = useCallback((dataChanged: boolean): PageHeaderButton[] => [
-    { text: 'Save', icon: "save", color: "green", onClick: () => dispatch(saveStationStates()), disabled: !dataChanged, },
+    { text: 'Save', icon: "save", color: "green", onClick: () => dispatch(saveStations()), disabled: !dataChanged, },
     { text: 'Cancel', icon: "cancel", color: "black", onClick: () => dispatch(cancelStationsEditing()), disabled: !dataChanged, },
   ], [dispatch]);
   const { setHeaderButtons, updateButtonAttributes } = useHeaderContent();
@@ -69,6 +70,9 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
   const onStationOrderChange = (id: number, currentOrder: number, delta: number) => {
     dispatch(updateStationOrder({ id, currentOrder, delta }));
   };
+  const onSetBatteryCapacity = (id: number, batteryCapacity: number) => {
+    dispatch(updateStationBatteryCapacity({ id, batteryCapacity }));
+  }
 
   if (changed != initiallyChanged) {
     setInitiallyChanged(!initiallyChanged);
@@ -117,6 +121,41 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
             textAlign: 'center',
             checkedChange: (row, state) => onStationEnableChange(row.id, state),
           },
+        },
+        {
+          id: 'battery capacity',
+          header: 'Battery capacity',
+          accessorKey: 'batteryCapacity',
+          meta: {
+            dataType: ColumnDataType.Number,
+          },
+          cell: ({ renderValue, row }) => {
+            return <Group justify="space-between">
+              <Text>{renderValue()} kWh</Text>
+              <Tooltip
+                ml='sm'
+                label={
+                  <Text fw={500} fz={13}>
+                    Edit battery capacity
+                  </Text>
+                }
+              >
+                <ActionIcon
+                  color={'orange'}
+                  onClick={() => openBatteryCapacityEditDialog({
+                    batteryCapacity: row.original.batteryCapacity,
+                    onClose: (result, newCapacity) => {
+                      if (result) {
+                        onSetBatteryCapacity(row.original.id, newCapacity)
+                      }
+                    }
+                  })}
+                >
+                  <FontAwesomeIcon icon='edit' />
+                </ActionIcon>
+              </Tooltip>
+            </Group>;
+          }
         },
         {
           id: 'order',

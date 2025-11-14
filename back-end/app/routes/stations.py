@@ -30,6 +30,6 @@ def register(app, services: Services):
         enabled = request.json.get("enabled", False)
         order = request.json.get("order", 1)
         battery_capacity = request.json.get("batteryCapacity", None)
-        station_id = services.database.save_station_state(id, enabled, order, battery_capacity)
+        station_id = services.database.save_station_data(id, enabled, order, battery_capacity)
         services.db.session.commit()
         return jsonify({ 'success': True, 'id': station_id }), 200

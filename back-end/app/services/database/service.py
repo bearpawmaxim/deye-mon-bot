@@ -211,7 +211,7 @@ class DatabaseService:
             print(f"Error fetching stations: {e}")
             return []
 
-    def save_station_state(self, id: int, enabled: bool, order: int):
+    def save_station_data(self, id: int, enabled: bool, order: int, battery_capacity: float):
         try:
             station = self._session.query(Station).filter_by(id=id).with_for_update().first()   
             if not station:
@@ -219,6 +219,7 @@ class DatabaseService:
             else:
                 station.enabled = enabled
                 station.order = order
+                station.battery_capacity = battery_capacity
                 return station.id
         except Exception as e:
             self._session.rollback()
