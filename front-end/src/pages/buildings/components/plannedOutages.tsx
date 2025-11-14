@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ActionIcon, Alert, Badge, Box, Card, Group, Loader, SimpleGrid, Stack, Text, Title, useMantineColorScheme } from "@mantine/core";
-import { FC, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 
 
 type TimeSlot = {
@@ -41,26 +41,21 @@ type PlannedOutagesProps = {
 };
 
 export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue }) => {
-    const YASNO_URL = "https://app.yasno.ua/api/blackout-service";
-
+    const fetchYasnoData = useCallback(async (queue: string): Promise<ProcessedData | null> => {
     const addMinutesToMidnight = (minutes: number): string => {
-    const hours = Math.floor(minutes / 60) % 24;
-    const mins = minutes % 60;
-    return `${hours.toString().padStart(2, "0")}:${mins
+      const hours = Math.floor(minutes / 60) % 24;
+      const mins = minutes % 60;
+      return `${hours.toString().padStart(2, "0")}:${mins
         .toString()
         .padStart(2, "0")}`;
     };
 
-    const fetchYasnoData = async (queue: string): Promise<ProcessedData | null> => {
-    // Using CORS proxy to bypass CORS restrictions 😂😂😂
-    const corsProxy = "https://api.cors.lol/?url=";
-    const apiUrl = `${YASNO_URL}/public/shutdowns/regions/25/dsos/902/planned-outages`;
-    const url = `${corsProxy}${encodeURIComponent(apiUrl)}`;
-
     try {
-        const response = await fetch(url, {
+        const response = await fetch("/api/yasno/planned-outages?region=25&dso=902", {
         method: "GET",
-        mode: "cors",
+        headers: {
+            "Content-Type": "application/json",
+        },
         });
 
         if (!response.ok) {
@@ -99,7 +94,7 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue }) => {
         console.error("Error fetching YASNO data:", e);
         return null;
     }
-    };
+    }, []);
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -108,7 +103,7 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue }) => {
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === "dark";
 
-  const loadData = async (isManualRefresh = false) => {
+  const loadData = useCallback(async (isManualRefresh = false) => {
     if (isManualRefresh) {
       setRefreshing(true);
     } else {
@@ -128,15 +123,15 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue }) => {
         setLoading(false);
       }
     }
-  };
+  }, [outageQueue, fetchYasnoData]);
 
   useEffect(() => {
     loadData();
-    // Refresh every 30 minutes 😂😂😂
+    // Refresh every 30 minutes
     const interval = setInterval(() => loadData(), 30 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [loadData]);
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return "";
