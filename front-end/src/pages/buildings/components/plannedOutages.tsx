@@ -36,9 +36,12 @@ type ProcessedData = {
   updatedOn?: string;
 };
 
-export const PlannedOutages: FC = () => {
+type PlannedOutagesProps = {
+  outageQueue: string;
+};
+
+export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue }) => {
     const YASNO_URL = "https://app.yasno.ua/api/blackout-service";
-    const YASNO_QUEUE = "6.2";
 
     const addMinutesToMidnight = (minutes: number): string => {
     const hours = Math.floor(minutes / 60) % 24;
@@ -114,7 +117,7 @@ export const PlannedOutages: FC = () => {
     setError(null);
 
     try {
-      const data = await fetchYasnoData(YASNO_QUEUE);
+      const data = await fetchYasnoData(outageQueue);
       setOutageData(data);
     } catch {
       setError("Failed to load planned outages data");
@@ -243,7 +246,7 @@ export const PlannedOutages: FC = () => {
     <Stack gap="lg">
       <Group justify="center" align="center" gap="md">
         <Title order={2}>
-          Planned Power Outages Schedule (Queue {YASNO_QUEUE})
+          Planned Power Outages Schedule (Queue {outageQueue})
         </Title>
         <ActionIcon
           variant="light"

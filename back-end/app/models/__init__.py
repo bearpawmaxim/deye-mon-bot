@@ -5,6 +5,7 @@ from .station_statistic_data import StationStatisticData
 from .allowed_chat import AllowedChat
 from .chat_request import ChatRequest
 from .deye import DeyeStationData, DeyeStation, DeyeStationList
+from .dashboard_config import DashboardConfig
 from .user import User
 from .bot import Bot
 from .base import Base
@@ -16,5 +17,5 @@ __all__ = [
     Building, User, Message, Station,
     StationData, StationStatisticData,
     DeyeStation, DeyeStationData, DeyeStationList,
-    ExtData
+    ExtData, DashboardConfig
 ]

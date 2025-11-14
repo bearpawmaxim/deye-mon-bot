@@ -1,12 +1,13 @@
 import { combineReducers } from "redux";
-import { authReducer, botsReducer, chatsReducer, messagesReducer, stationsReducer, stationsDataReducer, buildingsReducer, usersReducer, extDataReducer } from "./slices";
+import { authReducer, botsReducer, chatsReducer, messagesReducer, stationsReducer, stationsDataReducer, buildingsReducer, usersReducer, extDataReducer, dashboardConfigReducer } from "./slices";
 
 export const rootReducer = combineReducers({
   ['auth']: authReducer,
-  ['chats']: chatsReducer,
   ['bots']: botsReducer,
   ['buildings']: buildingsReducer,
   ['extData']: extDataReducer,
+  ['chats']: chatsReducer,
+  ['dashboardConfig']: dashboardConfigReducer,
   ['stations']: stationsReducer,
   ['stationsData']: stationsDataReducer,
   ['messages']: messagesReducer,

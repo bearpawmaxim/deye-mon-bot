@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from sqlalchemy import Float, Integer, Numeric, func
-from app.models import Bot, Building, AllowedChat, ChatRequest, Message, Station, StationData, StationStatisticData, DeyeStationData, DeyeStation, User, ExtData
+from app.models import Bot, Building, AllowedChat, ChatRequest, DashboardConfig, Message, Station, StationData, StationStatisticData, DeyeStationData, DeyeStation, User, ExtData
 from .models import DatabaseConfig
 
 class DatabaseService:
@@ -335,6 +335,10 @@ class DatabaseService:
         
     def get_buildings(self):
         query = self._session.query(Building)
+        return query.all()
+    
+    def get_dashboard_config(self):
+        query = self._session.query(DashboardConfig)
         return query.all()
     
     def get_users(self, all: bool = False):
