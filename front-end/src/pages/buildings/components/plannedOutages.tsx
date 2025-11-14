@@ -51,7 +51,7 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue }) => {
     };
 
     try {
-        const response = await fetch("/api/yasno/planned-outages?region=25&dso=902", {
+        const response = await fetch("/api/yasno/planned-outages", { 
         method: "GET",
         headers: {
             "Content-Type": "application/json",
