@@ -9,6 +9,8 @@ export type BuildingListItem = {
   batteryDischargeTime?: string;
   consumptionPower: number;
   isGridAvailable: boolean;
+  isDischarging: boolean;
+  isCharging: boolean;
 };
 
 export type BuildingsState = BaseState & {

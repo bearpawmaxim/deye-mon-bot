@@ -83,6 +83,8 @@ library.add([
   faBattery0,
   faBolt,
   faFileLines,
+  faUpLong,
+  faDownLong,
 ]);
 
 export default library;

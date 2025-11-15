@@ -42,7 +42,7 @@ class BotService:
             if not station.enabled and not force:
                 continue
 
-            data = self._database.get_station_data(station.station_id)
+            data = self._database.get_station_data_tuple(station.station_id)
 
             station_data = {
                 **(data.to_dict(self._message_timezone) if data is not None else {}),
@@ -57,7 +57,7 @@ class BotService:
                 template_data['station'] = station_data
                 message_station = station
         return message_station
-    
+
     def _get_average_method(self, station_id, start_date = None):
         return partial(
             self._database.get_station_data_average_column,
@@ -65,7 +65,7 @@ class BotService:
             datetime.now(timezone.utc),
             station_id
         )
-    
+
     def _get_average_minutes_method(self, station_id):
         return (
             lambda column_name,minutes: self._database.get_station_data_average_column(

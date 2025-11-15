@@ -33,6 +33,15 @@ export const BuildingCard: FC<BuildingCardProps> = ({ building }) => {
         <FontAwesomeIcon icon='lightbulb' />
         <FontAwesomeIcon icon='slash' />
       </span>;
+    
+  const getOperationText = (building: BuildingListItem) => {
+    if (building.isCharging && building.isDischarging) {
+      return '';
+    } else if (building.isCharging) {
+      return 'Charging, ';
+    }
+    return 'Discharging, '
+  }
 
   const rows = [];
   rows.push({
@@ -44,7 +53,9 @@ export const BuildingCard: FC<BuildingCardProps> = ({ building }) => {
     rows.push({
       icon: getBatteryIcon(building),
       left: <>Battery: </>,
-      right: <>{building.batteryPercent}%, ~{building.batteryDischargeTime ?? '--'} left</>,
+      right: <>
+        {getOperationText(building)}{building.batteryPercent}%
+        {building.batteryDischargeTime && <>, ~{building.batteryDischargeTime} left</>}</>,
     });
     rows.push({
       icon: <FontAwesomeIcon icon='bolt' />,

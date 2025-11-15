@@ -132,13 +132,13 @@ class DatabaseService:
         except Exception as e:
             print(f'Error removing allowed chat {chat_id}: {e}')
 
-    def _get_station(self, station_id: str):
+    def get_station(self, station_id: str):
         return self._session.query(Station).filter_by(station_id=station_id).first()
-
+    
     def add_station(self, station: DeyeStation):
         try:
             max_order = self._session.query(Station).order_by(Station.order.desc()).first().order
-            existing_station = self._get_station(station.id)
+            existing_station = self.get_station(station.id)
             if existing_station == None:
                 new_record = Station(
                     station_id = station.id,
@@ -170,7 +170,7 @@ class DatabaseService:
 
     def add_station_data(self, station_id: str, station_data: DeyeStationData):
         try:
-            station = self._get_station(station_id)
+            station = self.get_station(station_id)
             if station is None:
                 raise ValueError(f'station not found')
 
@@ -226,7 +226,7 @@ class DatabaseService:
             print(f"Error updating station: {e}")
             return None
 
-    def get_station_data(self, station_id: str):
+    def get_station_data_tuple(self, station_id: str):
         try:
             stations = (
                 self._session.query(StationData)
@@ -241,6 +241,21 @@ class DatabaseService:
                 stations[1] if stations.count() == 2 else None,
                 stations[0]
             )
+        except Exception as e:
+            print(f"Error fetching station data tuple: {e}")
+            return None        
+
+    def get_last_station_data(self, station_id: int):
+        try:
+            station_data = (
+                self._session.query(StationData)
+                .filter(StationData.station_id == station_id)
+                .order_by(StationData.last_update_time.desc())
+                .limit(1)
+            )
+            if station_data.count() == 0:
+                return None
+            return station_data.first()
         except Exception as e:
             print(f"Error fetching station data: {e}")
             return None
