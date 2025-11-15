@@ -57,6 +57,8 @@ export const BuildingCard: FC<BuildingCardProps> = ({ building }) => {
         {getOperationText(building)}{building.batteryPercent}%
         {building.batteryDischargeTime && <>, ~{building.batteryDischargeTime} left</>}</>,
     });
+  }
+  if (building.consumptionPower) {
     rows.push({
       icon: <FontAwesomeIcon icon='bolt' />,
       left: <>Consumption: </>,

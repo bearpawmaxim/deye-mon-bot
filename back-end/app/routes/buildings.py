@@ -37,7 +37,7 @@ def register(app, services: Services):
                         datetime.now(timezone.utc) - timedelta(minutes=minutes),
                         datetime.now(timezone.utc),
                         station_id,
-                        "discharge_power"
+                        "consumption_power"
                     )
                     if average_consumption_w is None:
                         consumption_kwh = 0.0
@@ -49,6 +49,17 @@ def register(app, services: Services):
                     if consumption_kwh > 0:
                         estimate_discharge_time = get_average_discharge_time(batt_capacity, soc, consumption_kwh)
                         result_dict['batteryDischargeTime'] = estimate_discharge_time
+                else:
+                    average_consumption_w = services.database.get_station_data_average_column(
+                        datetime.now(timezone.utc) - timedelta(minutes=minutes),
+                        datetime.now(timezone.utc),
+                        station_id,
+                        "consumption_power"
+                    )
+                    if average_consumption_w is None:
+                        average_consumption_w = 0
+
+                    result_dict['consumptionPower'] = f"{(average_consumption_w / 1000):.2f}"
 
             return result_dict
 
