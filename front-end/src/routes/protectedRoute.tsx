@@ -8,10 +8,6 @@ export const ProtectedRoute = () => {
   const token = useSelector((state: RootState) => state.auth.token);
 
   if (!token) {
-    return <Navigate to="/login" />;
-  }
-
-  if (!token) {
     return <Navigate to={`/login?returnUrl=${encodeURIComponent(location.pathname)}`} />;
   }
 

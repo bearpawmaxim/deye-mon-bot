@@ -2,7 +2,8 @@ import { RouteObject, RouterProvider, createBrowserRouter } from "react-router-d
 import { ProtectedRoute } from "./protectedRoute";
 import { LoginPage, HomePage, StationsPage, BotsPage,
   ChatsPage, MessagesPage, MessageEditPage, UsersPage, 
-  BuildingsPage, ExtDataPage} from "../pages";
+  BuildingsPage, ExtDataPage,
+  NotFoundPage} from "../pages";
 import { FC } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../stores/store";
@@ -78,7 +79,13 @@ export const RootRoutes: MenuItem[] = [
     name: "Buildings",
     icon: "building",
     Component: BuildingsPage,
-  }
+  },
+  {
+    path: "*",
+    name: "Not found",
+    Component: NotFoundPage,
+    skipForMenu: true,
+  },
 ];
 
 const Routes: FC = () => {

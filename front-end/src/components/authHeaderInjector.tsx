@@ -2,7 +2,7 @@ import { FC, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { RootState, useAppDispatch } from "../stores/store";
 import apiClient from "../utils/apiClient";
-import { resetAuthData } from "../stores/slices";
+import { resetAuthData, updateAuthData } from "../stores/slices";
 
 export const AuthHeaderInjector: FC = () => {
   const dispatch = useAppDispatch();
@@ -20,7 +20,13 @@ export const AuthHeaderInjector: FC = () => {
     );
 
     const responseInterceptor = apiClient.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        const accessToken = response?.data['access_token'];
+        if (accessToken) {
+          dispatch(updateAuthData(accessToken));
+        }
+        return response;
+      },
       async (error) => {
         if (error.response && error.response.status === 401) {
           dispatch(resetAuthData());
