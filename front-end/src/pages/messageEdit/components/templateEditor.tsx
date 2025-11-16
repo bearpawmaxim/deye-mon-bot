@@ -1,5 +1,5 @@
 import { FC } from "react";
-import CodeMirror, { basicSetup } from '@uiw/react-codemirror';
+import EditorView, { minimalSetup } from '@uiw/react-codemirror';
 import { langs } from '@uiw/codemirror-extensions-langs';
 import { autocompletion } from "@codemirror/autocomplete";
 import { jinja2Autocomplete } from "../../../utils";
@@ -20,7 +20,7 @@ const Component: FC<ComponentProps> = ({ name, control, trigger }: ComponentProp
       name={name}
       render={({ field, fieldState: { error } }) => 
         <>
-        <CodeMirror
+        <EditorView
           className={error ? "cm-error" : undefined}
           theme={"dark"}
           onChange={(value) => {
@@ -31,7 +31,7 @@ const Component: FC<ComponentProps> = ({ name, control, trigger }: ComponentProp
           value={field.value as string}
           spellCheck={true}
           extensions={[
-            basicSetup(),
+            minimalSetup(),
             langs.jinja2(),
             langs.markdown(),
             autocompletion({
