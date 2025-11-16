@@ -9,6 +9,7 @@ from .database import DatabaseConfig, DatabaseService
 from .deye_api import DeyeConfig, DeyeApiService
 from .telegram import TelegramConfig, TelegramService
 from .authorization import AuthorizationService
+from .visit_counter import VisitCounterService
 
 class Services:
     db: SQLAlchemy
@@ -19,6 +20,7 @@ class Services:
     bot: BotService
     authorization: AuthorizationService
     executor: Executor
+    visit_counter: VisitCounterService
 
     def __init__(
         self,
@@ -29,7 +31,8 @@ class Services:
         database: DatabaseService,
         bot: BotService,
         authorization: AuthorizationService,
-        executor: Executor
+        executor: Executor,
+        visit_counter: VisitCounterService
     ):
         self.db = db
         self.deye_api = deye_api
@@ -39,6 +42,7 @@ class Services:
         self.bot = bot
         self.authorization = authorization
         self.executor = executor
+        self.visit_counter = visit_counter
 
 
 def initialize_services(config: Config):
@@ -78,6 +82,8 @@ def initialize_services(config: Config):
 
     executor = Executor()
 
+    visit_counter = VisitCounterService(db)
+
     return Services(
         db = db,
         deye_api = deye_api,
@@ -86,8 +92,9 @@ def initialize_services(config: Config):
         database = database,
         bot = bot,
         authorization = authorization,
-        executor = executor
+        executor = executor,
+        visit_counter = visit_counter
     )
 
 __all__ = [Services, AuthorizationService, DatabaseService, BotService, DeyeConfig,
-           DeyeApiService, TelegramConfig, TelegramService]
+           DeyeApiService, TelegramConfig, TelegramService, VisitCounterService]

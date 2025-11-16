@@ -11,11 +11,13 @@ from .bot import Bot
 from .base import Base
 from .building import Building
 from .ext_data import ExtData
+from .visit_counter import VisitCounter, DailyVisitCounter
 
 __all__ = [
     AllowedChat, ChatRequest, Bot, Base,
     Building, User, Message, Station,
     StationData, StationStatisticData,
     DeyeStation, DeyeStationData, DeyeStationList,
-    ExtData, DashboardConfig
+    ExtData, DashboardConfig, VisitCounter,
+    DailyVisitCounter
 ]

@@ -39,7 +39,8 @@ import {
   faBattery2,
   faBolt,
   faBattery0,
-  faFileLines
+  faFileLines,
+  faEye
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add([
@@ -85,6 +86,7 @@ library.add([
   faFileLines,
   faUpLong,
   faDownLong,
+  faEye
 ]);
 
 export default library;

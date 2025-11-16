@@ -1,0 +1,19 @@
+.header {
+  height: 56px;
+  margin-bottom: 120px;
+  background-color: var(--mantine-color-body);
+}
+
+.inner {
+  height: 56px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.main {
+  min-height: calc(100vh - var(--app-shell-header-height) - var(--app-shell-footer-height)) !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}

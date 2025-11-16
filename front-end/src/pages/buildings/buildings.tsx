@@ -4,7 +4,7 @@ import {
   Title,
   SimpleGrid,
   Stack,
-  LoadingOverlay
+  LoadingOverlay,
 } from "@mantine/core";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { fetchBuildings } from "../../stores/thunks";
@@ -39,9 +39,9 @@ const Component: FC<ComponentProps> = ({ loadingBuildings, loadingConfig, buildi
   return (
     <>
       <LoadingOverlay visible={loadingBuildings || loadingConfig} />
-      <Container size="xl" px="xl" py={48}>
-        <Stack gap={48}>
-          { dashboardConfig?.title && <Title order={1} ta="center" c="blue">
+      <Container size={"xl"} mih='100%'>
+        <Stack gap={48} justify="space-between">
+          { dashboardConfig?.title && <Title pt='sm' order={1} ta="center" c="blue">
               {dashboardConfig?.title}
             </Title>}
 

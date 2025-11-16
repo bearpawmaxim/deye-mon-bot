@@ -8,3 +8,4 @@ export * from './messages';
 export * from './stations';
 export * from './stationsData';
 export * from './users';
+export * from './visitCounter';
