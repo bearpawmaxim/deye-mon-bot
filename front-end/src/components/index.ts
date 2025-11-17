@@ -9,3 +9,4 @@ export * from './userAvatar';
 export * from './statCard';
 export * from './themePicker';
 export * from './page';
+export * from './iconButton'

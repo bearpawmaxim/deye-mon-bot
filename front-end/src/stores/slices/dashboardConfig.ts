@@ -1,12 +1,14 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { DashboardConfig, DashboardConfigState } from "../types";
 import { KeyValuePair } from "../../types";
-import { fetchDashboardConfig } from "../thunks/dashboardConfig";
+import { fetchDashboardConfig, saveDashboardConfig } from "../thunks/dashboardConfig";
 import { parseBoolean } from "../../utils";
+import { DashboardEditType } from "../../schemas/dashboardEdit";
 
 const initialState: DashboardConfigState = {
   loading: false,
   error: null,
+  changed: false,
 };
 
 const processDashboardConfig = (configs: Array<KeyValuePair>): DashboardConfig => {
@@ -21,22 +23,53 @@ const processDashboardConfig = (configs: Array<KeyValuePair>): DashboardConfig =
 export const dashboardConfigSlice = createSlice({
   name: 'dashboardConfig',
   initialState: initialState,
-  reducers: {},
+  reducers: {
+    startEditingDashboardConfig(state) {
+      state.editingConfig = state.config;
+    },
+    finishEditingDashboardConfig(state, { payload }: PayloadAction<DashboardEditType>) {
+      state.config = payload;
+      delete state.editingConfig;
+      state.changed = true;
+    },
+    cancelEditingDashboardConfig(state) {
+      delete state.editingConfig;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchDashboardConfig.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchDashboardConfig.fulfilled, (state, action: PayloadAction<Array<KeyValuePair>>) => {
-        state.config = processDashboardConfig(action.payload);
+      .addCase(fetchDashboardConfig.fulfilled, (state, { payload }: PayloadAction<Array<KeyValuePair>>) => {
+        state.config = processDashboardConfig(payload);
         state.loading = false;
       })
-      .addCase(fetchDashboardConfig.rejected, (state, action: PayloadAction<unknown>) => {
+      .addCase(fetchDashboardConfig.rejected, (state, { payload }: PayloadAction<unknown>) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = payload as string;
+      });
+    builder
+      .addCase(saveDashboardConfig.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(saveDashboardConfig.fulfilled, (state, { payload }: PayloadAction<Array<KeyValuePair>>) => {
+        state.config = processDashboardConfig(payload);
+        state.loading = false;
+        state.changed = false;
+      })
+      .addCase(saveDashboardConfig.rejected, (state, { payload }: PayloadAction<unknown>) => {
+        state.loading = false;
+        state.error = payload as string;
       });
   },
 });
 
+export const {
+  startEditingDashboardConfig,
+  finishEditingDashboardConfig,
+  cancelEditingDashboardConfig,
+} = dashboardConfigSlice.actions;
 export const dashboardConfigReducer = dashboardConfigSlice.reducer;

@@ -1,53 +1,122 @@
-import { FC, useEffect } from "react";
+import { FC, useCallback, useEffect } from "react";
 import {
   Container,
   Title,
   SimpleGrid,
   Stack,
   LoadingOverlay,
+  ActionIcon,
+  Group,
 } from "@mantine/core";
-import { RootState, useAppDispatch } from "../../stores/store";
-import { fetchBuildings } from "../../stores/thunks";
-import { BuildingCard, PlannedOutages } from "./components";
+import { RootState, useAppDispatch, useAppSelector } from "../../stores/store";
+import { fetchBuildings, fetchDashboardConfig, saveBuildings, saveDashboardConfig } from "../../stores/thunks";
+import { BuildingCard, EditableBuildingCard, openBuildingEditDialog, openDashboardEditDialog, PlannedOutages } from "./components";
 import { BuildingListItem, DashboardConfig } from "../../stores/types";
-import { fetchDashboardConfig } from "../../stores/thunks/dashboardConfig";
 import { connect } from "react-redux";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { IconButton } from "../../components";
+import { PageHeaderButton, useHeaderContent } from "../../providers";
+import { BuildingEditType } from "../../schemas";
+import { createSelectEdittedBuildings } from "../../stores/selectors/buildings";
 
 type ComponentProps = {
   loadingConfig: boolean;
   loadingBuildings: boolean;
   dashboardConfig?: DashboardConfig;
-  buildings: Array<BuildingListItem>;
+  buildings: Array<BuildingListItem | BuildingEditType>;
+  configChanged: boolean;
+  buildingsChanged: boolean;
 };
 
 const mapStateToProps = (state: RootState): ComponentProps => {
   return {
     loadingConfig: state.dashboardConfig.loading,
+    configChanged: state.dashboardConfig.changed,
     dashboardConfig: state.dashboardConfig.config,
     loadingBuildings: state.buildings.loading,
-    buildings: state.buildings.items,
+    buildingsChanged: state.buildings.changed,
+    buildings: createSelectEdittedBuildings(state),
   };
 };
 
-const Component: FC<ComponentProps> = ({ loadingBuildings, loadingConfig, buildings, dashboardConfig }) => {
+const Component: FC<ComponentProps> = ({
+  loadingBuildings,
+  loadingConfig,
+  buildings,
+  dashboardConfig,
+  configChanged,
+  buildingsChanged,
+}) => {
+  const isAuthenticated = useAppSelector(s => s.auth.token !== null);
   const dispatch = useAppDispatch();
-  useEffect(() => {
+
+  const fetchData = useCallback(() => {
     dispatch(fetchBuildings());
     dispatch(fetchDashboardConfig());
   }, [dispatch]);
+
+  const saveData = useCallback(() => {
+    if (configChanged) {
+      dispatch(saveDashboardConfig());
+    }
+    if (buildingsChanged) {
+      dispatch(saveBuildings());
+    }
+  }, [configChanged, buildingsChanged, dispatch]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const getHeaderButtons = useCallback((dataChanged: boolean): PageHeaderButton[] => [
+    { text: 'Save', icon: "save", color: "green", onClick: saveData, disabled: !dataChanged, },
+    { text: 'Cancel', icon: "cancel", color: "black", onClick: fetchData, disabled: !dataChanged, },
+  ], [fetchData, saveData]);
+  const { setHeaderButtons } = useHeaderContent();
+  useEffect(() => {
+    setHeaderButtons(getHeaderButtons(configChanged || buildingsChanged));
+    return () => setHeaderButtons([]);
+  }, [setHeaderButtons, getHeaderButtons, configChanged, buildingsChanged]);  
 
   return (
     <>
       <LoadingOverlay visible={loadingBuildings || loadingConfig} />
       <Container size={"xl"} mih='100%'>
         <Stack gap={48} justify="space-between">
-          { dashboardConfig?.title && <Title pt='sm' order={1} ta="center" c="blue">
-              {dashboardConfig?.title}
-            </Title>}
+          <Group justify="center">
+            <Title pt='sm' order={1} ta="center" c="blue">
+                {dashboardConfig?.title ?? '<no title set>'}
+              </Title>
+            { isAuthenticated && <IconButton
+                icon='edit'
+                color='blue'
+                text='Edit dashboard'
+                onClick={() => openDashboardEditDialog({
+                  dashboardConfig: dashboardConfig ?? {
+                    title: '',
+                    enableOutagesSchedule: false,
+                    outagesScheduleQueue: '',
+                  },
+                  title: 'Edit dashboard',
+                })}
+              /> }
+          </Group>
 
           <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="xl">
-            {buildings.map((building, idx) =>
-              <BuildingCard key={idx} building={building} />)}
+            {buildings.map((building, idx) => isAuthenticated
+                ? <EditableBuildingCard key={idx} building={building as BuildingListItem} />
+                : <BuildingCard key={idx} building={building as BuildingListItem} />
+            )}
+            { isAuthenticated && <Group justify="center" align="center">
+                Add new building
+                <ActionIcon radius={"lg"} size={"lg"}
+                  onClick={() => openBuildingEditDialog({
+                    creating: true,
+                    title: 'Create new building',
+                  })}>
+                  <FontAwesomeIcon icon="plus" size="2x" />
+                </ActionIcon>
+              </Group>}
           </SimpleGrid>
 
           { dashboardConfig?.enableOutagesSchedule && <PlannedOutages 

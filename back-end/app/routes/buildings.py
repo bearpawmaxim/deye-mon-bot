@@ -1,12 +1,13 @@
 from datetime import datetime, timedelta, timezone
-from flask import jsonify
+from flask import jsonify, request
 from app.services import Services
-from app.utils import get_average_discharge_time, get_kilowatthour_consumption
-
+from app.utils import get_average_discharge_time
+from app.utils.jwt_decorators import jwt_required
+from app.models import Building
 
 def register(app, services: Services):
 
-    @app.route('/api/buildings/buildings', methods=['POST'])
+    @app.route('/api/buildings/buildings', methods=['GET'])
     def get_buildings():
         buildings = services.database.get_buildings()
         minutes = 60
@@ -63,13 +64,14 @@ def register(app, services: Services):
 
             return result_dict
 
-        futures = [services.executor.submit(process_building, building) for building in buildings]
-        buildings_dict = [future.result() for future in futures]
+        #futures = [services.executor.submit(process_building, building) for building in buildings]
+        #buildings_dict = [future.result() for future in futures]
+        buildings_dict = [process_building(building) for building in buildings]
 
         return jsonify(buildings_dict)
 
 
-    @app.route('/api/buildings/dashboardConfig', methods=['POST'])
+    @app.route('/api/buildings/dashboardConfig', methods=['GET'])
     def get_dashboard_config():
         configs = services.database.get_dashboard_config()
 
@@ -83,3 +85,63 @@ def register(app, services: Services):
         configs_dict = [future.result() for future in futures]
 
         return jsonify(configs_dict)
+    
+    @app.route('/api/buildings/updateDashboardConfig', methods=['POST'])
+    @jwt_required()
+    def update_dashboard_config():
+        data = request.get_json()
+        if not data or not isinstance(data, list):
+            return jsonify({'error': 'Invalid payload'}), 400
+
+        for item in data:
+            if not isinstance(item, dict):
+                continue
+            key = item.get('key')
+            value = item.get('value')
+            if key is None:
+                continue
+
+            if isinstance(value, bool):
+                value_str = 'true' if value else 'false'
+            else:
+                value_str = '' if value is None else str(value)
+
+            services.database.create_dashboard_config(key, value_str)
+
+        services.db.session.commit()
+        configs = services.database.get_dashboard_config()
+        configs_dict = [{'key': c.key, 'value': c.value} for c in configs]
+        return jsonify(configs_dict)
+    
+    @app.route('/api/buildings/building/<building_id>', methods=['GET'])
+    @jwt_required()
+    def get_building(building_id: int):
+        building = services.database.get_building(building_id)
+        return jsonify({
+            'id': building.id,
+            'name': building.name,
+            'color': building.color,
+            'stationId': building.station_id,
+            'reportUserId': building.report_user_id,
+        })
+    
+    @app.route('/api/buildings/save', methods=['PUT'])
+    @jwt_required()
+    def save_building():
+        building = Building(
+            id=request.json.get("id", None),
+            name=request.json.get("name", ""),
+            color=request.json.get("color", "#FFFFFF"),
+            station_id=request.json.get("stationId", None),
+            report_user_id=request.json.get("reportUserId", None)
+        )
+        building_id = services.database.save_building(building)
+        services.db.session.commit()
+        return jsonify({ 'success': True, 'id': building_id }), 200
+    
+    @app.route('/api/buildings/delete/<building_id>', methods=['DELETE'])
+    @jwt_required()
+    def delete_building(building_id: int):
+        services.database.delete_building(building_id)
+        services.db.session.commit()
+        return jsonify({ 'success': True, 'id': building_id }), 200

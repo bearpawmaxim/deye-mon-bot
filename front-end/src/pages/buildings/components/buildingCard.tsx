@@ -4,7 +4,7 @@ import { StatsCard } from "../../../components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconName } from "@fortawesome/free-solid-svg-icons";
 
-type BuildingCardProps = {
+export type BuildingCardProps = {
   building: BuildingListItem;
 };
 

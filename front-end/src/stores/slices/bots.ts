@@ -62,9 +62,9 @@ export const botsSlice = createSlice({
         state.loading = false;
         state.creating = false;
       })
-      .addCase(fetchBots.rejected, (state, action: PayloadAction<any>) => {
+      .addCase(fetchBots.rejected, (state, action: PayloadAction<unknown>) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload as string;
       });
     builder
       .addCase(saveBots.pending, (state) => {
@@ -75,9 +75,9 @@ export const botsSlice = createSlice({
         state.loading = false;
         state.creating = false;
       })
-      .addCase(saveBots.rejected, (state, action: PayloadAction<any>) => {
+      .addCase(saveBots.rejected, (state, action: PayloadAction<unknown>) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload as string;
       });
   },
 });

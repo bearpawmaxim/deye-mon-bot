@@ -1,3 +1,4 @@
+import { DashboardEditType } from "../../schemas/dashboardEdit";
 import { BaseState } from "./base";
 
 export type DashboardConfig = {
@@ -8,4 +9,6 @@ export type DashboardConfig = {
 
 export type DashboardConfigState = BaseState & {
   config?: DashboardConfig;
+  editingConfig?: DashboardEditType;
+  changed: boolean;
 };

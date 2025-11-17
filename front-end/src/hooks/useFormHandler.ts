@@ -41,6 +41,7 @@ interface UseFormHandlerProps<T extends FieldValues> {
   errorFormatter?: (message: string) => string;
   loading?: boolean;
   formKey: string;
+  useLocationGuard?: boolean;
 };
 
 export type RegisterControlReturn<T> = Omit<UseFormRegisterReturn<Path<T>>, "onChange"> & {
@@ -61,6 +62,8 @@ export const useFormHandler = <T extends FieldValues>({
   loading,
   fields,
   defaultRender,
+  formKey,
+  useLocationGuard = true,
 }: UseFormHandlerProps<T>) => {
   const {
     handleSubmit,
@@ -79,21 +82,15 @@ export const useFormHandler = <T extends FieldValues>({
     criteriaMode: 'all',
   });
 
-  const location = useLocation();
-  const mounted = useRef(false);
-
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const location = useLocationGuard ? useLocation() : { key: formKey };
   useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true;
-    } else {
-      cleanupAction();
-    }
     fetchDataAction();
+
     return () => {
       cleanupAction();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.key]);
+  }, [location?.key]);
 
   const hasReset = useRef(false);
   useEffect(() => {

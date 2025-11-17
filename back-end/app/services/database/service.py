@@ -347,19 +347,88 @@ class DatabaseService:
             self._session.rollback()
             print(f"Error updating bot: {e}")
             return None
-        
+    
     def get_buildings(self):
         query = self._session.query(Building)
         return query.all()
-    
+
+    def get_building(self, building_id: int):
+        return self._session.query(Building).filter_by(id=building_id).first()
+
+    def save_building(self, building: Building):
+        try:
+            existing_building = (
+                self._session
+                .query(Building)
+                .filter_by(id=building.id)
+                .with_for_update()
+                .first()
+            )
+            print(f"Existing building: {existing_building.to_dict() if existing_building else 'None'}")
+            if not existing_building:
+                new_record = Building(
+                    name = building.name,
+                    color = building.color,
+                    station_id = building.station_id,
+                    report_user_id = building.report_user_id,
+                )
+                self._session.add(new_record)
+                self._session.flush()
+                return new_record.id
+            else:
+                existing_building.name = building.name
+                existing_building.color = building.color
+                existing_building.station_id = building.station_id
+                existing_building.report_user_id = building.report_user_id
+                return existing_building.id
+        except Exception as e:
+            self._session.rollback()
+            print(f"Error updating building: {e}")
+            return None
+        
+    def delete_building(self, building_id: int):
+        try:
+            building = self._session.query(Building).filter_by(id=building_id).first()
+            if building:
+                self._session.delete(building)
+                return True
+            return False
+        except Exception as e:
+            self._session.rollback()
+            print(f"Error deleting building: {e}")
+            return False
+
     def get_dashboard_config(self):
         query = self._session.query(DashboardConfig)
         return query.all()
-    
+
+    def create_dashboard_config(self, key: str, value: str):
+        """Insert or update a dashboard config key/value pair.
+
+        Returns the id of the created/updated record or None on error.
+        """
+        try:
+            existing = self._session.query(DashboardConfig).filter_by(key=key).with_for_update().first()
+            if not existing:
+                new_record = DashboardConfig(
+                    key = key,
+                    value = value
+                )
+                self._session.add(new_record)
+                self._session.flush()
+                return new_record.id
+            else:
+                existing.value = value
+                return existing.id
+        except Exception as e:
+            self._session.rollback()
+            print(f"Error creating/updating dashboard config {key}: {e}")
+            return None
+
     def get_users(self, all: bool = False):
         query = self._session.query(User)
         return query.all() if all else query.filter_by(is_active=True).all()
-    
+
     def save_user(self, id: int, name: str, password: str | None, is_active: bool, is_reporter: bool):
         try:
             user = self._session.query(User).filter_by(id=id).with_for_update().first()   
@@ -387,7 +456,7 @@ class DatabaseService:
             self._session.rollback()
             print(f"Error updating user: {e}")
             return None
-    
+
     def delete_user(self, id: int):
         try:
             user = self._session.query(User).filter_by(id=id).first()
