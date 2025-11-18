@@ -7,6 +7,8 @@ services:
         - "5005:80"
       networks:
         - web_network
+      labels:
+        io.hass.type: "addon"
 
    back-end:
       build: back-end/.
@@ -22,6 +24,8 @@ services:
         - "5000"
       networks:
         - web_network
+      labels:
+        io.hass.type: "addon"
 
 networks:
   web_network:
