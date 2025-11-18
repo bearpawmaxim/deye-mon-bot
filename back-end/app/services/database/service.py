@@ -264,7 +264,6 @@ class DatabaseService:
     def get_full_station_data(self, id: int, last_seconds: int):
         try:
             min_date = datetime.now(timezone.utc) - timedelta(seconds=last_seconds)
-            print(min_date)
             stations = (
                 self._session.query(StationData)
                     .join(Station, Station.id == StationData.station_id)
