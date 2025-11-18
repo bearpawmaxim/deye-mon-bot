@@ -40,7 +40,8 @@ import {
   faBolt,
   faBattery0,
   faFileLines,
-  faEye
+  faEye,
+  faSignIn
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add([
@@ -86,7 +87,8 @@ library.add([
   faFileLines,
   faUpLong,
   faDownLong,
-  faEye
+  faEye,
+  faSignIn,
 ]);
 
 export default library;

@@ -1,4 +1,4 @@
-import { RouteObject, RouterProvider, createBrowserRouter } from "react-router-dom";
+import { Navigate, RouteObject, RouterProvider, createBrowserRouter } from "react-router-dom";
 import { ProtectedRoute } from "./protectedRoute";
 import { LoginPage, HomePage, StationsPage, BotsPage,
   ChatsPage, MessagesPage, MessageEditPage, UsersPage, 
@@ -110,11 +110,15 @@ const Routes: FC = () => {
   const routesForNotAuthenticated: RouteObject[] = [
     loginRoute,
     {
-      path: "/public",
+      path: "/",
       element: <PublicLayout>
           <BuildingsPage />
         </PublicLayout>,
     },
+    {
+      path: '*',
+      element: <Navigate to={"/"} />
+    }
   ];
 
   const router = createBrowserRouter([

@@ -1,24 +1,64 @@
-import { FC, ReactNode } from "react";
-import { AppShell, Box, Container, Group, Title } from "@mantine/core";
+import { FC, ReactNode, useEffect, useState } from "react";
+import { Anchor, AppShell, Box, Container, Group, Title, Transition } from "@mantine/core";
 import { ThemePicker } from "../components";
 import classes from './styles/publicLayout.module.css';
 import { VisitTracker } from "./components/visitTracker";
 import { Authors } from "./components/authors";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 type PublicLayoutProps = {
   children: ReactNode;
 };
 
 export const PublicLayout: FC<PublicLayoutProps> = ({ children }) => {
+  const [isAltPressed, setIsAltPressed] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.altKey) {
+      setIsAltPressed(true);
+    }
+  };
+
+  const handleKeyUp = (e: KeyboardEvent) => {
+    if (!e.altKey) {
+      setTimeout(() => setIsAltPressed(false), 4000);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
   return <AppShell
       header={{ height: 60 }}
       layout="default"
       footer={{ height: 42 }}
     >
-      <AppShell.Header>
+      <AppShell.Header
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}>
         <header className={classes.header}>
           <Container size="md" className={classes.inner}>
-            <Title order={2}>Power monitoring</Title>
+            <Group justify="flex-start" align="center">
+              <Title order={2}>Power monitoring</Title>
+              <Transition transition="slide-down" mounted={isHovering && isAltPressed}>
+                {(transitionStyles) => (
+                  <Anchor
+                    style={transitionStyles}
+                    href="/login"
+                  >
+                    <FontAwesomeIcon icon='sign-in'/>
+                    Log in
+                  </Anchor>
+                )}
+              </Transition>
+            </Group>
             <ThemePicker isNavbarCollapsed={false} size="md" />
           </Container>
         </header>
