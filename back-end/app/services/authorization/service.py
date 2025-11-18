@@ -26,8 +26,8 @@ class AuthorizationService():
         return create_access_token(identity=user.name)
     
     def create_reporter_token(self, username: str):
-        return create_access_token(identity=username, additional_claims={"is_reporter": True})
-
+        return create_access_token(identity=username, additional_claims={"is_reporter": True}, expires_delta=False)
+        
     def add_user(self, username: str, password: str):
         hashed_password = self._bcrypt.generate_password_hash(password)
         self._database.create_user(username, hashed_password)
