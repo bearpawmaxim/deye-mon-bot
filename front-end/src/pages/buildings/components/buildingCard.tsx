@@ -35,12 +35,18 @@ export const BuildingCard: FC<BuildingCardProps> = ({ building }) => {
       </span>;
     
   const getOperationText = (building: BuildingListItem) => {
-    if (building.isCharging && building.isDischarging) {
-      return '';
-    } else if (building.isCharging) {
-      return 'Charging, ';
+    const statuses: Array<string> = [];
+    if (building.isCharging) {
+      statuses.push('Charging');
     }
-    return 'Discharging, '
+    if (building.isDischarging) {
+      statuses.push('Discharging');
+    }
+    const joined = statuses.join(', ');
+    if (joined.length > 0) {
+      return joined + ', ';
+    }
+    return joined;
   }
 
   const rows = [];

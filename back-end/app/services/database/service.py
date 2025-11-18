@@ -248,7 +248,8 @@ class DatabaseService:
     def get_last_station_data(self, station_id: int):
         try:
             station_data = (
-                self._session.query(StationData)
+                self._session
+                .query(StationData)
                 .filter(StationData.station_id == station_id)
                 .order_by(StationData.last_update_time.desc())
                 .limit(1)
