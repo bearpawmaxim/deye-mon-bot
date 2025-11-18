@@ -35,10 +35,13 @@ def register(app, services: Services):
         try:
             exp_timestamp = get_jwt()["exp"]
             now = datetime.now(timezone.utc)
-            target_timestamp = datetime.timestamp(now + timedelta(minutes=55))
+            target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
             if target_timestamp > exp_timestamp:
                 access_token = create_access_token(identity=get_jwt_identity())
                 data = response.get_json()
+
+                # TODO: switch to unified API response (success, error, data)
+                # to always have an ability to pass the token
                 if type(data) is dict:
                     data["access_token"] = access_token
                     response.data = json.dumps(data)

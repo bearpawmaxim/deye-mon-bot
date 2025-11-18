@@ -1,5 +1,3 @@
-export * from './buildingCard';
-export * from './buildingEditDialog';
-export * from './editableBuildingCard';
+export * from './buildingsView';
 export * from './dashboardEditDialog';
 export * from './plannedOutages';

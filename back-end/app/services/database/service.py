@@ -499,6 +499,19 @@ class DatabaseService:
         except Exception as e:
             print(f'Error getting ext data: {e}')
             return []
+    
+    def get_latest_ext_data_by_user_id(self, user_id: int):
+        try:
+            return (
+                self._session
+                .query(ExtData)
+                .filter_by(user_id=user_id)
+                .order_by(ExtData.received_at.desc())
+                .first()
+            )
+        except Exception as e:
+            print(f'Error getting latest ext data by user id: {e}')
+            return []
 
     def update_ext_data_grid_state(self, user: str, grid_state: bool):
         try:

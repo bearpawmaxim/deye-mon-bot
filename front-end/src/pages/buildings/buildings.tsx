@@ -2,18 +2,14 @@ import { FC, useCallback, useEffect } from "react";
 import {
   Container,
   Title,
-  SimpleGrid,
   Stack,
-  LoadingOverlay,
-  ActionIcon,
   Group,
 } from "@mantine/core";
 import { RootState, useAppDispatch, useAppSelector } from "../../stores/store";
 import { fetchBuildings, fetchDashboardConfig, saveBuildings, saveDashboardConfig } from "../../stores/thunks";
-import { BuildingCard, EditableBuildingCard, openBuildingEditDialog, openDashboardEditDialog, PlannedOutages } from "./components";
+import { BuildingsView, openDashboardEditDialog, PlannedOutages } from "./components";
 import { BuildingListItem, DashboardConfig } from "../../stores/types";
 import { connect } from "react-redux";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconButton } from "../../components";
 import { PageHeaderButton, useHeaderContent } from "../../providers";
 import { BuildingEditType } from "../../schemas";
@@ -76,50 +72,42 @@ const Component: FC<ComponentProps> = ({
   useEffect(() => {
     setHeaderButtons(getHeaderButtons(configChanged || buildingsChanged));
     return () => setHeaderButtons([]);
-  }, [setHeaderButtons, getHeaderButtons, configChanged, buildingsChanged]);  
+  }, [setHeaderButtons, getHeaderButtons, configChanged, buildingsChanged]);
+
+  const onEditDashboardClick = useCallback(() => {
+    openDashboardEditDialog({
+      dashboardConfig: dashboardConfig ?? {
+        title: '',
+        enableOutagesSchedule: false,
+        outagesScheduleQueue: '',
+      },
+      title: 'Edit dashboard',
+    });
+  }, [dashboardConfig]);
 
   return (
     <>
-      <LoadingOverlay visible={loadingBuildings || loadingConfig} />
       <Container size={"xl"} mih='100%'>
         <Stack gap={48} justify="space-between">
           <Group justify="center">
-            <Title pt='sm' order={1} ta="center" c="blue">
+            { !loadingConfig && <Title pt='sm' order={1} ta="center" c="blue">
                 {dashboardConfig?.title ?? '<no title set>'}
-              </Title>
+              </Title> }
             { isAuthenticated && <IconButton
                 icon='edit'
                 color='blue'
                 text='Edit dashboard'
-                onClick={() => openDashboardEditDialog({
-                  dashboardConfig: dashboardConfig ?? {
-                    title: '',
-                    enableOutagesSchedule: false,
-                    outagesScheduleQueue: '',
-                  },
-                  title: 'Edit dashboard',
-                })}
+                onClick={onEditDashboardClick}
               /> }
           </Group>
 
-          <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="xl">
-            {buildings.map((building, idx) => isAuthenticated
-                ? <EditableBuildingCard key={idx} building={building as BuildingListItem} />
-                : <BuildingCard key={idx} building={building as BuildingListItem} />
-            )}
-            { isAuthenticated && <Group justify="center" align="center">
-                Add new building
-                <ActionIcon radius={"lg"} size={"lg"}
-                  onClick={() => openBuildingEditDialog({
-                    creating: true,
-                    title: 'Create new building',
-                  })}>
-                  <FontAwesomeIcon icon="plus" size="2x" />
-                </ActionIcon>
-              </Group>}
-          </SimpleGrid>
+          <BuildingsView
+            loading={loadingBuildings}
+            isAuthenticated={isAuthenticated}
+            buildings={buildings}
+          />
 
-          { dashboardConfig?.enableOutagesSchedule && <PlannedOutages 
+          { dashboardConfig?.enableOutagesSchedule && <PlannedOutages
               outageQueue={dashboardConfig.outagesScheduleQueue}
             /> }
         </Stack>

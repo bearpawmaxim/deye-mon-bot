@@ -10,7 +10,7 @@ def register(app, services: Services):
     @app.route('/api/buildings/buildings', methods=['GET'])
     def get_buildings():
         buildings = services.database.get_buildings()
-        minutes = 60
+        minutes = 25
 
         def process_building(building):
             result_dict = {
@@ -18,6 +18,11 @@ def register(app, services: Services):
                 'name': building.name,
                 'color': building.color
             }
+
+            ext_data = services.database.get_latest_ext_data_by_user_id(building.report_user_id)
+            if ext_data is not None:
+                result_dict['isGridAvailable'] = ext_data.grid_state
+
             if building.station is not None:
                 station_id = building.station_id
                 station_data = services.database.get_last_station_data(station_id)
@@ -61,11 +66,8 @@ def register(app, services: Services):
                         average_consumption_w = 0
 
                     result_dict['consumptionPower'] = f"{(average_consumption_w / 1000):.2f}"
-
             return result_dict
 
-        #futures = [services.executor.submit(process_building, building) for building in buildings]
-        #buildings_dict = [future.result() for future in futures]
         buildings_dict = [process_building(building) for building in buildings]
 
         return jsonify(buildings_dict)
