@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react"
+import { FC, useEffect } from "react"
 import { StationDataItem } from "../../stores/types";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { StationChartCard } from "./components";
@@ -6,6 +6,7 @@ import { connect } from "react-redux";
 import { fetchStationsData } from "../../stores/thunks";
 import { ErrorMessage } from "../../components";
 import { ComboboxItem, Select, SimpleGrid } from "@mantine/core";
+import useLocalStorage from "../../hooks/useLocalStorage";
 
 type ComponentProps = {
   stationsData: Array<StationDataItem>;
@@ -52,7 +53,7 @@ const intervalOptions: ComboboxItem[] = [
 
 const Component: FC<ComponentProps> = ({ stationsData, loading, error }) => {
   const dispatch = useAppDispatch();
-  const [dataInterval, setDataInterval] = useState('1800');
+  const [dataInterval, setDataInterval] = useLocalStorage('home_graphs_interval', '1800');
 
   useEffect(() => {
     dispatch(fetchStationsData(parseInt(dataInterval)));
