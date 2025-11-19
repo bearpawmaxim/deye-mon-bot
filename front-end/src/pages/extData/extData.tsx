@@ -136,13 +136,6 @@ const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
             accessorKey: 'received_at',
             enableSorting: true,
             enableColumnFilter: true,
-            cell: ({ row }) => {
-              const receivedAt = row.original.received_at;
-              if (!receivedAt) return '-';
-              
-              const date = new Date(receivedAt);
-              return date.toUTCString();
-            },
             meta: {
               dataType: ColumnDataType.DateTime,
               filterOptions: {

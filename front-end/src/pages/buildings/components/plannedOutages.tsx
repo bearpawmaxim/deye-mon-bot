@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ActionIcon, Alert, Badge, Box, Card, Group, Loader, SimpleGrid, Stack, Text, Title, useMantineColorScheme } from "@mantine/core";
 import { FC, useCallback, useEffect, useState } from "react";
+import { toLocalDateTime } from "../../../utils";
 
 
 type TimeSlot = {
@@ -133,18 +134,6 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue }) => {
     return () => clearInterval(interval);
   }, [loadData]);
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleString("uk-UA", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
   if (loading) {
     return (
       <Box ta="center" py="xl">
@@ -206,7 +195,7 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue }) => {
       return (
         <Box ta="center" py="md">
           <Text size="sm" c="dimmed">
-            No outages
+            No outages or not published yet in YASNO 🤷
           </Text>
         </Box>
       );
@@ -313,7 +302,7 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue }) => {
       {/* Updated On */}
       {outageData?.updatedOn && (
         <Text size="xs" c="dimmed" ta="center">
-          Last updated: {formatDate(outageData.updatedOn)}
+          Last updated: {toLocalDateTime(outageData.updatedOn)}
         </Text>
       )}
     </Stack>

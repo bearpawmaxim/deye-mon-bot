@@ -68,3 +68,24 @@ export const fromDateRange = (range: DateOrDateRange): string | null => {
 
   return `${format(start)}, ${format(end)}`;
 };
+
+export const toLocalDateTime = (date: Date | string | null | undefined, ms: boolean = false): string => {
+  if (!date) return "";
+  
+  const dateObject = typeof date === "string" 
+    ? dayjs.utc(date).local() 
+    : dayjs(date);
+  
+  const formatStr = ms ? "DD.MM.YYYY HH:mm:ss.SSS" : "DD.MM.YYYY HH:mm:ss";
+  return dateObject.isValid() ? dateObject.format(formatStr) : "";
+};
+
+export const toLocalDate = (date: Date | string | null | undefined): string => {
+  if (!date) return "";
+  
+  const dateObject = typeof date === "string" 
+    ? dayjs.utc(date).local() 
+    : dayjs(date);
+  
+  return dateObject.isValid() ? dateObject.format("DD.MM.YYYY") : "";
+};
