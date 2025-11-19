@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useState } from "react"
+import { FC, useCallback, useEffect, useRef, useState } from "react"
 import { connect } from "react-redux";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { cancelUsersEditing, deleteUser, deleteUserToken, fetchUsers, generateUserToken, saveUsers } from "../../stores/thunks";
@@ -40,7 +40,6 @@ const mapStateToProps = (state: RootState): ComponentProps => ({
 
 const Component: FC<ComponentProps> = ({ users, loading, error, changed }: ComponentProps) => {
   const dispatch = useAppDispatch();
-  const [initiallyChanged, setInitiallyChanged] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
   const [tokenModalOpened, { open: openTokenModal, close: closeTokenModal }] = useDisclosure(false);
   const [integrationModalOpened, { open: openIntegrationModal, close: closeIntegrationModal }] = useDisclosure(false);
@@ -150,10 +149,21 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
   ], [openCreateDialog, dispatch]);
 
   const { setHeaderButtons, updateButtonAttributes } = useHeaderContent();
+  const updateButtonAttributesRef = useRef(updateButtonAttributes);
+  
+  useEffect(() => {
+    updateButtonAttributesRef.current = updateButtonAttributes;
+  });
+
   useEffect(() => {
     setHeaderButtons(getHeaderButtons(false));
     return () => setHeaderButtons([]);
   }, [setHeaderButtons, getHeaderButtons]);
+
+  useEffect(() => {
+    updateButtonAttributesRef.current(1, { disabled: !changed });
+    updateButtonAttributesRef.current(2, { disabled: !changed });
+  }, [changed]);
 
   if (error) {
     return <ErrorMessage content={error}/>;
@@ -166,14 +176,6 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
   const onUserReporterChange = (id: number, isReporter: boolean) => {
     dispatch(updateUser({ id, isReporter }));
   };
-
-  if (changed != initiallyChanged) {
-    setInitiallyChanged(!initiallyChanged);
-    setTimeout(() => {
-      updateButtonAttributes(1, { disabled: !changed });
-      updateButtonAttributes(2, { disabled: !changed });
-    }, 1);
-  }
 
   return <>
     <Page loading={loading}>

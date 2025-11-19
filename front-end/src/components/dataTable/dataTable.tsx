@@ -10,6 +10,7 @@ import { ActionsCell, BooleanCell } from "./cell";
 import useLocalStorage from "../../hooks/useLocalStorage";
 import { ColumnDataType } from "../../types";
 import { FilterCell } from "./filterCell";
+import { toLocalDateTime } from "../../utils";
 
 export type DataTableColumnDef<T, TValue> = ColumnDef<T, TValue> & {
   meta?: TypedColumnMeta<T, TValue>;
@@ -105,6 +106,9 @@ export const DataTable = <T,>({
           checkedChange={meta.checkedChange}
         />
       </Group>;
+    } else if (columnDef.meta?.dataType === ColumnDataType.DateTime) {
+      const value = cell.getValue();
+      return toLocalDateTime(value as string | Date) || '-';
     }
     return flexRender(columnDef.cell, cell.getContext());
   };
