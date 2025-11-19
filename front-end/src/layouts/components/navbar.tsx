@@ -1,16 +1,18 @@
 import { FC, forwardRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Flex, Grid, Group, rem, Stack , Switch, Text, Tooltip } from "@mantine/core";
+import { Button, Divider, Flex, Grid, Group, rem, Stack , Switch, Text, Tooltip } from "@mantine/core";
 import classes from "./styles/navbar.module.css"
 import { MenuItem, RootRoutes } from "../../routes";
-import { ThemePicker } from "../../components";
+import { ThemePicker, UserAvatar } from "../../components";
+import { UserData } from "../../stores/types";
 
 type MenuRowProps = {
   route: MenuItem;
   isNavbarCollapsed: boolean;
   closeMenu?: () => void;
 };
+
 const MenuRow: FC<MenuRowProps> = ({ route, isNavbarCollapsed, closeMenu }) => {
   const location = useLocation();
   const isActive = location.pathname === route.path;
@@ -75,12 +77,15 @@ const NavbarSwitch: FC<{ isNavbarCollapsed: boolean, toggleNavbar: () => void}> 
   };
 
 type NavbarProps = {
+  user?: UserData;
   isNavbarCollapsed: boolean;
   toggleNavbar: () => void;
   closeMenu?: () => void;
+  onProfileClick: () => void;
+  onLogoutClick: () => void;
 };
 
-export const Navbar: FC<NavbarProps> = ({ isNavbarCollapsed, toggleNavbar, closeMenu }) => {
+export const Navbar: FC<NavbarProps> = ({ user, isNavbarCollapsed, toggleNavbar, closeMenu, onProfileClick, onLogoutClick }) => {
   return (
       <Stack
         w="100%"
@@ -125,26 +130,56 @@ export const Navbar: FC<NavbarProps> = ({ isNavbarCollapsed, toggleNavbar, close
             <Text className={classes.navTitle} fz={12} fw={500} tt="uppercase">
               {isNavbarCollapsed ? "NAV" : "Navigation"}
             </Text>
-              <Group gap={0}>
-                {
-                  RootRoutes.map((route: MenuItem, i) => {
-                    if (route.skipForMenu) {
-                      return;
-                    }
-                    return <MenuRow
-                      key={`menu_${i}`}
-                      route={route}
-                      isNavbarCollapsed={isNavbarCollapsed}
-                      closeMenu={closeMenu}
-                      />
-                  })
+            <Group gap={0}>
+              { RootRoutes.map((route: MenuItem, i) => {
+                if (route.skipForMenu) {
+                  return;
                 }
-              </Group>
-
+                return <MenuRow
+                  key={`menu_${i}`}
+                  route={route}
+                  isNavbarCollapsed={isNavbarCollapsed}
+                  closeMenu={closeMenu}
+                  />
+              })}
+            </Group>
           </Flex>
         </Flex>
-        
+
         <Stack justify="flex-end">
+          <Divider hiddenFrom="sm" />
+          <Group justify="space-evenly" hiddenFrom="sm">
+            <UserAvatar userName={user?.name ?? ''} />
+            <Flex direction="column" align="start">
+              <Text
+                className={classes.profileName}
+                fz={13}
+                lh={1}
+                fw={500}
+                lts={-0.3}
+              >
+                {user?.name}
+              </Text>
+            </Flex>
+            <Divider orientation="vertical" />
+            <Button
+              variant="outline"
+              disabled
+              onClick={onProfileClick}
+            >
+              <FontAwesomeIcon icon="user-md" />
+              Profile
+            </Button>
+            <Divider orientation="vertical" />
+            <Button
+              variant="outline"
+              onClick={onLogoutClick}
+            >
+              <FontAwesomeIcon icon="sign-out" />
+              Log out
+            </Button>
+          </Group>
+          <Divider hiddenFrom="sm"/>
           <ThemePicker isNavbarCollapsed={isNavbarCollapsed} />
         </Stack>
 

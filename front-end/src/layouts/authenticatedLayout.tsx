@@ -1,31 +1,44 @@
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { FC, Suspense, useCallback, useEffect } from "react";
 import { RootRoutes } from "../routes";
 import { useHeaderContent } from "../providers";
-import { RootState } from "../stores/store";
-import { createSelector } from "@reduxjs/toolkit";
-import { useSelector } from "react-redux";
+import { RootState, useAppDispatch } from "../stores/store";
+import { connect } from "react-redux";
 import { AppShell } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import classes from './styles/authenticatedLayout.module.css';
 import { Header } from "./components/header";
 import { Navbar } from "./components/navbar";
 import useLocalStorage from "../hooks/useLocalStorage";
+import { UserData } from "../stores/types";
+import { fetchUser, logout } from "../stores/thunks";
 
-const selectProfileAndToken = createSelector(
-  (state: RootState) => state.auth.token,
-  (token) => ({ token })
-);
+type ComponentProps = {
+  token: string | null;
+  user: UserData;
+};
 
-export const AuthenticatedLayout: FC = () => {
+const mapStateToProps = (state: RootState): ComponentProps => ({
+  token: state.auth.token,
+  user: state.auth.user!,
+});
+
+const Component: FC<ComponentProps> = ({ token, user }) => {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch()
+
+  useEffect(() => {
+    if (!user) {
+      dispatch(fetchUser());
+    };
+  }, [user, dispatch]);
+
   const [opened, { toggle, close }] = useDisclosure();
 
   const { headerButtons, headerText } = useHeaderContent();
 
   const location = useLocation();
   const caption = headerText ? headerText : RootRoutes.find(f => f.path === location.pathname)?.name;
-
-  const { token } = useSelector(selectProfileAndToken);
 
   const [ isNavbarCollapsed, setNavbarCollapsed ] = useLocalStorage('dmb-nv-collapsed', false);
   const toggleNavbar = useCallback(() => {
@@ -46,6 +59,14 @@ export const AuthenticatedLayout: FC = () => {
     }
   }, [isNavbarCollapsed, opened]);
 
+  const onLogoutClick = () => {
+    dispatch(logout());
+  };
+
+  const onProfileEditClick = () => {
+    navigate('/profile');
+  };
+
   return (
     <AppShell
       classNames={{
@@ -63,10 +84,25 @@ export const AuthenticatedLayout: FC = () => {
       transitionTimingFunction="step-start"
     >
       <AppShell.Header ms={0}>
-        <Header opened={opened} toggle={toggle} caption={caption!} buttons={headerButtons}/>
+        <Header
+          user={user}
+          opened={opened}
+          toggle={toggle}
+          caption={caption!}
+          buttons={headerButtons}
+          onProfileClick={onProfileEditClick}
+          onLogoutClick={onLogoutClick}
+        />
       </AppShell.Header>
       <AppShell.Navbar data-collpased={isNavbarCollapsed}>
-        <Navbar isNavbarCollapsed={isNavbarCollapsed} toggleNavbar={toggleNavbar} closeMenu={close}/>
+        <Navbar
+          user={user}
+          isNavbarCollapsed={isNavbarCollapsed}
+          toggleNavbar={toggleNavbar}
+          closeMenu={close}
+          onProfileClick={onProfileEditClick}
+          onLogoutClick={onLogoutClick}
+        />
       </AppShell.Navbar>
       <AppShell.Main>
         <Suspense>
@@ -76,3 +112,5 @@ export const AuthenticatedLayout: FC = () => {
     </AppShell>
   );
 };
+
+export const AuthenticatedLayout = connect(mapStateToProps)(Component);
