@@ -40,8 +40,7 @@ def register(app, services: Services):
                 'enabled': message.enabled,
             }
 
-        futures = [services.executor.submit(process_message, message) for message in messages]
-        messages_dict = [future.result() for future in futures]
+        messages_dict = [process_message(message) for message in messages]
 
         return jsonify(messages_dict)
 
@@ -104,6 +103,15 @@ def register(app, services: Services):
                 'success': False,
                 'error': str(e)
             })
+
+    @app.route('/api/messages/saveState', methods=['PATCH'])
+    @jwt_required()
+    def save_message_state():
+        id = request.json.get("id", None)
+        enabled = request.json.get("enabled", False)
+        services.database.save_message_state(id, enabled)
+        services.db.session.commit()
+        return jsonify({ 'success': True, 'id': id }), 200
 
     @app.route('/api/messages/save', methods=['PATCH'])
     @jwt_required()

@@ -13,7 +13,7 @@ import { connect } from "react-redux";
 import { IconButton } from "../../components";
 import { PageHeaderButton, useHeaderContent } from "../../providers";
 import { BuildingEditType } from "../../schemas";
-import { createSelectEdittedBuildings } from "../../stores/selectors/buildings";
+import { createSelectEdittedBuildings } from "../../stores/selectors";
 
 type ComponentProps = {
   loadingConfig: boolean;

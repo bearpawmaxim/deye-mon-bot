@@ -5,6 +5,7 @@ import { RootState } from "../store";
 import apiClient from "../../utils/apiClient";
 import { MessageType } from "../../schemas";
 import { getErrorMessage } from "../../utils";
+import { messageStateSaved } from "../slices";
 
 export const fetchMessages = createAsyncThunk('messages/fetchMessages', async (_, thunkAPI) => {
   try {
@@ -86,5 +87,24 @@ export const saveMessage = createAsyncThunk('messages/saveMessage', async (_,
     return fulfillWithValue(response.data.id);
   } catch (error: unknown) {
     return rejectWithValue(getErrorMessage(error) || 'Failed to save message');
+  }
+});
+
+export const saveMessageStates = createAsyncThunk('messages/saveMessageStates', async (_, { getState, dispatch }) => {
+  try {
+    const state = getState() as RootState;
+    const messagesState = state.messages;
+    const promises = messagesState.messages.filter(s => s.changed).map(async message => {
+      const serverDto = {
+        id: message.id,
+        enabled: message.enabled,
+      } as ServerMessageListItem;
+      const response = await apiClient.patch<BaseSaveDataResponse>('/messages/saveState', serverDto);
+      dispatch(messageStateSaved(response.data.id));
+    });
+    await Promise.all(promises);
+    dispatch(fetchMessages());
+  } catch (error: unknown) {
+    console.error(error);
   }
 });

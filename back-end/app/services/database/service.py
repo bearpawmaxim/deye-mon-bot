@@ -24,6 +24,20 @@ class DatabaseService:
             print(f"Error fetching message id={message_id}: {e}")
             return []
 
+    def save_message_state(self, id: int, enabled: bool):
+        try:
+            message = self._session.query(Message).filter_by(id=id).with_for_update().first()   
+            if not message:
+                return None
+            else:
+                message.enabled = enabled
+                return message.id
+        except Exception as e:
+            self._session.rollback()
+            print(f"Error updating station: {e}")
+            return None
+        pass
+
     def save_message(self, message: Message):
         try:
             existing_message = self._session.query(Message).filter_by(id=message.id).with_for_update().first()   

@@ -1,51 +1,91 @@
-import { FC, useCallback, useEffect } from "react"
+import { FC, useCallback, useEffect, useState } from "react"
 import { connect } from "react-redux";
 import { RootState, useAppDispatch } from "../../stores/store";
-import { fetchMessages } from "../../stores/thunks";
+import { fetchMessages, saveMessageStates } from "../../stores/thunks";
 import { ServerMessageListItem } from "../../stores/types";
 import { useNavigate } from "react-router-dom";
 import { PageHeaderButton, useHeaderContent } from "../../providers";
 import { DataTable, ErrorMessage, Page } from "../../components";
 import { ColumnDataType } from "../../types";
+import { selectMessagesChanged } from "../../stores/selectors";
+import { updateMessageState } from "../../stores/slices";
+import { modals } from "@mantine/modals";
 
 type ComponentProps = {
   messages: Array<ServerMessageListItem>;
+  dataChanged: boolean;
   loading: boolean;
   error: string | null;
 };
 
 const mapStateToProps = (state: RootState): ComponentProps => ({
   messages: state.messages.messages,
+  dataChanged: selectMessagesChanged(state),
   loading: state.messages.loading,
   error: state.messages.error,
 });
 
-const Component: FC<ComponentProps> = ({ messages, loading, error }: ComponentProps) => {
+const Component: FC<ComponentProps> = ({ messages, loading, error, dataChanged }: ComponentProps) => {
+  const [initiallyChanged, setInitiallyChanged] = useState(false);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  
+  const showUnsavedChangesModal = (confirmAction: () => void) => {
+      modals.openConfirmModal({
+        title: 'Unsaved changes',
+        children: `The page contains unsaved changes, which would be lost. Are you sure?`,
+        labels: { confirm: 'Yes', cancel: 'No' },
+        confirmProps: { color: 'red' },
+        onConfirm: confirmAction
+      });
+  };
 
   const onCreateClick = useCallback(() => {
-    navigate(`/messages/create`);
-  }, [navigate]);
+    const create = () => navigate(`/messages/create`);
+    if (dataChanged) {
+      showUnsavedChangesModal(create)
+      return;
+    }
+    create();
+  }, [dataChanged, navigate]);
 
   const onEditClick = (messageId: number) => {
-    navigate(`/messages/edit/${messageId}`);
+    const edit = () => navigate(`/messages/edit/${messageId}`);
+    if (dataChanged) {
+      showUnsavedChangesModal(edit);
+    } else {
+      navigate(`/messages/edit/${messageId}`);
+    }
   };
+
+  const fetchData = useCallback(() => dispatch(fetchMessages()), [dispatch]);
 
   const getHeaderButtons = useCallback((): PageHeaderButton[] => [
     { text: 'Create', icon: "add", color: "teal", onClick: () => onCreateClick(), disabled: false, },
-  ], [onCreateClick]);
-  const { setHeaderButtons } = useHeaderContent();
+    { text: 'Save', icon: "save", color: "green", onClick: () => dispatch(saveMessageStates()), disabled: !dataChanged, },
+    { text: 'Cancel', icon: "cancel", color: "black", onClick: fetchData, disabled: !dataChanged, },
+  ], [dataChanged, dispatch, fetchData, onCreateClick]);
+  const { setHeaderButtons, updateButtonAttributes } = useHeaderContent();
   useEffect(() => {
     setHeaderButtons(getHeaderButtons());
     return () => setHeaderButtons([]);
   }, [setHeaderButtons, getHeaderButtons]);  
 
-  const fetchData = useCallback(() => dispatch(fetchMessages()), [dispatch]);
-    
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  if (dataChanged != initiallyChanged) {
+    setInitiallyChanged(!initiallyChanged);
+    setTimeout(() => {
+      updateButtonAttributes(1, { disabled: !dataChanged });
+      updateButtonAttributes(2, { disabled: !dataChanged });
+    }, 1);
+  }
+
+  const onMessageEnableChange = (id: number, enabled: boolean) => {
+    dispatch(updateMessageState({ id, enabled }));
+  };
 
   if (error) {
     return <ErrorMessage content={error} />;
@@ -96,6 +136,8 @@ const Component: FC<ComponentProps> = ({ messages, loading, error }: ComponentPr
           enableSorting: true,
           meta: {
             dataType: ColumnDataType.Boolean,
+            readOnly: false,
+            checkedChange: (row, state) => onMessageEnableChange(row.id!, state),
           },
         },
         {

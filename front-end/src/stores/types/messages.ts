@@ -23,7 +23,9 @@ type MessageDetailsItem = {
   botName: string;
 };
 
-export type ServerMessageListItem = BaseServerMessageListItem & MessageDetailsItem;
+export type ServerMessageListItem = BaseServerMessageListItem & MessageDetailsItem & {
+  changed: boolean;
+};
 
 export type ServerMessageItem = BaseServerMessageItem & MessageDetailsItem;
 

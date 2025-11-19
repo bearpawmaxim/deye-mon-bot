@@ -15,13 +15,29 @@ const initialState: MessagesState = {
 
 export type UpdateMessageActionPayload = {
   id: number;
-  enabled?: boolean;
+  enabled: boolean;
 };
 
 export const messagesSlice = createSlice({
     name: 'messages',
     initialState: initialState,
     reducers: {
+      updateMessageState(state, { payload }: PayloadAction<UpdateMessageActionPayload>) {
+        const message = state.messages.find(s => s.id === payload.id);
+        if (!message) {
+          return;
+        }
+        if (message.enabled !== payload.enabled) {
+          message.enabled = payload.enabled;
+          message.changed = true;
+        }
+      },
+      messageStateSaved(state, { payload: stationId }: PayloadAction<number>) {
+        const station = state.messages.find(s => s.id === stationId);
+        if (station) {
+          station.changed = false;
+        }
+      },
       updateMessage(state, { payload }: PayloadAction<MessageType>) {
         state.editingMessage = payload;
         state.changed = true;
@@ -114,5 +130,11 @@ export const messagesSlice = createSlice({
     },
   });
   
-  export const { updateMessage, createMessage, finishEditingMessage } = messagesSlice.actions;
+  export const {
+    updateMessage,
+    createMessage,
+    finishEditingMessage,
+    updateMessageState,
+    messageStateSaved,
+  } = messagesSlice.actions;
   export const messagesReducer = messagesSlice.reducer;
