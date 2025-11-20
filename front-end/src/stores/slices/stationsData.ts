@@ -9,7 +9,7 @@ const initialState: StationsDataState = {
 };
 
 export const stationsDataSlice = createSlice({
-    name: 'stations',
+    name: 'stationData',
     initialState: initialState,
     reducers: {
     },
@@ -23,9 +23,9 @@ export const stationsDataSlice = createSlice({
           state.stationsData = action.payload.map(channel => ({ ...channel, changed: false}));
           state.loading = false;
         })
-        .addCase(fetchStationsData.rejected, (state, action: PayloadAction<any>) => {
+        .addCase(fetchStationsData.rejected, (state, action: PayloadAction<unknown>) => {
           state.loading = false;
-          state.error = action.payload;
+          state.error = action.payload as string;
         });
     },
   });

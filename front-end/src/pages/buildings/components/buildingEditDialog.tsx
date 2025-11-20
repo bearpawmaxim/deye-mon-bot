@@ -1,6 +1,6 @@
 import { FC, useEffect } from "react";
 import { modals } from "@mantine/modals";
-import { Button, ColorInput, ComboboxItem, Group, parseThemeColor, Select, Stack, TextInput, useMantineColorScheme, useMantineTheme } from "@mantine/core";
+import { Button, ColorInput, ComboboxItem, Group, Loader, parseThemeColor, Select, Stack, TextInput, useMantineColorScheme, useMantineTheme } from "@mantine/core";
 import { useFormHandler } from "../../../hooks";
 import { RootState, useAppDispatch } from "../../../stores/store";
 import { buildingEditSchema, BuildingEditType } from "../../../schemas";
@@ -23,13 +23,15 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
     loading: boolean;
     buildingId?: number;
     users: Array<ComboboxItem>;
+    usersLoading: boolean;
     stations: Array<ComboboxItem>;
+    stationsLoading: boolean;
   };
 
   const selectUsers = (state: RootState): Array<ServerUserItem> =>
     state.users.users ?? [];
 
-  const selectUserOptions = () => createSelector(
+  const selectUserOptions = createSelector(
     [selectUsers],
     (users) => users.filter(u => u.isReporter).map((user) => ({
       value: user.id!.toString(),
@@ -40,7 +42,7 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
   const selectStations = (state: RootState): Array<StationItem> =>
     state.stations.stations ?? [];
 
-  const selectStationOptions = () => createSelector(
+  const selectStationOptions = createSelector(
     [selectStations],
     (stations) => stations.map((station) => ({
       value: station.id!.toString(),
@@ -52,11 +54,13 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
     buildingId: buildingId,
     building: state.buildings.editingItem!,
     loading: state.buildings.loading,
-    users: selectUserOptions()(state),
-    stations: selectStationOptions()(state),
+    users: selectUserOptions(state),
+    usersLoading: state.users.loading,
+    stations: selectStationOptions(state),
+    stationsLoading: state.stations.loading,
   });
 
-  const Inner: FC<InnerProps> = ({ building, loading, stations, users, buildingId }) => {
+  const Inner: FC<InnerProps> = ({ building, loading, stations, stationsLoading, users, usersLoading, buildingId }) => {
     const dispatch = useAppDispatch();
 
     const theme = useMantineTheme();
@@ -95,7 +99,7 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
       formKey: "dashboard-edit-form",
       isEdit: true,
       initialData: building,
-      loading: loading,
+      loading: loading || usersLoading || stationsLoading,
       useLocationGuard: false,
       defaultRender: (name, title, context) => {
         return <TextInput
@@ -125,9 +129,6 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
               swatches={[
                 ...Object.values(theme.colors).flat(),
               ]}
-              styles={{
-                
-              }}
               swatchesPerRow={15}
               {...context.helpers.registerControl('color')}
               value={color}
@@ -151,6 +152,7 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
                   allowDeselect={false}
                   data={stations}
                   {...field}
+                  leftSection={stationsLoading ? <Loader size="xs" /> : null}
                   label={context.title}
                   value={field.value?.toString() ?? ''}
                   error={context.helpers.getFieldError('stationId')}
@@ -174,6 +176,7 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
                   allowDeselect={false}
                   data={users}
                   {...field}
+                  rightSection={usersLoading ? <Loader size="xs" /> : null}
                   label={context.title}
                   value={field.value?.toString() ?? ''}
                   error={context.helpers.getFieldError('reportUserId')}

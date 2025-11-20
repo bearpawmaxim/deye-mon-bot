@@ -8,7 +8,7 @@ import { BotItem, ServerStationItem } from "../../stores/types";
 import { connect } from "react-redux";
 import { createSelector } from "@reduxjs/toolkit";
 import { FormPage, FormSubmitButtons } from "../../components";
-import { ActionIcon, Badge, ComboboxItem, Divider, Select, SimpleGrid, Switch, Tabs, TextInput, Title, Button } from "@mantine/core";
+import { ActionIcon, Badge, ComboboxItem, Divider, Select, SimpleGrid, Switch, Tabs, TextInput, Title, Button, Loader } from "@mantine/core";
 import { useFormHandler } from "../../hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { messageSchema, MessageType } from "../../schemas";
@@ -24,6 +24,7 @@ type ComponentProps = {
   stations: ServerStationItem[];
   message?: MessageType;
   loading: boolean;
+  stationsLoading: boolean;
   isEdit: boolean;
 };
 
@@ -41,10 +42,11 @@ const mapStateToProps = (state: RootState, ownProps: ComponentOwnProps): Compone
   stations: state.stations.stations,
   message: state.messages.editingMessage,
   loading: selectLoading(state),
+  stationsLoading: state.stations.loading,
   isEdit: ownProps.isEdit
 });
 
-const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loading }: ComponentProps) => {
+const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loading, stationsLoading }: ComponentProps) => {
   const dispatch = useAppDispatch();
   const { messageId } = useParams();
   const messageIdInt = parseInt(messageId!);
@@ -107,7 +109,7 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loadin
     fetchDataAction: editOrCreateMessage,
     saveAction: handleSave,
     validationSchema: messageSchema,
-    loading: loading,
+    loading: loading || stationsLoading,
     initialData: message,
     fields: [
       {
@@ -147,6 +149,7 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loadin
                 data={getBotOptions()}
                 {...field}
                 label={context.title}
+                leftSection={stationsLoading ? <Loader size="xs" /> : null}
                 value={field.value?.toString() ?? ''}
                 error={context.helpers.getFieldError('botId')}
                 onChange={(value) => context.helpers.setControlValue('botId', value!, true, false)}

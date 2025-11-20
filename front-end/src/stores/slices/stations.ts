@@ -79,7 +79,7 @@ export const stationsSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchStations.fulfilled, (state, action: PayloadAction<Array<ServerStationItem>>) => {
-        state.stations = action.payload.map(channel => ({ ...channel, changed: false}));
+        state.stations = action.payload.map(station => ({ ...station, changed: false}));
         state.loading = false;
       })
       .addCase(fetchStations.rejected, (state, action: PayloadAction<unknown>) => {
