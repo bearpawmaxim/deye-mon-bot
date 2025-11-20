@@ -1,8 +1,8 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ActionIcon, Alert, Badge, Box, Card, Group, Loader, SimpleGrid, Stack, Text, Title, useMantineColorScheme } from "@mantine/core";
+import { ActionIcon, Alert, Box, Group, Loader, SimpleGrid, Stack, Text, Title, useMantineColorScheme } from "@mantine/core";
 import { FC, useCallback, useEffect, useState } from "react";
 import { toLocalDateTime } from "../../../utils";
-
+import { DayOutageSchedule, ProcessedSlot } from "./dayOutageSchedule";
 
 type TimeSlot = {
   start: number;
@@ -10,10 +10,16 @@ type TimeSlot = {
   type: string;
 };
 
+enum DayDataStatus {
+  Definite = "Definite",
+  NotPlanned = "NotPlanned",
+  EmergencyShutdown = "EmergencyShutdowns"
+};
+
 type DayData = {
   slots: TimeSlot[];
   date?: string;
-  status?: string;
+  status?: DayDataStatus;
 };
 
 type QueueData = {
@@ -24,11 +30,6 @@ type QueueData = {
 
 type YasnoData = {
   [key: string]: QueueData;
-};
-
-type ProcessedSlot = {
-  start: string;
-  end: string;
 };
 
 type ProcessedData = {
@@ -43,58 +44,58 @@ type PlannedOutagesProps = {
 
 export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue }) => {
     const fetchYasnoData = useCallback(async (queue: string): Promise<ProcessedData | null> => {
-    const addMinutesToMidnight = (minutes: number): string => {
-      const hours = Math.floor(minutes / 60) % 24;
-      const mins = minutes % 60;
-      return `${hours.toString().padStart(2, "0")}:${mins
-        .toString()
-        .padStart(2, "0")}`;
-    };
+      const addMinutesToMidnight = (minutes: number): string => {
+        const hours = Math.floor(minutes / 60) % 24;
+        const mins = minutes % 60;
+        return `${hours.toString().padStart(2, "0")}:${mins
+          .toString()
+          .padStart(2, "0")}`;
+      };
 
-    try {
+      try {
         const response = await fetch("/api/yasno/planned-outages", { 
         method: "GET",
         headers: {
-            "Content-Type": "application/json",
+          "Content-Type": "application/json",
         },
         });
 
         if (!response.ok) {
-        throw new Error("Failed to fetch data");
+          throw new Error("Failed to fetch data");
         }
 
         const dashboard: YasnoData = await response.json();
         const queueData = dashboard[queue];
 
         if (!queueData) {
-        return null;
+          return null;
         }
 
-        const todaySlots =
-        queueData.today?.slots
-            ?.filter((e) => e.type === "Definite")
-            .map((e) => ({
-            start: addMinutesToMidnight(e.start),
-            end: addMinutesToMidnight(e.end),
-            })) || [];
+        const todaySlots = queueData
+          .today?.slots
+          ?.filter((e) => e.type === DayDataStatus.Definite)
+          .map((e) => ({
+            from: addMinutesToMidnight(e.start),
+            to: addMinutesToMidnight(e.end),
+          })) || [];
 
-        const tomorrowSlots =
-        queueData.tomorrow?.slots
-            ?.filter((e) => e.type === "Definite")
-            .map((e) => ({
-            start: addMinutesToMidnight(e.start),
-            end: addMinutesToMidnight(e.end),
-            })) || [];
+        const tomorrowSlots = queueData
+          .tomorrow?.slots
+          ?.filter((e) => e.type === DayDataStatus.Definite)
+          .map((e) => ({
+            from: addMinutesToMidnight(e.start),
+            to: addMinutesToMidnight(e.end),
+          })) || [];
 
         return {
-        today: todaySlots,
-        tomorrow: tomorrowSlots,
-        updatedOn: queueData.updatedOn,
+          today: todaySlots,
+          tomorrow: tomorrowSlots,
+          updatedOn: queueData.updatedOn,
         };
-    } catch (e) {
+      } catch (e) {
         console.error("Error fetching YASNO data:", e);
         return null;
-    }
+      }
     }, []);
 
   const [loading, setLoading] = useState(true);
@@ -187,45 +188,6 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue }) => {
     );
   }
 
-  const hasTodayOutages = outageData && outageData.today.length > 0;
-  const hasTomorrowOutages = outageData && outageData.tomorrow.length > 0;
-
-  const renderOutageSlots = (slots: ProcessedSlot[]) => {
-    if (slots.length === 0) {
-      return (
-        <Box ta="center" py="md">
-          <Text size="sm" c="dimmed">
-            No outages or not published yet in YASNO 🤷
-          </Text>
-        </Box>
-      );
-    }
-
-    return (
-      <Stack gap="xs">
-        {slots.map((slot, idx) => (
-          <Box
-            key={idx}
-            p="sm"
-            style={{
-              backgroundColor: isDark
-                ? "var(--mantine-color-red-9)"
-                : "var(--mantine-color-red-0)",
-              borderRadius: "var(--mantine-radius-sm)",
-              borderLeft: `3px solid var(--mantine-color-red-${
-                isDark ? "4" : "6"
-              })`,
-            }}
-          >
-            <Text size="sm" fw={500} c={isDark ? "red.2" : "dark.8"}>
-              {slot.start} - {slot.end}
-            </Text>
-          </Box>
-        ))}
-      </Stack>
-    );
-  };
-
   return (
     <Stack gap="lg">
       <Group justify="center" align="center" gap="md">
@@ -265,38 +227,10 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue }) => {
 
       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
         {/* Today */}
-        <Card shadow="sm" padding="lg" radius="md" withBorder>
-          <Stack gap="md">
-            <Group justify="space-between" align="center">
-              <Text fw={600} size="lg">
-                Today
-              </Text>
-              {hasTodayOutages && (
-                <Badge color="red" variant="light">
-                  {outageData.today.length}
-                </Badge>
-              )}
-            </Group>
-            {renderOutageSlots(outageData?.today || [])}
-          </Stack>
-        </Card>
+        <DayOutageSchedule title="Today" isDark={isDark} slots={outageData.today || []} />
 
         {/* Tomorrow */}
-        <Card shadow="sm" padding="lg" radius="md" withBorder>
-          <Stack gap="md">
-            <Group justify="space-between" align="center">
-              <Text fw={600} size="lg">
-                Tomorrow
-              </Text>
-              {hasTomorrowOutages && (
-                <Badge color="red" variant="light">
-                  {outageData.tomorrow.length}
-                </Badge>
-              )}
-            </Group>
-            {renderOutageSlots(outageData?.tomorrow || [])}
-          </Stack>
-        </Card>
+        <DayOutageSchedule title="Tomorrow" isDark={isDark} slots={outageData.tomorrow || []} />
       </SimpleGrid>
 
       {/* Updated On */}
