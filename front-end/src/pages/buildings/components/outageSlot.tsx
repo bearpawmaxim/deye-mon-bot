@@ -1,13 +1,15 @@
-import { Box, Text } from "@mantine/core";
+import { Box, Group, Text } from "@mantine/core";
 import { FC } from "react";
-import { ValueRange } from "../../../types";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { minutesToHoursAndMinutes } from "../../../utils";
+import { TimeSlot } from "../../../stores/types";
 
 type OutageSlotProps = {
   isDark: boolean;
-  slot: ValueRange<string>;
+  slot: TimeSlot;
 };
 
-export const OutageSlot: FC<OutageSlotProps> = ({ isDark, slot }) => {
+export const OutageSlot: FC<OutageSlotProps> = ({ isDark, slot }) => {  
   return <Box
     p="sm"
     style={{
@@ -20,8 +22,14 @@ export const OutageSlot: FC<OutageSlotProps> = ({ isDark, slot }) => {
       })`,
     }}
   >
+    <Group justify="space-between">
     <Text size="sm" fw={500} c={isDark ? "red.2" : "dark.8"}>
-      {slot.from} - {slot.to}
+      {minutesToHoursAndMinutes(slot.start)} - {minutesToHoursAndMinutes(slot.end)}
     </Text>
+    <Text size="sm" fw={500} c={isDark ? "red.2" : "dark.8"}>
+      <FontAwesomeIcon icon='clock' />
+      {minutesToHoursAndMinutes(slot.end - slot.start)}
+    </Text>
+    </Group>
   </Box>;
 };

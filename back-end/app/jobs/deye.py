@@ -10,7 +10,7 @@ def register(config: Config, services: Services):
         check_deye_status,
         trigger = 'interval',
         seconds = int(config.DEYE_FETCH_INTERVAL),
-        args = [config, services]
+        args    = [config, services]
     )
     if not config.DEYE_SYNC_STATIONS_ON_POLL:
         scheduler.add_job(

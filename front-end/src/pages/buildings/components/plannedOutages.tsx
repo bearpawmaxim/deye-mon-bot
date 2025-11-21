@@ -1,139 +1,21 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ActionIcon, Alert, Box, Group, Loader, SimpleGrid, Stack, Text, Title, useMantineColorScheme } from "@mantine/core";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC } from "react";
 import { toLocalDateTime } from "../../../utils";
-import { DayOutageSchedule, ProcessedSlot } from "./dayOutageSchedule";
-
-type TimeSlot = {
-  start: number;
-  end: number;
-  type: string;
-};
-
-enum DayDataStatus {
-  Definite = "Definite",
-  NotPlanned = "NotPlanned",
-  EmergencyShutdown = "EmergencyShutdowns"
-};
-
-type DayData = {
-  slots: TimeSlot[];
-  date?: string;
-  status?: DayDataStatus;
-};
-
-type QueueData = {
-  today?: DayData;
-  tomorrow?: DayData;
-  updatedOn?: string;
-};
-
-type YasnoData = {
-  [key: string]: QueueData;
-};
-
-type ProcessedData = {
-  today: ProcessedSlot[];
-  tomorrow: ProcessedSlot[];
-  updatedOn?: string;
-};
+import { DayOutageSchedule } from "./dayOutageSchedule";
+import { OutagesScheduleData } from "../../../stores/types";
 
 type PlannedOutagesProps = {
   outageQueue: string;
+  data: OutagesScheduleData;
+  loading: boolean;
+  error: string | null;
+  onRefresh: () => void;
 };
 
-export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue }) => {
-    const fetchYasnoData = useCallback(async (queue: string): Promise<ProcessedData | null> => {
-      const addMinutesToMidnight = (minutes: number): string => {
-        const hours = Math.floor(minutes / 60) % 24;
-        const mins = minutes % 60;
-        return `${hours.toString().padStart(2, "0")}:${mins
-          .toString()
-          .padStart(2, "0")}`;
-      };
-
-      try {
-        const response = await fetch("/api/yasno/planned-outages", { 
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch data");
-        }
-
-        const dashboard: YasnoData = await response.json();
-        const queueData = dashboard[queue];
-
-        if (!queueData) {
-          return null;
-        }
-
-        const todaySlots = queueData
-          .today?.slots
-          ?.filter((e) => e.type === DayDataStatus.Definite)
-          .map((e) => ({
-            from: addMinutesToMidnight(e.start),
-            to: addMinutesToMidnight(e.end),
-          })) || [];
-
-        const tomorrowSlots = queueData
-          .tomorrow?.slots
-          ?.filter((e) => e.type === DayDataStatus.Definite)
-          .map((e) => ({
-            from: addMinutesToMidnight(e.start),
-            to: addMinutesToMidnight(e.end),
-          })) || [];
-
-        return {
-          today: todaySlots,
-          tomorrow: tomorrowSlots,
-          updatedOn: queueData.updatedOn,
-        };
-      } catch (e) {
-        console.error("Error fetching YASNO data:", e);
-        return null;
-      }
-    }, []);
-
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [outageData, setOutageData] = useState<ProcessedData | null>(null);
+export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue, data, loading, error, onRefresh }) => {
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === "dark";
-
-  const loadData = useCallback(async (isManualRefresh = false) => {
-    if (isManualRefresh) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-    setError(null);
-
-    try {
-      const data = await fetchYasnoData(outageQueue);
-      setOutageData(data);
-    } catch {
-      setError("Failed to load planned outages data");
-    } finally {
-      if (isManualRefresh) {
-        setRefreshing(false);
-      } else {
-        setLoading(false);
-      }
-    }
-  }, [outageQueue, fetchYasnoData]);
-
-  useEffect(() => {
-    loadData();
-    // Refresh every 30 minutes
-    const interval = setInterval(() => loadData(), 30 * 60 * 1000);
-
-    return () => clearInterval(interval);
-  }, [loadData]);
 
   if (loading) {
     return (
@@ -154,7 +36,7 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue }) => {
     );
   }
 
-  if (!outageData) {
+  if (error) {
     return (
       <Box ta="center" py="xl">
         <Alert color="yellow" title="No Data Available">
@@ -167,12 +49,12 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue }) => {
                 variant="light"
                 color="blue"
                 size="lg"
-                onClick={() => loadData(true)}
-                disabled={refreshing}
+                onClick={() => onRefresh()}
+                disabled={loading}
               >
                 <Box
                   style={{
-                    animation: refreshing ? "spin 1s linear infinite" : "none",
+                    animation: loading ? "spin 1s linear infinite" : "none",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -198,13 +80,13 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue }) => {
           variant="light"
           color="blue"
           size="lg"
-          onClick={() => loadData(true)}
+          onClick={() => onRefresh()}
           title="Refresh data"
-          disabled={refreshing}
+          disabled={loading}
         >
           <Box
             style={{
-              animation: refreshing ? "spin 1s linear infinite" : "none",
+              animation: loading ? "spin 1s linear infinite" : "none",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -227,16 +109,16 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue }) => {
 
       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
         {/* Today */}
-        <DayOutageSchedule title="Today" isDark={isDark} slots={outageData.today || []} />
+        <DayOutageSchedule title="Today" isDark={isDark} dayData={data?.today} />
 
         {/* Tomorrow */}
-        <DayOutageSchedule title="Tomorrow" isDark={isDark} slots={outageData.tomorrow || []} />
+        <DayOutageSchedule title="Tomorrow" isDark={isDark} dayData={data?.tomorrow} />
       </SimpleGrid>
 
       {/* Updated On */}
-      {outageData?.updatedOn && (
+      {data?.updatedOn && (
         <Text size="xs" c="dimmed" ta="center">
-          Last updated: {toLocalDateTime(outageData.updatedOn)}
+          Last updated: {toLocalDateTime(data.updatedOn)}
         </Text>
       )}
     </Stack>

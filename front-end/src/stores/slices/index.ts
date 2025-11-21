@@ -5,6 +5,7 @@ export * from './extData';
 export * from './chats';
 export * from './dashboardConfig';
 export * from './messages';
+export * from './outagesSchedule';
 export * from './stations';
 export * from './stationsData';
 export * from './users';

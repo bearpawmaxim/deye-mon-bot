@@ -89,3 +89,11 @@ export const toLocalDate = (date: Date | string | null | undefined): string => {
   
   return dateObject.isValid() ? dateObject.format("DD.MM.YYYY") : "";
 };
+
+export const minutesToHoursAndMinutes = (minutes: number): string => {
+  const hours = Math.floor(minutes / 60) % 24;
+  const mins = minutes % 60;
+  return `${hours.toString().padStart(2, "0")}:${mins
+    .toString()
+    .padStart(2, "0")}`;
+};

@@ -1,0 +1,52 @@
+import string
+from pydantic import ValidationError
+import requests
+from .models import SchedulesResponse
+
+class OutagesScheduleService:
+
+    def __init__(self):
+        self._cache = {}
+        pass
+
+
+    def get_schedule(self, queue: string):
+        schedule = self._cache.root.get(queue)
+        return schedule
+
+
+    def update(self, region: int, dso: int):
+        yasno_url = f"https://app.yasno.ua/api/blackout-service/public/shutdowns/regions/{region}/dsos/{dso}/planned-outages"
+        try:
+            response = requests.get(
+                yasno_url,
+                timeout=10,
+                headers={
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                    'Accept': 'application/json',
+                }
+            )
+
+            if not response.ok:
+                print(f"Failed to fetch data from YASNO API. Status: {response.status_code}")
+                return None
+
+            data = response.json()
+            parsed = SchedulesResponse.model_validate(data)
+
+            self._cache = parsed
+
+        except requests.exceptions.Timeout:
+            print("Request to YASNO API timed out")
+            return None
+            
+        except requests.exceptions.RequestException as e:
+            print(f"Failed to fetch data from YASNO API: {str(e)}")
+            return None
+
+        except ValidationError as ve:
+            print(repr(ve.errors()[0]['type']))
+
+        except Exception as e:
+            print(f"Internal server error: {str(e)}")
+            return None

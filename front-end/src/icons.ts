@@ -42,7 +42,8 @@ import {
   faFileLines,
   faEye,
   faSignIn,
-  faChevronDown
+  faChevronDown,
+  faClock
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add([
@@ -91,6 +92,7 @@ library.add([
   faEye,
   faSignIn,
   faChevronDown,
+  faClock,
 ]);
 
 export default library;
