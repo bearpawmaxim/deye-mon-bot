@@ -52,7 +52,7 @@ export const usersSlice = createSlice({
     createUser(state, { payload }: PayloadAction<CreateUserPayload>) {
       state.creating = false;
       state.users.push({
-        id: 0, // Temporary ID, will be replaced after save i hope ))
+        id: -Date.now(),
         name: payload.name,
         password: payload.password,
         isActive: true,
