@@ -15,7 +15,7 @@ export const AnonymousLayout: FC<AnonymousLayoutProps> = ({ caption, children })
         <Group wrap="nowrap">
           <Box ta={"center"}>
             <Title className={classes.title} order={2}>
-              Deye monitoring bot control panel 
+              Svitlo Power monitoring tool 
             </Title>
             <Divider />
             <Text className={classes.subtitle}>

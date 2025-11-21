@@ -1,11 +1,13 @@
 import { FC, forwardRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Button, Divider, Flex, Grid, Group, rem, Stack , Switch, Text, Tooltip } from "@mantine/core";
+import { Button, Divider, Flex, Grid, Group, Image, rem, Stack , Switch, Text, Tooltip, useMantineColorScheme } from "@mantine/core";
 import classes from "./styles/navbar.module.css"
 import { MenuItem, RootRoutes } from "../../routes";
 import { ThemePicker, UserAvatar } from "../../components";
 import { UserData } from "../../stores/types";
+import iconDark from "../../assets/icon_dark.png";
+import iconLight from "../../assets/icon_light.png";
 
 type MenuRowProps = {
   route: MenuItem;
@@ -86,6 +88,9 @@ type NavbarProps = {
 };
 
 export const Navbar: FC<NavbarProps> = ({ user, isNavbarCollapsed, toggleNavbar, closeMenu, onProfileClick, onLogoutClick }) => {
+  const { colorScheme } = useMantineColorScheme();
+  const iconSrc = colorScheme === 'dark' ? iconLight : iconDark;
+  
   return (
       <Stack
         w="100%"
@@ -99,13 +104,13 @@ export const Navbar: FC<NavbarProps> = ({ user, isNavbarCollapsed, toggleNavbar,
         <Flex w="100%" gap={18} direction="column" align="start">
           <Group justify="space-between" align="center" w="100%" gap={isNavbarCollapsed? 0 : 'xs'}>
             <Grid align="center" justify="space-evenly">
-              {/* <Grid.Col span='content'>
-                <Image h={40} w={40} src="/android-chrome-192x192.png" alt="Logo" className={classes.appImage} />
-              </Grid.Col> */}
+               <Grid.Col span='content'>
+                <Image h={40} w={40} src={iconSrc} alt="Logo" />
+              </Grid.Col> 
               {!isNavbarCollapsed && (
                 <Grid.Col span='auto'>
                   <Text className={classes.appTitle}>
-                    Deye monitoring bot control panel
+                  Svitlo Power monitoring tool 
                   </Text>
                 </Grid.Col>
               )}
