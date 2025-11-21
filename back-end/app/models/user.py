@@ -7,8 +7,8 @@ class User(Base):
     id            = Column(Integer, primary_key=True, autoincrement=True)
     name          = Column(String(64), unique=True)
     password      = Column(String(128))
-    is_active     = Column(Boolean, default=True)
-    is_reporter   = Column(Boolean, default=False)
+    is_active     = Column(Boolean, default=True, server_default='1')
+    is_reporter   = Column(Boolean, default=False, server_default='0')
     api_key       = Column(String(64), nullable=True)
 
     def __str__(self):

@@ -182,17 +182,21 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
       <DataTable<UserItem>
         data={users}
         fetchAction={fetchData}
+        defSort={[{ id: 'name', desc: false }]}
         columns={[
           {
             id: 'name',
             header: 'Username',
             enableSorting: true,
             accessorKey: 'name',
+            meta: {
+              dataType: ColumnDataType.Text,
+            },
           },
           {
             id: 'isActive',
             header: 'Active',
-            enableSorting: true,
+            enableSorting: false,
             accessorKey: 'isActive',
             meta: {
               dataType: ColumnDataType.Boolean,
@@ -203,7 +207,7 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
           {
             id: 'isReporter',
             header: 'Is Reporter',
-            enableSorting: true,
+            enableSorting: false,
             accessorKey: 'isReporter',
             meta: {
               dataType: ColumnDataType.Boolean,
@@ -214,6 +218,7 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
           {
             id: 'apiKey',
             header: 'API Token',
+            enableSorting: false,
             accessorKey: 'apiKey',
             cell: ({ row }) => {
               const user = row.original;
