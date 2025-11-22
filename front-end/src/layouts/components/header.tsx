@@ -1,10 +1,11 @@
-import { FC } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { UserData } from "../../stores/types";
 import { Burger, Button, Menu, Text, Box, Flex, Divider, Group, Transition, ActionIcon, Indicator  } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classes from "./styles/header.module.css"
 import { BackButton, UserAvatar } from "../../components";
 import { PageHeaderButton } from "../../providers";
+import { useLocation } from "react-router-dom";
 
 type HeaderProps = {
   opened: boolean;
@@ -17,6 +18,38 @@ type HeaderProps = {
 };
 
 export const Header: FC<HeaderProps> = ({ user, opened, toggle, caption, buttons, onProfileClick, onLogoutClick }) => {
+  const [initialDisabled, setInitialDisabled] = useState<boolean[] | null>(null);
+
+  useEffect(() => {
+    if (buttons.length > 0 && initialDisabled === null) {
+      setTimeout(() => setInitialDisabled(buttons.map(b => b.disabled)), 1);
+    }
+  }, [buttons, initialDisabled]);
+
+  const { buttonsChanged, anyChanged } = useMemo(() => {
+    if (!initialDisabled) {
+      return {
+        buttonsChanged: buttons.map(() => false),
+        anyChanged: false
+      };
+    }
+
+    const changed = buttons.map(
+      (b, i) => b.disabled !== initialDisabled[i]
+    );
+
+    return {
+      buttonsChanged: changed,
+      anyChanged: changed.some(Boolean)
+    };
+  }, [buttons, initialDisabled]);
+
+  const location = useLocation();
+
+  useEffect(() => {
+    setTimeout(() => setInitialDisabled(null), 1);
+  }, [location.pathname]);
+
   return (
     <Box className={classes.root} w="100%" h="100%">
       <Box className={classes.wrapper} w="100%" h="100%">
@@ -48,23 +81,34 @@ export const Header: FC<HeaderProps> = ({ user, opened, toggle, caption, buttons
               <Group gap="sm" style={styles}>
                 <Box visibleFrom="md">
                   {buttons.map((button, i) => (
-                    <Button
-                      key={`btn_${i}`}
-                      color={button.color}
-                      disabled={button.disabled}
-                      onClick={() => button.onClick()}
-                      leftSection={button.icon ? <FontAwesomeIcon icon={button.icon!} /> : null}
-                      size="xs"
+                    <Indicator
+                      disabled={!buttonsChanged[i]}
+                      display={'inline-flex'}
+                      withBorder
+                      processing
+                      color="teal"
+                      size={15}
+                      position="top-end"
                     >
-                      {button.text}
-                    </Button>
+                      <Button
+                        key={`btn_${i}`}
+                        color={button.color}
+                        disabled={button.disabled}
+                        onClick={() => button.onClick()}
+                        leftSection={button.icon ? <FontAwesomeIcon icon={button.icon!} /> : null}
+                        size="xs"
+                        ml='xs'
+                      >
+                        {button.text}
+                      </Button>
+                    </Indicator>
                   ))}
                 </Box>
-                <Box hiddenFrom="md">
+                <Box hidden={buttons.length === 0} hiddenFrom="md">
                   <Menu trigger="click" transitionProps={{ transition: 'fade-up', duration: 150 }}>
                     <Menu.Target>
                       <Indicator
-                        disabled={buttons.every(btn => btn.disabled)}
+                        disabled={!anyChanged}
                         withBorder
                         processing
                         color="teal"
@@ -78,15 +122,24 @@ export const Header: FC<HeaderProps> = ({ user, opened, toggle, caption, buttons
                     </Menu.Target>
                     <Menu.Dropdown>
                       {buttons.map((button, i) => (
-                        <Menu.Item
-                          key={`btn_${i}`}
-                          color={button.color}
-                          disabled={button.disabled}
-                          onClick={() => button.onClick()}
-                          leftSection={button.icon ? <FontAwesomeIcon icon={button.icon!} /> : null}
+                        <Indicator
+                          disabled={!buttonsChanged[i]}
+                          withBorder
+                          processing
+                          color="teal"
+                          size={15}
+                          position="middle-start"
                         >
-                          {button.text}
-                        </Menu.Item>
+                          <Menu.Item
+                            key={`btn_${i}`}
+                            color={button.color}
+                            disabled={button.disabled}
+                            onClick={() => button.onClick()}
+                            leftSection={button.icon ? <FontAwesomeIcon icon={button.icon!} /> : null}
+                          >
+                            {button.text}
+                          </Menu.Item>
+                        </Indicator>
                       ))}
                     </Menu.Dropdown>
                   </Menu>

@@ -152,8 +152,8 @@ export const Navbar: FC<NavbarProps> = ({ user, isNavbarCollapsed, toggleNavbar,
         </Flex>
 
         <Stack justify="flex-end">
-          <Divider hiddenFrom="sm" />
-          <Group justify="space-evenly" hiddenFrom="sm">
+          <Divider hiddenFrom="md" />
+          <Group justify="space-evenly" hiddenFrom="md">
             <UserAvatar userName={user?.name ?? ''} />
             <Flex direction="column" align="start">
               <Text
@@ -184,7 +184,7 @@ export const Navbar: FC<NavbarProps> = ({ user, isNavbarCollapsed, toggleNavbar,
               Log out
             </Button>
           </Group>
-          <Divider hiddenFrom="sm"/>
+          <Divider hiddenFrom="md"/>
           <ThemePicker isNavbarCollapsed={isNavbarCollapsed} />
         </Stack>
 
