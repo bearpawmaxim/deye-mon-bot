@@ -6,9 +6,9 @@ import {
   Group,
 } from "@mantine/core";
 import { RootState, useAppDispatch, useAppSelector } from "../../stores/store";
-import { fetchBuildings, fetchDashboardConfig, saveBuildings, saveDashboardConfig } from "../../stores/thunks";
+import { fetchBuildings, fetchDashboardConfig, fetchOutagesSchedule, saveBuildings, saveDashboardConfig } from "../../stores/thunks";
 import { BuildingsView, openDashboardEditDialog, PlannedOutages } from "./components";
-import { BuildingListItem, DashboardConfig } from "../../stores/types";
+import { BuildingListItem, DashboardConfig, OutagesScheduleData } from "../../stores/types";
 import { connect } from "react-redux";
 import { IconButton } from "../../components";
 import { PageHeaderButton, useHeaderContent } from "../../providers";
@@ -22,6 +22,9 @@ type ComponentProps = {
   buildings: Array<BuildingListItem | BuildingEditType>;
   configChanged: boolean;
   buildingsChanged: boolean;
+  loadingOutagesSchedule: boolean;
+  outagesScheduleError: string | null;
+  outagesSchedule: OutagesScheduleData;
 };
 
 const mapStateToProps = (state: RootState): ComponentProps => {
@@ -32,6 +35,9 @@ const mapStateToProps = (state: RootState): ComponentProps => {
     loadingBuildings: state.buildings.loading,
     buildingsChanged: state.buildings.changed,
     buildings: createSelectEdittedBuildings(state),
+    loadingOutagesSchedule: state.outagesSchedule.loading,
+    outagesSchedule: state.outagesSchedule.outagesSchedule,
+    outagesScheduleError: state.outagesSchedule.error,
   };
 };
 
@@ -42,6 +48,9 @@ const Component: FC<ComponentProps> = ({
   dashboardConfig,
   configChanged,
   buildingsChanged,
+  loadingOutagesSchedule,
+  outagesSchedule,
+  outagesScheduleError,
 }) => {
   const isAuthenticated = useAppSelector(s => s.auth.token !== null);
   const dispatch = useAppDispatch();
@@ -63,6 +72,19 @@ const Component: FC<ComponentProps> = ({
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const fetchOutages = useCallback(
+    () => {
+      if (dashboardConfig?.enableOutagesSchedule && dashboardConfig?.outagesScheduleQueue) {
+        dispatch(fetchOutagesSchedule(dashboardConfig.outagesScheduleQueue));
+      }
+    },
+    [dashboardConfig, dispatch]
+  );
+
+  useEffect(() => {
+    fetchOutages();
+  }, [fetchOutages]);
 
   const getHeaderButtons = useCallback((dataChanged: boolean): PageHeaderButton[] => [
     { text: 'Save', icon: "save", color: "green", onClick: saveData, disabled: !dataChanged, },
@@ -109,6 +131,10 @@ const Component: FC<ComponentProps> = ({
 
           { dashboardConfig?.enableOutagesSchedule && <PlannedOutages
               outageQueue={dashboardConfig.outagesScheduleQueue}
+              data={outagesSchedule}
+              loading={loadingOutagesSchedule}
+              error={outagesScheduleError}
+              onRefresh={fetchOutages}
             /> }
         </Stack>
       </Container>

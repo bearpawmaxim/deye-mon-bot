@@ -12,3 +12,37 @@
   opacity: 1;
   pointer-events: auto;
 }
+
+.passedOutageSlot {
+  background-color: light-dark(
+    var(--mantine-color-gray-2),
+    var(--mantine-color-gray-7)
+  );
+}
+
+.pendingOutageSlot {
+  background-color: light-dark(
+    var(--mantine-color-red-3),
+    var(--mantine-color-red-9)
+  );
+  color: light-dark(
+    var(--mantine-color-gray-8),
+    var(--mantine-color-gray-1)
+  );
+}
+
+.activeOutageSlot {
+  transform: scale(1.025);
+  color: light-dark(
+    var(--mantine-color-gray-8),
+    var(--mantine-color-gray-1)
+  );
+}
+
+.schedulePlaceholder {
+  transition: all 0.2s ease-in-out;
+}
+
+.schedulePlaceholder:hover {
+  transform: scale(1.3);
+}
