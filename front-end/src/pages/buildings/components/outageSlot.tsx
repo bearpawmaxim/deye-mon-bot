@@ -1,5 +1,5 @@
 import { Box, Group, Progress, Text } from "@mantine/core";
-import { FC, useMemo } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { minutesToHoursAndMinutes } from "../../../utils";
 import { TimeSlot } from "../../../stores/types";
@@ -12,7 +12,14 @@ type OutageSlotProps = {
 };
 
 export const OutageSlot: FC<OutageSlotProps> = ({ isDark, slot }) => {
-  const now = dayjs();
+  const [now, setNow] = useState(dayjs());
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(dayjs());
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
   const minutesFromMidnight = useMemo(() => {
     const midnight = now.startOf('day');
     return now.diff(midnight, 'minute');
