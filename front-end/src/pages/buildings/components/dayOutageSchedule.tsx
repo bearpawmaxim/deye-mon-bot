@@ -10,9 +10,10 @@ type DayOutageScheduleProps = {
   title: string;
   isDark: boolean;
   dayData?: DayData;
+  isToday?: boolean;
 };
 
-export const DayOutageSchedule: FC<DayOutageScheduleProps> = ({ isDark, dayData, title }) => {
+export const DayOutageSchedule: FC<DayOutageScheduleProps> = ({ isDark, dayData, title, isToday = false }) => {
   const slots = useMemo(
     () => (dayData?.slots ?? []),
     [dayData],
@@ -75,7 +76,7 @@ export const DayOutageSchedule: FC<DayOutageScheduleProps> = ({ isDark, dayData,
             />
           }
           {isAvailable && slots.map((slot, idx) => (
-            <OutageSlot key={`outage_${idx}`} isDark={isDark} slot={slot} />
+            <OutageSlot key={`outage_${idx}`} isDark={isDark} slot={slot} isToday={isToday} />
           ))}
         </Stack>
       </Stack>
