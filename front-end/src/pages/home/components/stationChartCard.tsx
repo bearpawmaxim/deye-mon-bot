@@ -70,6 +70,9 @@ export const StationChartCard: FC<StationChartCardProps> = ({ data, loading }) =
               valueFormatter={(v: number) => `${v / 1000}`}
               strokeWidth={2}
               withDots={false}
+              yAxisProps={{
+                domain: [0, 100],
+              }}
               gridProps={{ strokeDasharray: "3 2" }}
               areaChartProps={{ syncId: String(data.id) }}
             />
