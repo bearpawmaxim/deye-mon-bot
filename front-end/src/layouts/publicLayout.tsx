@@ -1,12 +1,12 @@
 import { FC, ReactNode, useEffect, useState } from "react";
-import { Anchor, AppShell, Box, Container, Group, Image, SimpleGrid, Title, Transition, useMantineColorScheme } from "@mantine/core";
+import { Anchor, AppShell, Box, Container, Group, Image, SimpleGrid, Transition, useMantineColorScheme } from "@mantine/core";
 import { ThemePicker } from "../components";
 import classes from './styles/publicLayout.module.css';
 import { VisitTracker } from "./components/visitTracker";
 import { Authors } from "./components/authors";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import iconDark from "../assets/icon_dark.png";
-import iconLight from "../assets/icon_light.png";
+import iconDark from "../assets/icon_dark_with_text.png";
+import iconLight from "../assets/icon_light_with_text.png";
 
 type PublicLayoutProps = {
   children: ReactNode;
@@ -50,8 +50,7 @@ export const PublicLayout: FC<PublicLayoutProps> = ({ children }) => {
         <header className={classes.header}>
           <Container size="md" className={classes.inner}>
             <Group justify="flex-start" align="center">
-              <Image h={40} w={40} src={iconSrc} alt="Logo" />
-              <Title  className={classes.title} order={2}>vitlo Power</Title>
+              <Image h={35} w={160} src={iconSrc} alt="Logo" />
               <Transition transition="slide-down" mounted={isHovering && isAltPressed}>
                 {(transitionStyles) => (
                   <Anchor

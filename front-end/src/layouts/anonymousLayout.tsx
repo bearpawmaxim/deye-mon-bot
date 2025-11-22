@@ -1,7 +1,9 @@
 import { FC, ReactElement, ReactNode } from "react";
-import { Box, Center, Container, Divider, Group, Stack, Text, Title } from "@mantine/core";
+import { Box, Center, Container, Divider, Group, Image, Stack, Text, useMantineColorScheme } from "@mantine/core";
 import classes from './styles/anonymousLayout.module.css';
 import { Page, ThemePicker } from "../components";
+import iconDark from "../assets/icon_dark_with_text.png";
+import iconLight from "../assets/icon_light_with_text.png";
 
 export type AnonymousLayoutProps = {
   caption: string;
@@ -9,15 +11,17 @@ export type AnonymousLayoutProps = {
 };
 
 export const AnonymousLayout: FC<AnonymousLayoutProps> = ({ caption, children }) => {
+  const { colorScheme } = useMantineColorScheme();
+  const iconSrc = colorScheme === 'dark' ? iconLight : iconDark;
+
   return <Stack justify="center" h="100dvh">
     <Container w={{ base: 400, md: 450 }}>
       <Center>
         <Group wrap="nowrap">
           <Box ta={"center"}>
-            <Title className={classes.title} order={2}>
-              Svitlo Power monitoring tool 
-            </Title>
-            <Divider />
+            <Center mt="md">
+              <Image h={60} w="auto" src={iconSrc} alt="Logo" />
+            </Center>
             <Text className={classes.subtitle}>
               {caption}
             </Text>
