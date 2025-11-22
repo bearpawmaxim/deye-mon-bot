@@ -109,10 +109,10 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue, data, loa
 
       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
         {/* Today */}
-        <DayOutageSchedule title="Today" isDark={isDark} dayData={data?.today} />
+        <DayOutageSchedule title="Today" isDark={isDark} dayData={data?.today} isToday={true} />
 
         {/* Tomorrow */}
-        <DayOutageSchedule title="Tomorrow" isDark={isDark} dayData={data?.tomorrow} />
+        <DayOutageSchedule title="Tomorrow" isDark={isDark} dayData={data?.tomorrow} isToday={false} />
       </SimpleGrid>
 
       {/* Updated On */}

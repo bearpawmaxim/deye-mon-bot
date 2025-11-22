@@ -9,9 +9,10 @@ import dayjs from "dayjs";
 type OutageSlotProps = {
   isDark: boolean;
   slot: TimeSlot;
+  isToday?: boolean;
 };
 
-export const OutageSlot: FC<OutageSlotProps> = ({ isDark, slot }) => {
+export const OutageSlot: FC<OutageSlotProps> = ({ isDark, slot, isToday = false }) => {
   const [now, setNow] = useState(dayjs());
   useEffect(() => {
     const interval = setInterval(() => {
@@ -25,16 +26,16 @@ export const OutageSlot: FC<OutageSlotProps> = ({ isDark, slot }) => {
     return now.diff(midnight, 'minute');
   }, [now]);
   const isActive = useMemo(() => {
-    return slot.start <= minutesFromMidnight && minutesFromMidnight <= slot.end;
-  }, [minutesFromMidnight, slot.end, slot.start]);
+    return isToday && slot.start <= minutesFromMidnight && minutesFromMidnight <= slot.end;
+  }, [isToday, minutesFromMidnight, slot.end, slot.start]);
   const className = useMemo(() => {
     if (isActive) {
       return classes.activeOutageSlot;
-    } else if (minutesFromMidnight > slot.start) {
+    } else if (isToday && minutesFromMidnight > slot.start) {
       return classes.passedOutageSlot;
     }
     return classes.pendingOutageSlot;
-  }, [isActive, minutesFromMidnight, slot.start]);
+  }, [isActive, isToday, minutesFromMidnight, slot.start]);
   const slotProgress = useMemo(() => {
     if (!isActive) {
       return 0;
