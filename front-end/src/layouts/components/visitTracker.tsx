@@ -1,12 +1,14 @@
 import { FC, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../stores/store";
 import { fetchVisitStats, postVisitStats } from "../../stores/thunks";
-import { Badge, Box } from "@mantine/core";
+import { Badge, Box, em } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useMediaQuery } from "@mantine/hooks";
 
 export const VisitTracker: FC = () => {
   const dispatch = useAppDispatch();
   const visitData = useAppSelector(state => state.visitCounter.visits);
+  const isMobile = useMediaQuery(`(max-width: ${em(750)})`);
 
   useEffect(() => {
     dispatch(fetchVisitStats())
@@ -40,15 +42,19 @@ export const VisitTracker: FC = () => {
 
   return (
     <Box fz='xs'>
-      visits:
-      <Badge variant="outline" m="xs">
+      unique visitors:
+      { isMobile
+          ? `${visitData.dailyVisitors} daily, `
+          : <Badge variant="outline" m="xs">
         <FontAwesomeIcon icon="eye" />&nbsp;
         Daily: {visitData.dailyVisitors}
-      </Badge>
-      <Badge variant="outline">
+      </Badge> }
+      { isMobile
+        ? `${visitData.dailyVisitors} total`
+          : <Badge variant="outline">
         <FontAwesomeIcon icon="eye" />&nbsp;
         Total: {visitData.totalVisitors}
-      </Badge>
+      </Badge> }
     </Box>
   );
 };

@@ -1,5 +1,5 @@
 import { FC, ReactNode, useEffect, useState } from "react";
-import { Anchor, AppShell, Box, Container, Group, Image, Title, Transition, useMantineColorScheme } from "@mantine/core";
+import { Anchor, AppShell, Box, Container, Group, Image, SimpleGrid, Title, Transition, useMantineColorScheme } from "@mantine/core";
 import { ThemePicker } from "../components";
 import classes from './styles/publicLayout.module.css';
 import { VisitTracker } from "./components/visitTracker";
@@ -74,12 +74,10 @@ export const PublicLayout: FC<PublicLayoutProps> = ({ children }) => {
         </Box>
       </AppShell.Main>
       <AppShell.Footer>
-        <Container size="md">
-        <Group justify="space-between">
+        <SimpleGrid pt={2} verticalSpacing={0} spacing={0} p={0} ta={'center'} cols={{ xs: 1, md: 2}}>
           <Authors />
-          <VisitTracker />
-        </Group>
-        </Container>
+          <VisitTracker/>
+        </SimpleGrid>
       </AppShell.Footer>
     </AppShell>;
 };
