@@ -37,12 +37,11 @@ class AuthorizationService():
         self._database.save_changes()
         return user.password_reset_token
 
-    def _validate_reset_token(self, token):
-        user = self._database.get_user_by_reset_token(token)
-        if not user:
-            raise ValueError("Invalid token")
-
+    def _validate_reset_token(self, user: User):
         if user.reset_token_expiration < datetime.now(timezone.utc):
+            user.reset_token_expiration = None
+            user.password_reset_token = None
+            self._database.save_changes()
             raise ValueError("Token expired")
 
         return user
@@ -75,6 +74,8 @@ class AuthorizationService():
         user = self._database.get_user_by_reset_token(token)
         if user is None:
             raise ValueError("Cannot find user")
+
+        self._validate_reset_token(token)
 
         hashed_new_password = self._bcrypt.generate_password_hash(new_password)
         self._database.change_password(user.id, hashed_new_password)

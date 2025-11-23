@@ -332,6 +332,7 @@ class DatabaseService:
         return (
             self._session.query(User)
             .filter_by(password_reset_token=token, is_active=True)
+            .with_for_update()
             .first()
         )
 
