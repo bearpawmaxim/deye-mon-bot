@@ -1,8 +1,7 @@
 import { FC, useEffect } from "react";
-import { RootState, useAppDispatch } from "../../../stores/store";
+import { RootState, useAppDispatch, useAppSelector } from "../../../stores/store";
 import { getTemplatePreview } from "../../../stores/thunks";
 import { TemplatePreview } from "../../../stores/types";
-import { useSelector } from 'react-redux'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkBreaks from "remark-breaks";
@@ -26,9 +25,9 @@ export function openMessagePreviewDialog({
 }: OpenMessagePreviewOptions) {
   const Inner: FC = () => {
     const dispatch = useAppDispatch();
-    const preview = useSelector((s: RootState) => s.messages.templatePreview) as TemplatePreview | undefined;
-    const loading = useSelector((s: RootState) => s.messages.loadingPreview) as boolean;
-    const error = useSelector((s: RootState) => s.messages.previewError) as string | undefined;
+    const preview = useAppSelector((s: RootState) => s.messages.templatePreview) as TemplatePreview | undefined;
+    const loading = useAppSelector((s: RootState) => s.messages.loadingPreview) as boolean;
+    const error = useAppSelector((s: RootState) => s.messages.previewError) as string | undefined;
 
     useEffect(() => {
       dispatch(getTemplatePreview({ stationId, shouldSendTemplate, timeoutTemplate, messageTemplate }));

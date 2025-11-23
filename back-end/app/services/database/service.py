@@ -328,6 +328,13 @@ class DatabaseService:
     def get_user_by_id(self, user_id: int):
         return self._session.query(User).filter_by(id=user_id, is_active=True).first()
     
+    def get_user_by_reset_token(self, token: str):
+        return (
+            self._session.query(User)
+            .filter_by(password_reset_token=token, is_active=True)
+            .first()
+        )
+    
     def create_user(self, user_name: str, password: str):
         existing_user = self.get_user(user_name)
         if not existing_user:
@@ -336,6 +343,20 @@ class DatabaseService:
                 password = password
             )
             self._session.add(user)
+
+    def update_user(self, user_id: int, username: str):
+        existing_user = self.get_user_by_id(user_id)
+        if existing_user:
+            existing_user.name = username
+            self._session.commit()
+
+    def change_password(self, user_id: int, new_password: str):
+        existing_user = self.get_user_by_id(user_id)
+        if existing_user:
+            existing_user.password = new_password
+            existing_user.password_reset_token = None
+            existing_user.reset_token_expiration = None
+            self._session.commit()
 
     def get_bots(self, all: bool = False):
         query = self._session.query(Bot)
@@ -550,3 +571,6 @@ class DatabaseService:
     def delete_old_ext_data(self):
         timeout = datetime.now(timezone.utc) - timedelta(days=self._statistic_keep_days)
         self._session.query(ExtData).filter(ExtData.received_at < timeout).delete(synchronize_session=False)
+
+    def save_changes(self):
+        self._session.commit()

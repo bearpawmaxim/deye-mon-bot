@@ -5,7 +5,7 @@ import { Button, Divider, Flex, Grid, Group, Image, rem, Stack , Switch, Text, T
 import classes from "./styles/navbar.module.css"
 import { MenuItem, RootRoutes } from "../../routes";
 import { ThemePicker, UserAvatar } from "../../components";
-import { UserData } from "../../stores/types";
+import { ProfileData } from "../../stores/types";
 import iconDark from "../../assets/icon_dark.png";
 import iconLight from "../../assets/icon_light.png";
 
@@ -79,7 +79,7 @@ const NavbarSwitch: FC<{ isNavbarCollapsed: boolean, toggleNavbar: () => void}> 
   };
 
 type NavbarProps = {
-  user?: UserData;
+  user?: ProfileData;
   isNavbarCollapsed: boolean;
   toggleNavbar: () => void;
   closeMenu?: () => void;
@@ -154,7 +154,7 @@ export const Navbar: FC<NavbarProps> = ({ user, isNavbarCollapsed, toggleNavbar,
         <Stack justify="flex-end">
           <Divider hiddenFrom="md" />
           <Group justify="space-evenly" hiddenFrom="md">
-            <UserAvatar userName={user?.name ?? ''} />
+            <UserAvatar userName={user?.userName ?? ''} />
             <Flex direction="column" align="start">
               <Text
                 className={classes.profileName}
@@ -163,13 +163,12 @@ export const Navbar: FC<NavbarProps> = ({ user, isNavbarCollapsed, toggleNavbar,
                 fw={500}
                 lts={-0.3}
               >
-                {user?.name}
+                {user?.userName}
               </Text>
             </Flex>
             <Divider orientation="vertical" />
             <Button
               variant="outline"
-              disabled
               onClick={onProfileClick}
             >
               <FontAwesomeIcon icon="user-md" />

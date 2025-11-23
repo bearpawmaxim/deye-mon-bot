@@ -10,34 +10,36 @@ import classes from './styles/authenticatedLayout.module.css';
 import { Header } from "./components/header";
 import { Navbar } from "./components/navbar";
 import useLocalStorage from "../hooks/useLocalStorage";
-import { UserData } from "../stores/types";
-import { fetchUser, logout } from "../stores/thunks";
+import { ProfileData } from "../stores/types";
+import { fetchProfile, logout } from "../stores/thunks";
+import { openProfileEditDialog } from "../dialogs";
 
 type ComponentProps = {
   token: string | null;
-  user: UserData;
+  profile: ProfileData;
 };
 
 const mapStateToProps = (state: RootState): ComponentProps => ({
   token: state.auth.token,
-  user: state.auth.user!,
+  profile: state.auth.profile!,
 });
 
-const Component: FC<ComponentProps> = ({ token, user }) => {
-  const navigate = useNavigate();
+const Component: FC<ComponentProps> = ({ token, profile }) => {
   const dispatch = useAppDispatch()
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) {
-      dispatch(fetchUser());
-    };
-  }, [user, dispatch]);
+    if (token && !profile) {
+      dispatch(fetchProfile());
+    }
+  }, [token, profile, dispatch]);
 
   const [opened, { toggle, close }] = useDisclosure();
 
   const { headerButtons, headerText } = useHeaderContent();
 
-  const location = useLocation();
+  
   const caption = headerText ? headerText : RootRoutes.find(f => f.path === location.pathname)?.name;
 
   const [ isNavbarCollapsed, setNavbarCollapsed ] = useLocalStorage('dmb-nv-collapsed', false);
@@ -64,7 +66,7 @@ const Component: FC<ComponentProps> = ({ token, user }) => {
   };
 
   const onProfileEditClick = () => {
-    navigate('/profile');
+    openProfileEditDialog({ navigate });
   };
 
   return (
@@ -85,7 +87,7 @@ const Component: FC<ComponentProps> = ({ token, user }) => {
     >
       <AppShell.Header ms={0}>
         <Header
-          user={user}
+          user={profile}
           opened={opened}
           toggle={toggle}
           caption={caption!}
@@ -96,7 +98,7 @@ const Component: FC<ComponentProps> = ({ token, user }) => {
       </AppShell.Header>
       <AppShell.Navbar data-collpased={isNavbarCollapsed}>
         <Navbar
-          user={user}
+          user={profile}
           isNavbarCollapsed={isNavbarCollapsed}
           toggleNavbar={toggleNavbar}
           closeMenu={close}
@@ -106,7 +108,7 @@ const Component: FC<ComponentProps> = ({ token, user }) => {
       </AppShell.Navbar>
       <AppShell.Main>
         <Suspense>
-          { token && <Outlet /> }
+          { token && profile && <Outlet /> }
         </Suspense>
       </AppShell.Main>
     </AppShell>

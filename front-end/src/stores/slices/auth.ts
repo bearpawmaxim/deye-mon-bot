@@ -1,7 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { AuthState, UserData } from "../types";
-import { fetchUser, login, logout } from "../thunks";
+import { AuthState, ProfileData } from "../types";
+import { fetchProfile, login, logout } from "../thunks";
 import { getToken } from "../../utils/tokenStorage";
+import { ProfileEdit } from "../../schemas";
 
 const initialState: AuthState = {
   token: getToken(),
@@ -18,12 +19,24 @@ export const authSlice = createSlice({
     resetAuthData: (state) => {
       state.token = null;
     },
+    startEditingProfile: (state) => {
+      state.editingProfile = {
+        userId: state.profile!.userId,
+        userName: state.profile!.userName,
+      };
+    },
+    editProfile: (state, { payload }: PayloadAction<ProfileEdit>) => {
+      state.profile = payload;
+    },
+    finishEditingProfile: (state) => {
+      delete state.editingProfile;
+    },
   },
   extraReducers: (builder) => {
     builder
       .addCase(logout.fulfilled, (state) => {
         state.loading = false;
-        delete state.user;
+        delete state.profile;
         state.token = null;
       });
     builder
@@ -34,27 +47,45 @@ export const authSlice = createSlice({
         state.token = payload!;
         state.loading = false;
       })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .addCase(login.rejected, (state, action: PayloadAction<any>) => {
+      .addCase(login.rejected, (state, action: PayloadAction<unknown>) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload as string;
       });
     builder
-      .addCase(fetchUser.pending, (state) => {
+      .addCase(fetchProfile.pending, (state) => {
         state.loading = true;
       })
-      .addCase(fetchUser.fulfilled, (state, action: PayloadAction<UserData>) => {
-        state.user = action.payload;
+      .addCase(fetchProfile.fulfilled, (state, action: PayloadAction<ProfileData>) => {
+        state.profile = action.payload;
         state.loading = false;
       })
-      .addCase(fetchUser.rejected, (state) => {
+      .addCase(fetchProfile.rejected, (state) => {
         state.loading = false;
-        delete state.user;
+        delete state.profile;
         state.token = null;
       });
+    // builder
+    //   .addCase(saveProfile.pending, (state) => {
+    //     state.loading = true;
+    //   })
+    //   .addCase(saveProfile.fulfilled, (state, action: PayloadAction<ProfileData>) => {
+    //     state.profile = action.payload;
+    //     state.loading = false;
+    //   })
+    //   .addCase(saveProfile.rejected, (state) => {
+    //     state.loading = false;
+    //     delete state.profile;
+    //     state.token = null;
+    //   });
   },
 });
 
 
-export const { updateAuthData, resetAuthData } = authSlice.actions;
+export const {
+  editProfile,
+  updateAuthData,
+  resetAuthData,
+  startEditingProfile,
+  finishEditingProfile,
+} = authSlice.actions;
 export const authReducer = authSlice.reducer;

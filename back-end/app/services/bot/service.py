@@ -34,7 +34,7 @@ class BotService:
             else:
                 self._database.add_chat_request(chat_id, bot_id)
                 print(f'request from not allowed chat {chat_id}')
-            self._database._session.commit()
+            self._database.save_changes()
 
     def _populate_stations_data(self, template_data, stations, channel, force):
         message_station = None

@@ -1,12 +1,11 @@
 import { FC, useEffect } from "react";
-import { useSelector } from "react-redux";
-import { RootState, useAppDispatch } from "../stores/store";
+import { RootState, useAppDispatch, useAppSelector } from "../stores/store";
 import apiClient from "../utils/apiClient";
 import { resetAuthData, updateAuthData } from "../stores/slices";
 
 export const AuthHeaderInjector: FC = () => {
   const dispatch = useAppDispatch();
-  const token = useSelector((state: RootState) => (state.auth.token));
+  const token = useAppSelector((state: RootState) => (state.auth.token));
 
   useEffect(() => {
     const requestInterceptor = apiClient.interceptors.request.use(
