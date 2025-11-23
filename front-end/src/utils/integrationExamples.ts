@@ -1,14 +1,9 @@
+import { getApiBaseUrl } from "./uriUtils";
+
 export interface IntegrationExample {
   curl: string;
   homeAssistant: string;
 }
-
-export const getApiBaseUrl = (): string => {
-  const protocol = window.location.protocol;
-  const hostname = window.location.hostname;
-  const port = window.location.port;
-  return `${protocol}//${hostname}${port ? ':' + port : ''}`;
-};
 
 export const getCurlExample = (apiToken: string): string => {
   const baseUrl = getApiBaseUrl();

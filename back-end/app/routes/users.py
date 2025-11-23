@@ -1,5 +1,5 @@
 from flask import jsonify, request
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services import Services
 from app.utils.key_generation import generate_api_token
 from app.utils.jwt_decorators import jwt_required
@@ -10,16 +10,18 @@ def register(app, services: Services):
     @app.route('/api/users/users', methods=['POST'])
     @jwt_required()
     def get_users():
+        current_user = get_jwt_identity()
         users = services.database.get_users(all=True)
         users_dict = []
         for user in users:
-            users_dict.append({
-                'id': user.id,
-                'name': user.name,
-                'isActive': user.is_active,
-                'isReporter': user.is_reporter,
-                'apiKey': user.api_key,
-            })
+            if user.name != current_user:
+                users_dict.append({
+                    'id': user.id,
+                    'name': user.name,
+                    'isActive': user.is_active,
+                    'isReporter': user.is_reporter,
+                    'apiKey': user.api_key,
+                })
         return jsonify(users_dict)
     
     @app.route('/api/users/save', methods=['PUT'])

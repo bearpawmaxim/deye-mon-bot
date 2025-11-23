@@ -1,6 +1,7 @@
 export * from './home/home';
 export * from './login';
 export * from './bots/bots';
+export * from './changePassword';
 export * from './errorPage';
 export * from './notFound';
 export * from './messages/messages';

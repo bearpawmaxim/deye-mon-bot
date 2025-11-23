@@ -1,5 +1,5 @@
 import { FC, useEffect, useMemo, useState } from "react";
-import { UserData } from "../../stores/types";
+import { ProfileData } from "../../stores/types";
 import { Burger, Button, Menu, Text, Box, Flex, Divider, Group, Transition, ActionIcon, Indicator  } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classes from "./styles/header.module.css"
@@ -12,7 +12,7 @@ type HeaderProps = {
   toggle: () => void;
   caption: string;
   buttons: Array<PageHeaderButton>;
-  user?: UserData;
+  user?: ProfileData;
   onProfileClick: () => void;
   onLogoutClick: () => void;
 };
@@ -82,6 +82,7 @@ export const Header: FC<HeaderProps> = ({ user, opened, toggle, caption, buttons
                 <Box visibleFrom="md">
                   {buttons.map((button, i) => (
                     <Indicator
+                      key={`btn_${i}`}
                       disabled={!buttonsChanged[i]}
                       display={'inline-flex'}
                       withBorder
@@ -90,8 +91,7 @@ export const Header: FC<HeaderProps> = ({ user, opened, toggle, caption, buttons
                       size={15}
                       position="top-end"
                     >
-                      <Button
-                        key={`btn_${i}`}
+                      <Button  
                         color={button.color}
                         disabled={button.disabled}
                         onClick={() => button.onClick()}
@@ -123,6 +123,7 @@ export const Header: FC<HeaderProps> = ({ user, opened, toggle, caption, buttons
                     <Menu.Dropdown>
                       {buttons.map((button, i) => (
                         <Indicator
+                          key={`btn_${i}`}
                           disabled={!buttonsChanged[i]}
                           withBorder
                           processing
@@ -131,7 +132,6 @@ export const Header: FC<HeaderProps> = ({ user, opened, toggle, caption, buttons
                           position="middle-start"
                         >
                           <Menu.Item
-                            key={`btn_${i}`}
                             color={button.color}
                             disabled={button.disabled}
                             onClick={() => button.onClick()}
@@ -153,7 +153,7 @@ export const Header: FC<HeaderProps> = ({ user, opened, toggle, caption, buttons
               <Menu.Target>
                 <Button px={6} variant="subtle" h={34}>
                   <Flex align="center" gap={10}>
-                    <UserAvatar userName={user?.name ?? ''} />
+                    <UserAvatar userName={user?.userName ?? ''} />
                     <Flex direction="column" align="start">
                       <Text
                         className={classes.profileName}
@@ -162,7 +162,7 @@ export const Header: FC<HeaderProps> = ({ user, opened, toggle, caption, buttons
                         fw={500}
                         lts={-0.3}
                       >
-                        {user?.name}
+                        {user?.userName}
                       </Text>
                     </Flex>
                   </Flex>
@@ -170,7 +170,6 @@ export const Header: FC<HeaderProps> = ({ user, opened, toggle, caption, buttons
               </Menu.Target>
               <Menu.Dropdown>
                 <Menu.Item
-                  disabled
                   leftSection={<FontAwesomeIcon icon='user-md' />}
                   onClick={onProfileClick}
                 >

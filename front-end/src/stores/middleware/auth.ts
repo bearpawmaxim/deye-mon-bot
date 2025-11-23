@@ -1,8 +1,9 @@
 import { createListenerMiddleware, PayloadAction } from "@reduxjs/toolkit";
 import { AppDispatch, RootState } from "../store";
-import { removeToken, setAuthorizationHeader, setToken } from "../../utils";
+import { removeTokens, setAuthorizationHeader, setTokens } from "../../utils";
 import { login, logout } from "../thunks";
 import { resetAuthData } from "../slices";
+import { AuthData } from "../../types";
 
 const authMiddleware = createListenerMiddleware();
 const startListening = authMiddleware.startListening.withTypes<
@@ -12,17 +13,16 @@ const startListening = authMiddleware.startListening.withTypes<
 
 startListening({
   actionCreator: login.fulfilled,
-  effect: (action: PayloadAction<string>) => {
-    const token = action.payload;
-    setToken(token);
-    setAuthorizationHeader(token);
+  effect: ({ payload }: PayloadAction<AuthData>) => {
+    setTokens(payload.accessToken!, payload.refreshToken!);
+    setAuthorizationHeader(payload.accessToken);
   },
 });
 
 startListening({
   actionCreator: logout.fulfilled,
   effect: async () => {
-    removeToken();
+    removeTokens();
     setAuthorizationHeader(null);
   },
 });
@@ -30,7 +30,7 @@ startListening({
 startListening({
   actionCreator: resetAuthData,
   effect: async () => {
-    removeToken();
+    removeTokens();
     setAuthorizationHeader(null);
   },
 });

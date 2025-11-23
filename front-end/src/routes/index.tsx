@@ -2,14 +2,14 @@ import { Navigate, RouteObject, RouterProvider, createBrowserRouter } from "reac
 import { ProtectedRoute } from "./protectedRoute";
 import { LoginPage, HomePage, StationsPage, BotsPage,
   ChatsPage, MessagesPage, MessageEditPage, UsersPage, 
-  BuildingsPage, ExtDataPage,
-  NotFoundPage} from "../pages";
+  BuildingsPage, ExtDataPage, NotFoundPage, 
+  ChangePasswordPage} from "../pages";
 import { FC } from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "../stores/store";
+import { useAppSelector } from "../stores/store";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 import { AnonymousLayout } from "../layouts/anonymousLayout";
 import { PublicLayout } from "../layouts/publicLayout";
+import { authDataSelector } from "../stores/selectors";
 
 export type MenuItem = RouteObject & {
   children?: MenuItem[];
@@ -89,7 +89,14 @@ export const RootRoutes: MenuItem[] = [
 ];
 
 const Routes: FC = () => {
-  const token = useSelector<RootState>(state => state.auth.token);
+  const authData = useAppSelector(authDataSelector);
+  
+  const changePasswordRoute = {
+    path: "/changePassword",
+    element: (<AnonymousLayout caption="Change password">
+      <ChangePasswordPage />
+    </AnonymousLayout>),
+  } as RouteObject;
 
   const loginRoute = {
     path: "/login",
@@ -100,6 +107,7 @@ const Routes: FC = () => {
 
   const routesForAuthenticatedOnly: MenuItem[] = [
     loginRoute,
+    changePasswordRoute,
     {
       path: "/",
       element: (<ProtectedRoute/>),
@@ -109,6 +117,7 @@ const Routes: FC = () => {
 
   const routesForNotAuthenticated: RouteObject[] = [
     loginRoute,
+    changePasswordRoute,
     {
       path: "/",
       element: <PublicLayout>
@@ -118,11 +127,11 @@ const Routes: FC = () => {
     {
       path: '*',
       element: <Navigate to={"/"} />
-    }
+    },
   ];
 
   const router = createBrowserRouter([
-    ...(!token ? routesForNotAuthenticated : []),
+    ...(!authData?.accessToken ? routesForNotAuthenticated : []),
     ...routesForAuthenticatedOnly,
   ]);
 

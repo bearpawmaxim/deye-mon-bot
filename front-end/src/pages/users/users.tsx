@@ -1,18 +1,18 @@
 import { FC, useCallback, useEffect, useRef, useState } from "react"
 import { connect } from "react-redux";
 import { RootState, useAppDispatch } from "../../stores/store";
-import { cancelUsersEditing, deleteUser, deleteUserToken, fetchUsers, generateUserToken, saveUsers } from "../../stores/thunks";
+import { cancelPasswordReset, cancelUsersEditing, deleteUser, deleteUserToken, fetchUsers, generateUserToken, requestPasswordReset, saveUsers } from "../../stores/thunks";
 import { cancelCreatingUser, createUser, startCreatingUser, updateUser } from "../../stores/slices";
 import { PageHeaderButton, useHeaderContent } from "../../providers";
 import { createSelector } from "@reduxjs/toolkit";
 import { UserItem } from "../../stores/types";
 import { DataTable, ErrorMessage, Page } from "../../components";
 import { ColumnDataType } from "../../types";
-import { Badge, Button, Code, CopyButton, Group, Modal, PasswordInput, Stack, Switch, Tabs, Text, TextInput } from "@mantine/core";
+import { Anchor, Badge, Button, Code, CopyButton, Group, Modal, PasswordInput, Stack, Switch, Tabs, Text, Textarea, TextInput } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { getCurlExample, getCurlExampleOneLine, getHomeAssistantExample, integrationNotes } from "../../utils";
+import { generatePasswordResetLink, getApiBaseUrl, getCurlExample, getCurlExampleOneLine, getHomeAssistantExample, integrationNotes } from "../../utils";
 
 
 type ComponentProps = {
@@ -177,6 +177,67 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
     dispatch(updateUser({ id, isReporter }));
   };
 
+  const handleChangePassword = () => {
+    if (editingUser) {
+      dispatch(requestPasswordReset(editingUser.name))
+        .unwrap()
+        .then((token) => {
+          close();
+          const baseUrl = getApiBaseUrl();
+          const link = baseUrl + generatePasswordResetLink(editingUser.name, token);
+          const id = modals.open({
+            title: "Password reset link",
+            children: <>
+              <Text>Either follow this&nbsp;
+                <Anchor href={link} target="_blank">link</Anchor>&nbsp;
+                to change the password or send it to the person who requested the password change.
+              </Text>
+              <Textarea value={link} autosize />
+              <Text c='red.8'>
+                <FontAwesomeIcon icon="exclamation-triangle" />
+                The link is valid 1 hour!
+              </Text>
+              <Group justify="space-between" mt="md">
+                <CopyButton value={viewingToken || ''}>
+                  {({ copied, copy }) => (
+                    <Button
+                      leftSection={<FontAwesomeIcon icon={copied ? 'check' : 'copy'} />}
+                      color={copied ? 'teal' : 'blue'}
+                      onClick={copy}
+                    >
+                      {copied ? 'Copied!' : 'Copy to Clipboard'}
+                    </Button>
+                  )}
+                </CopyButton>
+                <Group>
+                  <Button
+                    variant="default"
+                    onClick={() => {
+                      modals.openConfirmModal({
+                        title: 'Cancel password reset',
+                        children: `Are you sure you want to cancel password reset for user ${editingUser.name}?`,
+                        labels: { confirm: 'Ok', cancel: 'Cancel' },
+                        confirmProps: { color: 'red' },
+                        onConfirm: () => {
+                          modals.close(id);
+                          dispatch(cancelPasswordReset(editingUser.name));
+                        },
+                      });
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={() => modals.close(id)}>
+                    Ok
+                  </Button>
+                </Group>
+              </Group>
+            </>
+          });
+        });
+    }
+  }
+
   return <>
     <Page loading={loading}>
       <DataTable<UserItem>
@@ -307,13 +368,13 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           required
         />
-        <PasswordInput
-          label={editingUser ? "New Password (leave empty to keep current)" : "Password"}
+        { !editingUser && <PasswordInput
+          label={"Password"}
           placeholder="Enter password"
           value={formData.password}
           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
           required={!editingUser}
-        />
+        /> }
         <Switch
           label="Active"
           checked={formData.isActive}
@@ -324,11 +385,19 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
           checked={formData.isReporter}
           onChange={(e) => setFormData({ ...formData, isReporter: e.currentTarget.checked })}
         />
-        <Group justify="flex-end" mt="md">
-          <Button variant="default" onClick={handleCancel}>Cancel</Button>
-          <Button onClick={handleSave} disabled={!formData.name || (!editingUser && !formData.password)}>
-            {editingUser ? 'Update' : 'Create'}
+        <Group justify="space-between" mt="md">
+          <Button
+            color='orange'
+            onClick={handleChangePassword}
+          >
+            Change password
           </Button>
+          <Group justify="flex-end">
+            <Button variant="default" onClick={handleCancel}>Cancel</Button>
+            <Button onClick={handleSave} disabled={!formData.name || (!editingUser && !formData.password)}>
+              {editingUser ? 'Update' : 'Create'}
+            </Button>
+          </Group>
         </Group>
       </Stack>
     </Modal>

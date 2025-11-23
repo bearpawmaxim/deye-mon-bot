@@ -9,20 +9,22 @@ import { loginSchema, LoginType } from '../schemas';
 import { useLoading } from '../providers';
 import { ErrorMessage } from '../components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { AuthData } from '../types';
+import { authDataSelector } from '../stores/selectors';
 
 type ComponentProps = {
   loading: boolean;
   error?: string;
-  token: string | null;
+  authData: AuthData | null;
 };
 
 const mapStateToProps = (state: RootState): ComponentProps => ({
   loading: state.auth.loading,
   error: state.auth.error,
-  token: state.auth.token,
+  authData: authDataSelector(state),
 });
 
-const Component: FC<ComponentProps> = ({ loading, error, token }) => {
+const Component: FC<ComponentProps> = ({ loading, error, authData }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -31,16 +33,16 @@ const Component: FC<ComponentProps> = ({ loading, error, token }) => {
   const returnUrl = new URLSearchParams(location.search).get("returnUrl") || "/";
 
   useEffect(() => {
-    if (token) {
+    if (authData?.accessToken) {
       navigate('/');
     }
-  }, [token, navigate]);
+  }, [authData, navigate]);
 
   useEffect(() => {
-    if (token) {
+    if (authData?.accessToken) {
       navigate(returnUrl.endsWith('notAllowed') ? "/" : returnUrl, { replace: true });
     }
-  }, [token, returnUrl, navigate]);
+  }, [authData, returnUrl, navigate]);
 
   useEffect(() => {
     setLoading(loading);
@@ -48,7 +50,7 @@ const Component: FC<ComponentProps> = ({ loading, error, token }) => {
 
   const changePassword = async (data: LoginType) => {
     dispatch(login({
-      username: data.username,
+      userName: data.userName,
       password: data.password,
     }));
   };
@@ -72,7 +74,7 @@ const Component: FC<ComponentProps> = ({ loading, error, token }) => {
         required
         radius="md"
         leftSection={<FontAwesomeIcon icon={'user-md'} />}
-        {...registerControl('username')}
+        {...registerControl('userName')}
       />
       <PasswordInput
         placeholder={'Password'}
