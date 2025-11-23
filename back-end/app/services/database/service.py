@@ -324,10 +324,18 @@ class DatabaseService:
 
     def get_user(self, user_name: str):
         return self._session.query(User).filter_by(is_active=True, name=user_name).first()
-    
+
     def get_user_by_id(self, user_id: int):
         return self._session.query(User).filter_by(id=user_id, is_active=True).first()
-    
+
+    def get_user_by_reset_token(self, token: str):
+        return (
+            self._session.query(User)
+            .filter_by(password_reset_token=token, is_active=True)
+            .with_for_update()
+            .first()
+        )
+
     def create_user(self, user_name: str, password: str):
         existing_user = self.get_user(user_name)
         if not existing_user:
@@ -336,6 +344,20 @@ class DatabaseService:
                 password = password
             )
             self._session.add(user)
+
+    def update_user(self, user_id: int, username: str):
+        existing_user = self.get_user_by_id(user_id)
+        if existing_user:
+            existing_user.name = username
+            self._session.commit()
+
+    def change_password(self, user_id: int, new_password: str):
+        existing_user = self.get_user_by_id(user_id)
+        if existing_user:
+            existing_user.password = new_password
+            existing_user.password_reset_token = None
+            existing_user.reset_token_expiration = None
+            self._session.commit()
 
     def get_bots(self, all: bool = False):
         query = self._session.query(Bot)
@@ -361,7 +383,7 @@ class DatabaseService:
             self._session.rollback()
             print(f"Error updating bot: {e}")
             return None
-    
+
     def get_buildings(self):
         query = self._session.query(Building)
         return query.all()
@@ -399,7 +421,7 @@ class DatabaseService:
             self._session.rollback()
             print(f"Error updating building: {e}")
             return None
-        
+
     def delete_building(self, building_id: int):
         try:
             building = self._session.query(Building).filter_by(id=building_id).first()
@@ -482,7 +504,7 @@ class DatabaseService:
             self._session.rollback()
             print(f"Error deleting user: {e}")
             return False
-    
+
     def generate_user_api_token(self, id: int, token: str):
         try:
             user = self._session.query(User).filter_by(id=id).with_for_update().first()
@@ -494,7 +516,7 @@ class DatabaseService:
             self._session.rollback()
             print(f"Error generating API token for user: {e}")
             return None
-    
+
     def delete_user_api_token(self, id: int):
         try:
             user = self._session.query(User).filter_by(id=id).with_for_update().first()
@@ -513,7 +535,7 @@ class DatabaseService:
         except Exception as e:
             print(f'Error getting ext data: {e}')
             return []
-    
+
     def get_latest_ext_data_by_user_id(self, user_id: int):
         try:
             return (
@@ -550,3 +572,6 @@ class DatabaseService:
     def delete_old_ext_data(self):
         timeout = datetime.now(timezone.utc) - timedelta(days=self._statistic_keep_days)
         self._session.query(ExtData).filter(ExtData.received_at < timeout).delete(synchronize_session=False)
+
+    def save_changes(self):
+        self._session.commit()

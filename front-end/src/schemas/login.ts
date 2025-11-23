@@ -1,7 +1,7 @@
 import * as v from 'valibot';
 
 export const loginSchema = v.object({
-  username: v.pipe(
+  userName: v.pipe(
     v.string(),
     v.trim(),
     v.minLength(1, 'Username is required')

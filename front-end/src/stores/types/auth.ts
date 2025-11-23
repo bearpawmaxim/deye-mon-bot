@@ -1,10 +1,15 @@
-export type UserData = {
-  name: string;
+import { ProfileEdit } from "../../schemas";
+
+export type ProfileData = {
+  userId: number;
+  userName: string;
 };
 
 export type AuthState = {
-  token: string | null;
+  accessToken: string | null;
+  refreshToken: string | null;
   loading: boolean;
   error?: string;
-  user?: UserData; 
+  profile?: ProfileData;
+  editingProfile?: ProfileEdit;
 };

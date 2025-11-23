@@ -13,7 +13,7 @@ import { connect } from "react-redux";
 import { IconButton } from "../../components";
 import { PageHeaderButton, useHeaderContent } from "../../providers";
 import { BuildingEditType } from "../../schemas";
-import { createSelectEdittedBuildings } from "../../stores/selectors";
+import { authDataSelector, createSelectEdittedBuildings } from "../../stores/selectors";
 
 type ComponentProps = {
   loadingConfig: boolean;
@@ -52,7 +52,7 @@ const Component: FC<ComponentProps> = ({
   outagesSchedule,
   outagesScheduleError,
 }) => {
-  const isAuthenticated = useAppSelector(s => s.auth.token !== null);
+  const isAuthenticated = Boolean(useAppSelector(authDataSelector));
   const dispatch = useAppDispatch();
 
   const fetchData = useCallback(() => {
