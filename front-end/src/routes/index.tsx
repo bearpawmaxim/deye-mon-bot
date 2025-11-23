@@ -5,10 +5,11 @@ import { LoginPage, HomePage, StationsPage, BotsPage,
   BuildingsPage, ExtDataPage, NotFoundPage, 
   ChangePasswordPage} from "../pages";
 import { FC } from "react";
-import { RootState, useAppSelector } from "../stores/store";
+import { useAppSelector } from "../stores/store";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 import { AnonymousLayout } from "../layouts/anonymousLayout";
 import { PublicLayout } from "../layouts/publicLayout";
+import { authDataSelector } from "../stores/selectors";
 
 export type MenuItem = RouteObject & {
   children?: MenuItem[];
@@ -88,7 +89,7 @@ export const RootRoutes: MenuItem[] = [
 ];
 
 const Routes: FC = () => {
-  const token = useAppSelector((state: RootState) => state.auth.token);
+  const authData = useAppSelector(authDataSelector);
   
   const changePasswordRoute = {
     path: "/changePassword",
@@ -130,7 +131,7 @@ const Routes: FC = () => {
   ];
 
   const router = createBrowserRouter([
-    ...(!token ? routesForNotAuthenticated : []),
+    ...(!authData?.accessToken ? routesForNotAuthenticated : []),
     ...routesForAuthenticatedOnly,
   ]);
 

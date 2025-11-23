@@ -4,6 +4,7 @@ import { AxiosError } from 'axios';
 import apiClient from '../../utils/apiClient';
 import { getErrorMessage } from '../../utils';
 import { RootState } from '../store';
+import { AuthData } from '../../types';
 
 export const fetchProfile = createAsyncThunk('auth/fetchProfile', async (_, {rejectWithValue}) => {
   try {
@@ -72,18 +73,16 @@ export type LoginRequest = {
   password: string;
 };
 
-export type LoginResponse = BaseResponse & {
-  access_token?: string;
+export type LoginResponse = BaseResponse & AuthData & {
   error?: string;
 };
 
-export const login = createAsyncThunk<string, LoginRequest>(
+export const login = createAsyncThunk<LoginResponse, LoginRequest>(
   'auth/login',
   async (request, { fulfillWithValue, rejectWithValue }) => {
     try {
       const response = await apiClient.post<LoginResponse>('/auth/login', request);
-      const token = response.data.access_token!;
-      return fulfillWithValue(token);
+      return fulfillWithValue(response.data);
     } catch(error: unknown) {
       if (error instanceof AxiosError) {
         return rejectWithValue(error.response?.data?.error);
@@ -93,5 +92,5 @@ export const login = createAsyncThunk<string, LoginRequest>(
   });
 
 export const logout = createAsyncThunk('auth/logout', async () => {
-  return await apiClient.post('/auth/logout');
+  await apiClient.post('/auth/logout');
 });

@@ -23,12 +23,12 @@ def jwt_required_reporter_only():
     return wrapper
 
 
-def jwt_required():
+def jwt_required(refresh: bool = False):
 
     def wrapper(fn):
         @wraps(fn)
         def decorator(*args, **kwargs):
-            verify_jwt_in_request()
+            verify_jwt_in_request(refresh=refresh)
             claims = get_jwt()
             
             # Block access if user is a reporter

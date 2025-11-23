@@ -38,7 +38,13 @@ class Config:
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
     if not JWT_SECRET_KEY:
         JWT_SECRET_KEY = generate_secret_key(64)
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600))
+
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(
+        seconds=int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600))
+    )
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(
+        seconds=int(os.getenv('JWT_REFRESH_TOKEN_EXPIRES', 3600 * 24))
+    )
 
     ADMIN_USER = os.getenv('ADMIN_USER')
     ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')

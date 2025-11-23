@@ -6,7 +6,8 @@ export type ProfileData = {
 };
 
 export type AuthState = {
-  token: string | null;
+  accessToken: string | null;
+  refreshToken: string | null;
   loading: boolean;
   error?: string;
   profile?: ProfileData;

@@ -12,8 +12,8 @@ def register(app, services: Services):
         user_name = rjson.get("userName", None)
         password = rjson.get("password", None)
         try:
-            token = services.authorization.login(user_name, password)
-            return { "success": True, "access_token": token }
+            access_token, refresh_token = services.authorization.login(user_name, password)
+            return { "success": True, "accessToken": access_token, "refreshToken": refresh_token }
         except ValueError as e:
             return { "success": False, "error": str(e) }, 401
 
@@ -86,21 +86,13 @@ def register(app, services: Services):
         except ValueError as e:
             return { "success": False, "error": str(e) }, 401
 
-    @app.after_request
-    def refresh_expiring_jwts(response):
-        try:
-            exp_timestamp = get_jwt()["exp"]
-            now = datetime.now(timezone.utc)
-            target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
-            if target_timestamp > exp_timestamp:
-                access_token = create_access_token(identity=get_jwt_identity())
-                data = response.get_json()
 
-                # TODO: switch to unified API response (success, error, data)
-                # to always have an ability to pass the token
-                if type(data) is dict:
-                    data["access_token"] = access_token
-                    response.data = json.dumps(data)
-            return response
-        except (RuntimeError, KeyError):
-            return response
+    @app.route("/api/auth/refresh", methods=["POST"])
+    @jwt_required(refresh=True)
+    def refresh():
+        identity = get_jwt_identity()
+        access_token = create_access_token(identity=identity)
+        auth_header = request.headers.get("Authorization", "")
+        raw_refresh_token = auth_header.replace("Bearer ", "")
+
+        return { "success": True, "accessToken": access_token, "refreshToken": raw_refresh_token }

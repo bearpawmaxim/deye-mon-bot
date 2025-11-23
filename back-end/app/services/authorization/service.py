@@ -1,7 +1,8 @@
 from datetime import datetime, timezone, timedelta
 import secrets
+from typing import Tuple
 from flask import Flask
-from flask_jwt_extended import JWTManager, create_access_token
+from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token
 from flask_bcrypt import Bcrypt
 from app.services.database.service import DatabaseService
 from app.models import User
@@ -27,9 +28,11 @@ class AuthorizationService():
 
         return user
 
-    def login(self, username: str, password: str):
-        user = self._get_user(username, password)
-        return create_access_token(identity=user.name)
+    def login(self, user_name: str, password: str) -> Tuple[str, str]:
+        user = self._get_user(user_name, password)
+        access_token = create_access_token(identity=user.name)
+        refresh_token = create_refresh_token(identity=user.name)
+        return access_token, refresh_token
 
     def _generate_passwd_reset_token(self, user: User):
         user.password_reset_token = secrets.token_urlsafe(64)

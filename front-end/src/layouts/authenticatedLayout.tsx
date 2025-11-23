@@ -13,27 +13,29 @@ import useLocalStorage from "../hooks/useLocalStorage";
 import { ProfileData } from "../stores/types";
 import { fetchProfile, logout } from "../stores/thunks";
 import { openProfileEditDialog } from "../dialogs";
+import { authDataSelector } from "../stores/selectors";
+import { AuthData } from "../types";
 
 type ComponentProps = {
-  token: string | null;
+  authData: AuthData | null;
   profile: ProfileData;
 };
 
 const mapStateToProps = (state: RootState): ComponentProps => ({
-  token: state.auth.token,
+  authData: authDataSelector(state),
   profile: state.auth.profile!,
 });
 
-const Component: FC<ComponentProps> = ({ token, profile }) => {
+const Component: FC<ComponentProps> = ({ authData, profile }) => {
   const dispatch = useAppDispatch()
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (token && !profile) {
+    if (authData?.accessToken && !profile) {
       dispatch(fetchProfile());
     }
-  }, [token, profile, dispatch]);
+  }, [authData, profile, dispatch]);
 
   const [opened, { toggle, close }] = useDisclosure();
 
@@ -108,7 +110,7 @@ const Component: FC<ComponentProps> = ({ token, profile }) => {
       </AppShell.Navbar>
       <AppShell.Main>
         <Suspense>
-          { token && profile && <Outlet /> }
+          { authData?.accessToken && profile && <Outlet /> }
         </Suspense>
       </AppShell.Main>
     </AppShell>

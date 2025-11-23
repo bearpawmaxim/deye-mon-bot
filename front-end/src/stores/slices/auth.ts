@@ -1,11 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AuthState, ProfileData } from "../types";
-import { fetchProfile, login, logout } from "../thunks";
-import { getToken } from "../../utils/tokenStorage";
+import { fetchProfile, login, LoginResponse, logout } from "../thunks";
+import { getAccessToken, getRefreshToken } from "../../utils/tokenStorage";
 import { ProfileEdit } from "../../schemas";
+import { AuthData } from "../../types";
 
 const initialState: AuthState = {
-  token: getToken(),
+  accessToken: getAccessToken(),
+  refreshToken: getRefreshToken(),
   loading: false,
 };
 
@@ -13,11 +15,13 @@ export const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    updateAuthData: (state, action: PayloadAction<string>) => {
-      state.token = action.payload;
+    updateAuthData: (state, { payload }: PayloadAction<AuthData>) => {
+      state.accessToken = payload.accessToken;
+      state.refreshToken = payload.refreshToken;
     },
     resetAuthData: (state) => {
-      state.token = null;
+      state.accessToken = null;
+      state.refreshToken = null;
     },
     startEditingProfile: (state) => {
       state.editingProfile = {
@@ -37,14 +41,16 @@ export const authSlice = createSlice({
       .addCase(logout.fulfilled, (state) => {
         state.loading = false;
         delete state.profile;
-        state.token = null;
+        state.accessToken = null;
+        state.refreshToken = null;
       });
     builder
       .addCase(login.pending, (state) => {
         state.loading = true;
       })
-      .addCase(login.fulfilled, (state, { payload }: PayloadAction<string>) => {
-        state.token = payload!;
+      .addCase(login.fulfilled, (state, { payload }: PayloadAction<LoginResponse>) => {
+        state.accessToken = payload!.accessToken;
+        state.refreshToken = payload!.refreshToken;
         state.loading = false;
       })
       .addCase(login.rejected, (state, action: PayloadAction<unknown>) => {
@@ -62,21 +68,8 @@ export const authSlice = createSlice({
       .addCase(fetchProfile.rejected, (state) => {
         state.loading = false;
         delete state.profile;
-        state.token = null;
+        state.accessToken = null;
       });
-    // builder
-    //   .addCase(saveProfile.pending, (state) => {
-    //     state.loading = true;
-    //   })
-    //   .addCase(saveProfile.fulfilled, (state, action: PayloadAction<ProfileData>) => {
-    //     state.profile = action.payload;
-    //     state.loading = false;
-    //   })
-    //   .addCase(saveProfile.rejected, (state) => {
-    //     state.loading = false;
-    //     delete state.profile;
-    //     state.token = null;
-    //   });
   },
 });
 
