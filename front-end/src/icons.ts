@@ -45,7 +45,8 @@ import {
   faChevronDown,
   faClock,
   faTriangleExclamation,
-  faHourglass
+  faHourglass,
+  faExclamationTriangle
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add([
@@ -96,7 +97,8 @@ library.add([
   faChevronDown,
   faClock,
   faTriangleExclamation,
-  faHourglass
+  faHourglass,
+  faExclamationTriangle
 ]);
 
 export default library;

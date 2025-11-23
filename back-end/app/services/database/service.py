@@ -324,17 +324,17 @@ class DatabaseService:
 
     def get_user(self, user_name: str):
         return self._session.query(User).filter_by(is_active=True, name=user_name).first()
-    
+
     def get_user_by_id(self, user_id: int):
         return self._session.query(User).filter_by(id=user_id, is_active=True).first()
-    
+
     def get_user_by_reset_token(self, token: str):
         return (
             self._session.query(User)
             .filter_by(password_reset_token=token, is_active=True)
             .first()
         )
-    
+
     def create_user(self, user_name: str, password: str):
         existing_user = self.get_user(user_name)
         if not existing_user:
@@ -382,7 +382,7 @@ class DatabaseService:
             self._session.rollback()
             print(f"Error updating bot: {e}")
             return None
-    
+
     def get_buildings(self):
         query = self._session.query(Building)
         return query.all()
@@ -420,7 +420,7 @@ class DatabaseService:
             self._session.rollback()
             print(f"Error updating building: {e}")
             return None
-        
+
     def delete_building(self, building_id: int):
         try:
             building = self._session.query(Building).filter_by(id=building_id).first()
@@ -503,7 +503,7 @@ class DatabaseService:
             self._session.rollback()
             print(f"Error deleting user: {e}")
             return False
-    
+
     def generate_user_api_token(self, id: int, token: str):
         try:
             user = self._session.query(User).filter_by(id=id).with_for_update().first()
@@ -515,7 +515,7 @@ class DatabaseService:
             self._session.rollback()
             print(f"Error generating API token for user: {e}")
             return None
-    
+
     def delete_user_api_token(self, id: int):
         try:
             user = self._session.query(User).filter_by(id=id).with_for_update().first()
@@ -534,7 +534,7 @@ class DatabaseService:
         except Exception as e:
             print(f'Error getting ext data: {e}')
             return []
-    
+
     def get_latest_ext_data_by_user_id(self, user_id: int):
         try:
             return (

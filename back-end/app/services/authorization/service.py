@@ -47,20 +47,29 @@ class AuthorizationService():
 
         return user
 
-    def create_reporter_token(self, username: str):
-        return create_access_token(identity=username, additional_claims={"is_reporter": True}, expires_delta=False)
+    def create_reporter_token(self, user_name: str):
+        return create_access_token(identity=user_name, additional_claims={"is_reporter": True}, expires_delta=False)
 
-    def add_user(self, username: str, password: str):
+    def add_user(self, user_name: str, password: str):
         hashed_password = self._bcrypt.generate_password_hash(password)
-        self._database.create_user(username, hashed_password)
+        self._database.create_user(user_name, hashed_password)
 
-    def start_change_password(self, username: str):
-        user = self._database.get_user(username)
+    def start_change_password(self, user_name: str):
+        user = self._database.get_user(user_name)
         if user is None:
-            raise ValueError(f"Cannot find user '{username}'")
+            raise ValueError(f"Cannot find user '{user_name}'")
 
         token = self._generate_passwd_reset_token(user)
         return token
+    
+    def cancel_change_password(self, user_name: str):
+        user = self._database.get_user(user_name)
+        if user is None:
+            raise ValueError(f"Cannot find user '{user_name}'")
+        
+        user.password_reset_token = None
+        user.reset_token_expiration = None
+        self._database.save_changes()
 
     def change_password(self, token: str, new_password: str):
         user = self._database.get_user_by_reset_token(token)

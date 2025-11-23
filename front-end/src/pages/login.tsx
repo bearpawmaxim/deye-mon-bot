@@ -48,7 +48,7 @@ const Component: FC<ComponentProps> = ({ loading, error, token }) => {
 
   const changePassword = async (data: LoginType) => {
     dispatch(login({
-      username: data.username,
+      userName: data.userName,
       password: data.password,
     }));
   };
@@ -72,7 +72,7 @@ const Component: FC<ComponentProps> = ({ loading, error, token }) => {
         required
         radius="md"
         leftSection={<FontAwesomeIcon icon={'user-md'} />}
-        {...registerControl('username')}
+        {...registerControl('userName')}
       />
       <PasswordInput
         placeholder={'Password'}

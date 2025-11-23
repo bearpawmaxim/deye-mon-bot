@@ -29,9 +29,21 @@ export const saveProfile = createAsyncThunk(
 
 export const requestPasswordReset = createAsyncThunk<string, string>(
   'auth/startPasswordReset',
-  async (username: string, { fulfillWithValue, rejectWithValue }) => {
+  async (userName: string, { fulfillWithValue, rejectWithValue }) => {
     try {
-      const response = await apiClient.post('/auth/startPasswordChange', { username });
+      const response = await apiClient.post('/auth/startPasswordChange', { userName });
+      const token = response.data.resetToken;
+      return fulfillWithValue(token);
+    } catch (error: unknown) {
+      return rejectWithValue(getErrorMessage(error, 'Failed to request password reset'));
+    }
+  });
+
+export const cancelPasswordReset = createAsyncThunk<void, string>(
+  'auth/cancelPasswordReset',
+  async (userName: string, { fulfillWithValue, rejectWithValue }) => {
+    try {
+      const response = await apiClient.post('/auth/cancelPasswordChange', { userName });
       const token = response.data.resetToken;
       return fulfillWithValue(token);
     } catch (error: unknown) {
@@ -56,7 +68,7 @@ export const changePassword = createAsyncThunk<void, ChangePasswordRequest>(
   });
 
 export type LoginRequest = {
-  username: string;
+  userName: string;
   password: string;
 };
 

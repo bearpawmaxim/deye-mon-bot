@@ -5,12 +5,12 @@ export const passwordEditSchema = v.pipe(
   v.object({
     newPassword: v.pipe(
       v.string(),
-      v.minLength(6, 'validation.password.tooShort'),
-      v.maxLength(30, 'validation.password.tooLong'),
-      v.regex(/[a-z]/, 'validation.password.mustContainLowercase'),
-      v.regex(/[A-Z]/, 'validation.password.mustContainUppercase'),
-      v.regex(/[0-9]/, 'validation.password.mustContainNumber'),
-      v.regex(/[\W_]/, 'validation.password.mustContainSpecialCharacter'),
+      v.minLength(6, 'Password is too short'),
+      v.maxLength(30, 'Password is too long'),
+      v.regex(/[a-z]/, 'Password must contain a lower-case letter'),
+      v.regex(/[A-Z]/, 'Password must contain an upper-case letter'),
+      v.regex(/[0-9]/, 'Password must contain a digit'),
+      v.regex(/[\W_]/, 'Password must contain a special character'),
     ),
     repeatNewPassword: v.string(),
   }),
@@ -18,7 +18,7 @@ export const passwordEditSchema = v.pipe(
     v.partialCheck(
       [['newPassword'], ['repeatNewPassword']],
       (input) => input.newPassword === input.repeatNewPassword,
-      'validation.repeatPassword.doesNotMatch',
+      'Passwords does not match',
     ),
     ['repeatNewPassword'],
 ));
