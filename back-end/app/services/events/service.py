@@ -1,52 +1,55 @@
 from threading import RLock
+from queue import Queue
+from typing import Set, Tuple
 from .models import EventItem
+
+Client = Tuple[Queue, bool]
 
 class EventsService:
     def __init__(self):
-        self.clients = set()
-        self.lock = RLock()
+        self._clients: Set[Client] = set()
+        self._lock = RLock()
 
-    def add_client(self, q, is_authenticated: bool):
-        with self.lock:
-            self.clients.add((q, is_authenticated))
+    def add_client(self, q: Queue, is_authenticated: bool):
+        with self._lock:
+            self._clients.add((q, is_authenticated))
 
-    def remove_client(self, q):
-        with self.lock:
-            self.clients = {
-                (cq, auth) for (cq, auth) in self.clients if cq != q
-            }
+    def remove_client(self, q: Queue):
+        with self._lock:
+            self._clients = {(cq, auth) for (cq, auth) in self._clients if cq != q}
 
     def _broadcast(self, event: EventItem):
-        with self.lock:
-            dead = []
-            for q, is_authenticated in self.clients:
+        dead_clients: Set[Queue] = set()
+
+        with self._lock:
+            for q, is_authenticated in self._clients:
                 if event.private and not is_authenticated:
                     continue
-
                 try:
                     q.put_nowait(event)
-                except:
-                    dead.append(q)
+                except Exception:
+                    dead_clients.add(q)
 
-            if dead:
-                self.clients = {
-                    (cq, auth)
-                    for (cq, auth) in self.clients
-                    if cq not in dead
+            if dead_clients:
+                self._clients = {
+                    (cq, auth) for (cq, auth) in self._clients if cq not in dead_clients
                 }
 
-    def broadcast_private(self, type: str, data: dict = None):
-        evt = EventItem(
-            type    = type,
-            data    = data,
-            private = True
-        )
+    def broadcast_public(self, type: str, data: dict = None):
+        evt = EventItem(type=type, data=data, private=False)
         self._broadcast(evt)
 
-    def broadcast_public(self, type: str, data: dict = None):
-        evt = EventItem(
-            type    = type,
-            data    = data,
-            private = False
-        )
+    def broadcast_private(self, type: str, data: dict = None):
+        evt = EventItem(type=type, data=data, private=True)
         self._broadcast(evt)
+
+    def cleanup_dead_clients(self):
+        dead_clients: Set[Queue] = set()
+        with self._lock:
+            for q, _ in self._clients:
+                try:
+                    q.put_nowait(None)
+                except Exception:
+                    dead_clients.add(q)
+            if dead_clients:
+                self._clients = {(cq, auth) for (cq, auth) in self._clients if cq not in dead_clients}
