@@ -1,10 +1,10 @@
-from threading import Lock
+from threading import RLock
 from .models import EventItem
 
 class EventsService:
     def __init__(self):
         self.clients = set()
-        self.lock = Lock()
+        self.lock = RLock()
 
     def add_client(self, q, is_authenticated: bool):
         with self.lock:
