@@ -11,6 +11,7 @@ from .telegram import TelegramConfig, TelegramService
 from .authorization import AuthorizationService
 from .visit_counter import VisitCounterService
 from .outages_schedule import OutagesScheduleService
+from .events import EventsService, EventItem
 
 class Services:
     db: SQLAlchemy
@@ -23,6 +24,7 @@ class Services:
     executor: Executor
     visit_counter: VisitCounterService
     outages_scgedule: OutagesScheduleService
+    events: EventsService
 
     def __init__(
         self,
@@ -35,7 +37,8 @@ class Services:
         authorization: AuthorizationService,
         executor: Executor,
         visit_counter: VisitCounterService,
-        outages_scgedule: OutagesScheduleService
+        outages_scgedule: OutagesScheduleService,
+        events: EventsService
     ):
         self.db = db
         self.deye_api = deye_api
@@ -47,12 +50,14 @@ class Services:
         self.executor = executor
         self.visit_counter = visit_counter
         self.outages_scgedule = outages_scgedule
+        self.events = events
 
 
 def initialize_services(config: Config):
     db = SQLAlchemy()
 
     scheduler = APScheduler()
+    events = EventsService()
 
     deye_api_config = DeyeConfig(
         app_id = config.DEYE_APP_ID,
@@ -86,9 +91,8 @@ def initialize_services(config: Config):
 
     executor = Executor()
 
-    visit_counter = VisitCounterService(db)
-
-    outages_schedule = OutagesScheduleService()
+    visit_counter = VisitCounterService(db, events)
+    outages_schedule = OutagesScheduleService(events)
 
     return Services(
         db = db,
@@ -100,8 +104,9 @@ def initialize_services(config: Config):
         authorization = authorization,
         executor = executor,
         visit_counter = visit_counter,
-        outages_scgedule = outages_schedule
+        outages_scgedule = outages_schedule,
+        events = events
     )
 
 __all__ = [Services, AuthorizationService, DatabaseService, BotService, DeyeConfig,
-           DeyeApiService, TelegramConfig, TelegramService, VisitCounterService]
+           DeyeApiService, TelegramConfig, TelegramService, VisitCounterService, EventsService, EventItem]

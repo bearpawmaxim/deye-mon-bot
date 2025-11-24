@@ -2,13 +2,13 @@ import string
 from pydantic import ValidationError
 import requests
 from .models import SchedulesResponse
+from app.services.base import BaseService
 
-class OutagesScheduleService:
+class OutagesScheduleService(BaseService):
 
-    def __init__(self):
+    def __init__(self, events):
+        super().__init__(events)
         self._cache = {}
-        pass
-
 
     def get_schedule(self, queue: string):
         schedule = self._cache.root.get(queue)
@@ -35,6 +35,7 @@ class OutagesScheduleService:
             parsed = SchedulesResponse.model_validate(data)
 
             self._cache = parsed
+            self.broadcast_public("outages_updated")
 
         except requests.exceptions.Timeout:
             print("Request to YASNO API timed out")

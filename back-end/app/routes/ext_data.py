@@ -1,6 +1,6 @@
 from flask import jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.services import Services
+from app.services import Services, EventItem
 from app.utils.jwt_decorators import jwt_required_reporter_only, jwt_required
 
 
@@ -41,7 +41,8 @@ def register(app, services: Services):
                 return jsonify({'error': 'Failed to update data state'}), 500
             
             services.db.session.commit()
-            
+            services.events.broadcast_public("ext_data_updated")
+
             return jsonify({'status': 'ok'}), 200
             
         except Exception as e:

@@ -32,4 +32,5 @@ def register(app, services: Services):
         battery_capacity = request.json.get("batteryCapacity", None)
         station_id = services.database.save_station_data(id, enabled, order, battery_capacity)
         services.db.session.commit()
+        services.events.broadcast_private("stations_updated")
         return jsonify({ 'success': True, 'id': station_id }), 200
