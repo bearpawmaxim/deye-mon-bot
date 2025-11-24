@@ -1,8 +1,9 @@
 import string
 from pydantic import ValidationError
 import requests
-from .models import SchedulesResponse
 from app.services.base import BaseService
+from datetime import datetime, timezone, timedelta
+from .models import SchedulesResponse, DayStatus
 
 class OutagesScheduleService(BaseService):
 
@@ -33,6 +34,14 @@ class OutagesScheduleService(BaseService):
 
             data = response.json()
             parsed = SchedulesResponse.model_validate(data)
+            
+            # Validate dates from YASNO API
+            now = datetime.now(timezone.utc)
+            for unit in parsed.root.values():
+                if unit.today.date.date() != now.date():
+                    unit.today.status = DayStatus.WaitingForSchedule
+                if unit.tomorrow.date.date() != (now.date() + timedelta(days=1)):
+                    unit.tomorrow.status = DayStatus.WaitingForSchedule
 
             self._cache = parsed
             self.broadcast_public("outages_updated")
