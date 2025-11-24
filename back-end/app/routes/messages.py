@@ -111,6 +111,8 @@ def register(app, services: Services):
         enabled = request.json.get("enabled", False)
         services.database.save_message_state(id, enabled)
         services.db.session.commit()
+        services.events.broadcast_private("messages_updated")
+
         return jsonify({ 'success': True, 'id': id }), 200
 
     @app.route('/api/messages/save', methods=['PATCH'])
@@ -130,4 +132,5 @@ def register(app, services: Services):
         )
         id = services.database.save_message(message)
         services.db.session.commit()
+        services.events.broadcast_private("messages_updated")
         return jsonify({ 'success': True, 'id': id }), 200

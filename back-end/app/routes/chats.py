@@ -72,6 +72,7 @@ def register(app: Flask, services: Services):
 
         services.database.approve_chat_request(request_id)
         services.db.session.commit()
+        services.events.broadcast_private("chats_updated")
 
         return { "ok": True }
     
@@ -82,6 +83,7 @@ def register(app: Flask, services: Services):
 
         services.database.reject_chat_request(request_id)
         services.db.session.commit()
+        services.events.broadcast_private("chats_updated")
 
         return { "ok": True }
     
@@ -92,5 +94,6 @@ def register(app: Flask, services: Services):
 
         services.database.disallow_chat(chat_id)
         services.db.session.commit()
+        services.events.broadcast_private("chats_updated")
 
         return { "ok": True }

@@ -85,7 +85,7 @@ def initialize_services(config: Config):
 
     bot_config = BotConfig(config.BOT_TIMEZONE)
     print(bot_config)
-    bot = BotService(bot_config, deye_api, telegram, database)
+    bot = BotService(bot_config, deye_api, telegram, database, events)
 
     authorization = AuthorizationService(database)
 

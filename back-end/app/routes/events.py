@@ -17,7 +17,6 @@ def register(app, services: Services):
             try:
                 while True:
                     event = q.get()
-                    print(f"uthed: {is_authenticated}, type: {event}")
                     if is_authenticated and user_name is not None:
                         event.user = user_name
                     yield f"data: {json.dumps(event.to_dict())}\n\n"

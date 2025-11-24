@@ -1,6 +1,15 @@
 import { Middleware, ThunkDispatch, Action } from "@reduxjs/toolkit";
 import { eventsService } from "../../services";
-import { fetchVisitStats, fetchStations, fetchBuildings, fetchOutagesSchedule } from "../thunks";
+import {
+  fetchVisitStats,
+  fetchStations,
+  fetchBuildings,
+  fetchOutagesSchedule,
+  fetchMessages,
+  fetchAllowedChats,
+  fetchChatRequests,
+  fetchDashboardConfig
+} from "../thunks";
 
 export const eventsMiddleware: Middleware<
   object,
@@ -22,7 +31,12 @@ export const eventsMiddleware: Middleware<
         store.dispatch<unknown>(fetchVisitStats());
         break;
 
+      case "dashboard_config_updated":
+        store.dispatch<unknown>(fetchDashboardConfig());
+        break;
+
       case "station_data_updated":
+      case "buildings_updated":
       case "ext_data_updated":
         if (event.type === "station_data_updated" && isAuthenticated) {
           store.dispatch<unknown>(fetchStations());
@@ -37,6 +51,15 @@ export const eventsMiddleware: Middleware<
         }
         break;
       }
+
+      case "messages_updated":
+        store.dispatch<unknown>(fetchMessages());
+        break;
+
+      case "chats_updated":
+        store.dispatch<unknown>(fetchAllowedChats());
+        store.dispatch<unknown>(fetchChatRequests());
+        break;
 
       default:
         console.warn("Unhandled SSE event:", event.type);

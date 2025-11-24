@@ -111,6 +111,7 @@ def register(app, services: Services):
             services.database.create_dashboard_config(key, value_str)
 
         services.db.session.commit()
+        services.events.broadcast_public("dashboard_config_updated")
         configs = services.database.get_dashboard_config()
         configs_dict = [{'key': c.key, 'value': c.value} for c in configs]
         return jsonify(configs_dict)
@@ -139,6 +140,7 @@ def register(app, services: Services):
         )
         building_id = services.database.save_building(building)
         services.db.session.commit()
+        services.events.broadcast_public("buildings_updated")
         return jsonify({ 'success': True, 'id': building_id }), 200
     
     @app.route('/api/buildings/delete/<building_id>', methods=['DELETE'])
@@ -146,4 +148,5 @@ def register(app, services: Services):
     def delete_building(building_id: int):
         services.database.delete_building(building_id)
         services.db.session.commit()
+        services.events.broadcast_public("buildings_updated")
         return jsonify({ 'success': True, 'id': building_id }), 200

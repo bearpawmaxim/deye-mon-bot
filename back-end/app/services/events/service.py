@@ -19,7 +19,6 @@ class EventsService:
     def _broadcast(self, event: EventItem):
         with self.lock:
             dead = []
-            print(f"e: {event}, c: {self.clients}")
             for q, is_authenticated in self.clients:
                 if event.private and not is_authenticated:
                     continue
