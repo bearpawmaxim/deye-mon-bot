@@ -1,0 +1,517 @@
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { RootState, useAppDispatch } from "../../stores/store";
+import { connect } from "react-redux";
+import { ErrorMessage, Page } from "../../components";
+import {
+  Box,
+  Card,
+  Text,
+  Grid,
+  Stack,
+  Group,
+  Button,
+  Select,
+  Table,
+  Badge,
+  Paper,
+  Title,
+} from "@mantine/core";
+import { AreaChart } from "@mantine/charts";
+import { fetchStationDetails } from "../../stores/thunks";
+import { clearStationDetails } from "../../stores/slices";
+import { StationDetailsData } from "../../stores/types";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { toLocalDateTime } from "../../utils/dateUtils";
+
+type ComponentProps = {
+  detailsData: StationDetailsData | null;
+  loading: boolean;
+  error: string | null;
+};
+
+const mapStateToProps = (state: RootState): ComponentProps => ({
+  detailsData: state.stationsData.stationDetails,
+  loading: state.stationsData.detailsLoading,
+  error: state.stationsData.detailsError,
+});
+
+const StatCard: FC<{
+  title: string;
+  value: number;
+  unit: string;
+  color: string;
+}> = ({ title, value, unit, color }) => (
+  <Paper p="md" withBorder>
+    <Stack gap="xs">
+      <Text size="sm" c="dimmed">
+        {title}
+      </Text>
+      <Text size="xl" fw={700} c={color}>
+        {value.toFixed(2)} {unit}
+      </Text>
+    </Stack>
+  </Paper>
+);
+
+const Component: FC<ComponentProps> = ({
+  detailsData,
+  loading,
+  error,
+}: ComponentProps) => {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { stationId } = useParams<{ stationId: string }>();
+  const [timeRange, setTimeRange] = useState<string>("86400"); // 24 hours default
+
+  const fetchData = useCallback(() => {
+    if (stationId) {
+      dispatch(
+        fetchStationDetails({
+          stationId: parseInt(stationId),
+          lastSeconds: parseInt(timeRange),
+        })
+      );
+    }
+  }, [dispatch, stationId, timeRange]);
+
+  useEffect(() => {
+    fetchData();
+    return () => {
+      dispatch(clearStationDetails());
+    };
+  }, [fetchData, dispatch]);
+
+  const goBack = () => {
+    navigate("/stations");
+  };
+
+  const chartData = useMemo(() => {
+    if (!detailsData?.data) return [];
+
+    return detailsData.data.map((d) => ({
+      time: toLocalDateTime(d.lastUpdateTime).split(" ")[1].substring(0, 5), 
+      batterySoc: d.batterySoc ?? 0,
+      batteryPower: (d.batteryPower ?? 0) / 1000,
+      chargePower: Math.abs((d.chargePower ?? 0) / 1000),
+      dischargePower: (d.dischargePower ?? 0) / 1000,
+      consumptionPower: (d.consumptionPower ?? 0) / 1000,
+      generationPower: (d.generationPower ?? 0) / 1000,
+      gridPower: (d.gridPower ?? 0) / 1000,
+      irradiateIntensity: d.irradiateIntensity ?? 0,
+    }));
+  }, [detailsData]);
+
+  const statistics = useMemo(() => {
+    if (!detailsData?.data || detailsData.data.length === 0) {
+      return null;
+    }
+
+    const data = detailsData.data;
+    const validData = data.filter((d) => d.lastUpdateTime);
+
+    const calcStats = (values: (number | null)[]) => {
+      const validValues = values.filter(
+        (v): v is number => v !== null && !isNaN(v)
+      );
+      if (validValues.length === 0)
+        return { min: 0, max: 0, avg: 0, current: 0 };
+
+      return {
+        min: Math.min(...validValues),
+        max: Math.max(...validValues),
+        avg: validValues.reduce((a, b) => a + b, 0) / validValues.length,
+        current: validValues[validValues.length - 1] || 0,
+      };
+    };
+
+    return {
+      dataPoints: validData.length,
+      timeRange:
+        validData.length > 1
+          ? `${toLocalDateTime(validData[0].lastUpdateTime)} - ${toLocalDateTime(
+              validData[validData.length - 1].lastUpdateTime
+            )}`
+          : "N/A",
+      batterySoc: calcStats(data.map((d) => d.batterySoc)),
+      batteryPower: calcStats(data.map((d) => d.batteryPower)),
+      chargePower: calcStats(data.map((d) => d.chargePower)),
+      dischargePower: calcStats(data.map((d) => d.dischargePower)),
+      consumptionPower: calcStats(data.map((d) => d.consumptionPower)),
+      generationPower: calcStats(data.map((d) => d.generationPower)),
+      gridPower: calcStats(data.map((d) => d.gridPower)),
+      irradiateIntensity: calcStats(data.map((d) => d.irradiateIntensity)),
+    };
+  }, [detailsData]);
+
+  if (error) {
+    return <ErrorMessage content={error} />;
+  }
+
+  return (
+    <Page loading={loading}>
+      <Stack gap="md" p="10px">
+        {/* Header */}
+        <Group justify="space-between">
+          <Button
+            leftSection={<FontAwesomeIcon icon="arrow-left" />}
+            variant="light"
+            onClick={goBack}
+          >
+            Back to Stations
+          </Button>
+          <Select
+            label="Time Range"
+            value={timeRange}
+            onChange={(value) => setTimeRange(value || "86400")}
+            data={[
+              { value: "3600", label: "Last Hour" },
+              { value: "21600", label: "Last 6 Hours" },
+              { value: "43200", label: "Last 12 Hours" },
+              { value: "86400", label: "Last 24 Hours" },
+              { value: "172800", label: "Last 2 Days" },
+              { value: "604800", label: "Last Week" },
+            ]}
+            style={{ width: 200 }}
+          />
+        </Group>
+
+        {detailsData && (
+          <>
+            {/* Station Info Card */}
+            <Card withBorder radius="md" p="lg">
+              <Title order={2} mb="md">
+                {detailsData.station.stationName}
+              </Title>
+              <Grid>
+                <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                  <Text size="sm" c="dimmed">
+                    Station ID
+                  </Text>
+                  <Text fw={500}>{detailsData.station.stationId}</Text>
+                </Grid.Col>
+                <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                  <Text size="sm" c="dimmed">
+                    Connection Status
+                  </Text>
+                  <Badge
+                    color={
+                      detailsData.station.connectionStatus === "online"
+                        ? "green"
+                        : "red"
+                    }
+                  >
+                    {detailsData.station.connectionStatus}
+                  </Badge>
+                </Grid.Col>
+                <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                  <Text size="sm" c="dimmed">
+                    Grid Type
+                  </Text>
+                  <Text fw={500}>
+                    {detailsData.station.gridInterconnectionType || "N/A"}
+                  </Text>
+                </Grid.Col>
+                <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                  <Text size="sm" c="dimmed">
+                    Installed Capacity
+                  </Text>
+                  <Text fw={500}>
+                    {detailsData.station.installedCapacity || 0} kW
+                  </Text>
+                </Grid.Col>
+                <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                  <Text size="sm" c="dimmed">
+                    Battery Capacity
+                  </Text>
+                  <Text fw={500}>
+                    {detailsData.station.batteryCapacity || 0} kWh
+                  </Text>
+                </Grid.Col>
+                <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                  <Text size="sm" c="dimmed">
+                    Last Update
+                  </Text>
+                  <Text fw={500}>
+                    {detailsData.station.lastUpdateTime
+                      ? toLocalDateTime(detailsData.station.lastUpdateTime)
+                      : "N/A"}
+                  </Text>
+                </Grid.Col>
+                <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                  <Text size="sm" c="dimmed">
+                    Records Processed
+                  </Text>
+                  <Text fw={700} size="lg" c="blue">
+                    {detailsData.dataCount}
+                  </Text>
+                </Grid.Col>
+              </Grid>
+            </Card>
+
+            {chartData.length > 0 && statistics ? (
+              <>
+                {/* Current Stats */}
+                <Title order={3}>Current Values</Title>
+                <Grid>
+                  <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                    <StatCard
+                      title="Battery SOC"
+                      value={statistics.batterySoc.current}
+                      unit="%"
+                      color="blue"
+                    />
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                    <StatCard
+                      title="Generation Power"
+                      value={statistics.generationPower.current / 1000}
+                      unit="kW"
+                      color="green"
+                    />
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                    <StatCard
+                      title="Consumption Power"
+                      value={statistics.consumptionPower.current / 1000}
+                      unit="kW"
+                      color="orange"
+                    />
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                    <StatCard
+                      title="Grid Power"
+                      value={statistics.gridPower.current / 1000}
+                      unit="kW"
+                      color="violet"
+                    />
+                  </Grid.Col>
+                </Grid>
+
+                {/* Power Charts */}
+                <Card withBorder radius="md" p="md">
+                  <Title order={4} mb="md">
+                    Power Details
+                  </Title>
+                  <Box style={{ height: 300 }}>
+                    <AreaChart
+                      data={chartData}
+                      dataKey="time"
+                      series={[
+                        {
+                          name: "generationPower",
+                          label: "Generation",
+                          color: "green.6",
+                        },
+                        {
+                          name: "consumptionPower",
+                          label: "Consumption",
+                          color: "orange.6",
+                        },
+                        {
+                          name: "chargePower",
+                          label: "Charge",
+                          color: "cyan.6",
+                        },
+                        {
+                          name: "dischargePower",
+                          label: "Discharge",
+                          color: "red.6",
+                        },
+                      ]}
+                      withLegend
+                      withTooltip
+                      unit=" kW"
+                      h="100%"
+                      strokeWidth={2}
+                      withDots={false}
+                      gridProps={{ strokeDasharray: "3 2" }}
+                    />
+                  </Box>
+                </Card>
+
+                {/* Battery SOC Chart */}
+                <Card withBorder radius="md" p="md">
+                  <Title order={4} mb="md">
+                    Battery State of Charge
+                  </Title>
+                  <Box style={{ height: 250 }}>
+                    <AreaChart
+                      data={chartData}
+                      dataKey="time"
+                      series={[
+                        {
+                          name: "batterySoc",
+                          label: "Battery SOC",
+                          color: "blue.6",
+                        },
+                      ]}
+                      withLegend
+                      withTooltip
+                      unit="%"
+                      h="100%"
+                      withGradient
+                      withDots={false}
+                      fillOpacity={0.6}
+                      gridProps={{ strokeDasharray: "3 2" }}
+                      yAxisProps={{ domain: [0, 100] }}
+                    />
+                  </Box>
+                </Card>
+
+                {/* Statistics Table */}
+                <Card withBorder radius="md" p="md">
+                  <Title order={4} mb="md">
+                    Statistical Summary
+                  </Title>
+                  <Table.ScrollContainer minWidth={500}>
+                    <Table striped highlightOnHover>
+                      <Table.Thead>
+                        <Table.Tr>
+                          <Table.Th>Parameter</Table.Th>
+                          <Table.Th>Current</Table.Th>
+                          <Table.Th>Average</Table.Th>
+                          <Table.Th>Minimum</Table.Th>
+                          <Table.Th>Maximum</Table.Th>
+                        </Table.Tr>
+                      </Table.Thead>
+                      <Table.Tbody>
+                      <Table.Tr>
+                        <Table.Td>Battery SOC (%)</Table.Td>
+                        <Table.Td>
+                          {statistics.batterySoc.current.toFixed(2)}
+                        </Table.Td>
+                        <Table.Td>
+                          {statistics.batterySoc.avg.toFixed(2)}
+                        </Table.Td>
+                        <Table.Td>
+                          {statistics.batterySoc.min.toFixed(2)}
+                        </Table.Td>
+                        <Table.Td>
+                          {statistics.batterySoc.max.toFixed(2)}
+                        </Table.Td>
+                      </Table.Tr>
+                      <Table.Tr>
+                        <Table.Td>Generation Power (kW)</Table.Td>
+                        <Table.Td>
+                          {(statistics.generationPower.current / 1000).toFixed(
+                            2
+                          )}
+                        </Table.Td>
+                        <Table.Td>
+                          {(statistics.generationPower.avg / 1000).toFixed(2)}
+                        </Table.Td>
+                        <Table.Td>
+                          {(statistics.generationPower.min / 1000).toFixed(2)}
+                        </Table.Td>
+                        <Table.Td>
+                          {(statistics.generationPower.max / 1000).toFixed(2)}
+                        </Table.Td>
+                      </Table.Tr>
+                      <Table.Tr>
+                        <Table.Td>Consumption Power (kW)</Table.Td>
+                        <Table.Td>
+                          {(statistics.consumptionPower.current / 1000).toFixed(
+                            2
+                          )}
+                        </Table.Td>
+                        <Table.Td>
+                          {(statistics.consumptionPower.avg / 1000).toFixed(2)}
+                        </Table.Td>
+                        <Table.Td>
+                          {(statistics.consumptionPower.min / 1000).toFixed(2)}
+                        </Table.Td>
+                        <Table.Td>
+                          {(statistics.consumptionPower.max / 1000).toFixed(2)}
+                        </Table.Td>
+                      </Table.Tr>
+                      <Table.Tr>
+                        <Table.Td>Charge Power (kW)</Table.Td>
+                        <Table.Td>
+                          {(
+                            Math.abs(statistics.chargePower.current) / 1000
+                          ).toFixed(2)}
+                        </Table.Td>
+                        <Table.Td>
+                          {(
+                            Math.abs(statistics.chargePower.avg) / 1000
+                          ).toFixed(2)}
+                        </Table.Td>
+                        <Table.Td>
+                          {(
+                            Math.abs(statistics.chargePower.min) / 1000
+                          ).toFixed(2)}
+                        </Table.Td>
+                        <Table.Td>
+                          {(
+                            Math.abs(statistics.chargePower.max) / 1000
+                          ).toFixed(2)}
+                        </Table.Td>
+                      </Table.Tr>
+                      <Table.Tr>
+                        <Table.Td>Discharge Power (kW)</Table.Td>
+                        <Table.Td>
+                          {(statistics.dischargePower.current / 1000).toFixed(
+                            2
+                          )}
+                        </Table.Td>
+                        <Table.Td>
+                          {(statistics.dischargePower.avg / 1000).toFixed(2)}
+                        </Table.Td>
+                        <Table.Td>
+                          {(statistics.dischargePower.min / 1000).toFixed(2)}
+                        </Table.Td>
+                        <Table.Td>
+                          {(statistics.dischargePower.max / 1000).toFixed(2)}
+                        </Table.Td>
+                      </Table.Tr>
+                      <Table.Tr>
+                        <Table.Td>Grid Power (kW)</Table.Td>
+                        <Table.Td>
+                          {(statistics.gridPower.current / 1000).toFixed(2)}
+                        </Table.Td>
+                        <Table.Td>
+                          {(statistics.gridPower.avg / 1000).toFixed(2)}
+                        </Table.Td>
+                        <Table.Td>
+                          {(statistics.gridPower.min / 1000).toFixed(2)}
+                        </Table.Td>
+                        <Table.Td>
+                          {(statistics.gridPower.max / 1000).toFixed(2)}
+                        </Table.Td>
+                      </Table.Tr>
+                      <Table.Tr>
+                        <Table.Td>Solar Irradiance (W/m²)</Table.Td>
+                        <Table.Td>
+                          {statistics.irradiateIntensity.current.toFixed(2)}
+                        </Table.Td>
+                        <Table.Td>
+                          {statistics.irradiateIntensity.avg.toFixed(2)}
+                        </Table.Td>
+                        <Table.Td>
+                          {statistics.irradiateIntensity.min.toFixed(2)}
+                        </Table.Td>
+                        <Table.Td>
+                          {statistics.irradiateIntensity.max.toFixed(2)}
+                        </Table.Td>
+                      </Table.Tr>
+                    </Table.Tbody>
+                  </Table>
+                  </Table.ScrollContainer>
+                </Card>
+              </>
+            ) : (
+              <Card withBorder radius="md" p="lg">
+                <Text ta="center" c="dimmed">
+                  No data available for the selected time range
+                </Text>
+              </Card>
+            )}
+          </>
+        )}
+      </Stack>
+    </Page>
+  );
+};
+
+export const StationDetailsPage = connect(mapStateToProps)(Component);

@@ -34,3 +34,51 @@ def register(app, services: Services):
         stations_data_dict = [future.result() for future in futures]
 
         return jsonify(stations_data_dict)
+
+    @app.route('/api/stationsData/stationDetails/<int:station_id>', methods=['POST'])
+    @jwt_required()
+    def get_station_details(station_id):
+        last_seconds = request.json.get("lastSeconds", 86400)  # Default to 24 hours
+        
+        from app.models import Station
+        station = services.db.session.query(Station).filter_by(id=station_id).first()
+        if not station:
+            return jsonify({ 'error': 'Station not found' }), 404
+        
+        stations_data = services.database.get_full_station_data(station_id, last_seconds)
+        
+        data_list = []
+        for data in stations_data:
+            data_list.append({
+                'id': data.id,
+                'stationId': data.station_id,
+                'batteryPower': data.battery_power,
+                'batterySoc': data.battery_soc,
+                'chargePower': data.charge_power,
+                'code': data.code,
+                'consumptionPower': data.consumption_power,
+                'dischargePower': data.discharge_power,
+                'generationPower': data.generation_power,
+                'gridPower': data.grid_power,
+                'irradiateIntensity': data.irradiate_intensity,
+                'lastUpdateTime': data.last_update_time,
+                'msg': data.msg,
+                'purchasePower': data.purchase_power,
+                'requestId': data.request_id,
+                'wirePower': data.wire_power,
+            })
+        
+        return jsonify({
+            'station': {
+                'id': station.id,
+                'stationId': station.station_id,
+                'stationName': station.station_name,
+                'connectionStatus': station.connection_status,
+                'gridInterconnectionType': station.grid_interconnection_type,
+                'installedCapacity': station.installed_capacity,
+                'batteryCapacity': station.battery_capacity,
+                'lastUpdateTime': station.last_update_time,
+            },
+            'data': data_list,
+            'dataCount': len(data_list)
+        })

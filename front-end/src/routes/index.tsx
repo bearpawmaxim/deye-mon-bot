@@ -1,6 +1,6 @@
 import { Navigate, RouteObject, RouterProvider, createBrowserRouter } from "react-router-dom";
 import { ProtectedRoute } from "./protectedRoute";
-import { LoginPage, HomePage, StationsPage, BotsPage,
+import { LoginPage, HomePage, StationsPage, StationDetailsPage, BotsPage,
   ChatsPage, MessagesPage, MessageEditPage, UsersPage, 
   BuildingsPage, ExtDataPage, NotFoundPage, 
   ChangePasswordPage} from "../pages";
@@ -37,6 +37,12 @@ export const RootRoutes: MenuItem[] = [
     name: "Stations",
     icon: "tower-broadcast",
     Component: StationsPage,
+  },
+  {
+    path: "/stations/details/:stationId",
+    name: "Station Details",
+    Component: StationDetailsPage,
+    skipForMenu: true,
   },
   {
     path: "/messages",

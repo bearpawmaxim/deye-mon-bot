@@ -9,5 +9,6 @@ export * from './messageEdit/messageEdit';
 export * from './chats/chats'
 export * from './extData/extData';
 export * from './stations/stations';
+export * from './stations/stationDetails';
 export * from './users/users';
 export * from './buildings/buildings';

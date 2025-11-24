@@ -8,9 +8,10 @@ import { createSelector } from "@reduxjs/toolkit";
 import { updateStationBatteryCapacity, updateStationOrder, updateStationState } from "../../stores/slices";
 import { DataTable, ErrorMessage, Page } from "../../components";
 import { ColumnDataType } from "../../types";
-import { ActionIcon, Button, Group, Text, Tooltip } from "@mantine/core";
+import { ActionIcon, Anchor, Button, Group, Text, Tooltip } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { openBatteryCapacityEditDialog } from "./components";
+import { useNavigate } from "react-router-dom";
 
 
 type ComponentProps = {
@@ -42,6 +43,7 @@ const mapStateToProps = (state: RootState): ComponentProps => ({
 
 const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, error }: ComponentProps) => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const [initiallyChanged, setInitiallyChanged] = useState(false);
 
   const getHeaderButtons = useCallback((dataChanged: boolean): PageHeaderButton[] => [
@@ -92,7 +94,18 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
         {
           id: 'stationName',
           header: 'Name',
-          accessorKey: "stationName"
+          accessorKey: "stationName",
+          cell: ({ row }) => {
+            return (
+              <Anchor
+                component="button"
+                onClick={() => navigate(`/stations/details/${row.original.id}`)}
+                fw={500}
+              >
+                {row.original.stationName}
+              </Anchor>
+            );
+          }
         },
         {
           id: 'connectionStatus',
