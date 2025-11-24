@@ -2,10 +2,11 @@ from datetime import date
 from typing import Dict, Any
 from sqlalchemy import func
 from app.models import VisitCounter, DailyVisitCounter
+from app.services.base import BaseService
 
-
-class VisitCounterService:
-    def __init__(self, db):
+class VisitCounterService(BaseService):
+    def __init__(self, db, events):
+        super().__init__(events)
         self._db = db
         self._session = self._db.session
 
@@ -33,6 +34,8 @@ class VisitCounterService:
                 counter = DailyVisitCounter(date=visit_date, count=0)
                 self._session.add(counter)
             counter.count += 1
+
+        self.broadcast_public("visits_updated")
 
 
     def get_today_stats(self) -> Dict[str, Any]:

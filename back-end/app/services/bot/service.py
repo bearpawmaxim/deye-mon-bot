@@ -4,10 +4,12 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from app.services.database.service import DatabaseService
 from app.services.deye_api.service import DeyeApiService
 from app.services.telegram.service import TelegramService
+from app.services.events.service import EventsService
+from app.services.base import BaseService
 from app.utils import generate_message, get_send_timeout, get_should_send
 from .models import BotConfig, MessageItem
 
-class BotService:
+class BotService(BaseService):
     def _try_get_timezone(self, timezone: str):
         try:
             return ZoneInfo(timezone)
@@ -15,7 +17,8 @@ class BotService:
             print(f'Cannot get timezone {timezone}, falling back to UTC')
             return ZoneInfo('utc')
 
-    def __init__(self, config: BotConfig, deye_api: DeyeApiService, telegram: TelegramService, database: DatabaseService):
+    def __init__(self, config: BotConfig, deye_api: DeyeApiService, telegram: TelegramService, database: DatabaseService, events: EventsService):
+        super().__init__(events)
         self._message_timezone = self._try_get_timezone(config.timezone)
         self._deye_api = deye_api
         self._telegram = telegram
@@ -33,6 +36,7 @@ class BotService:
                 self._telegram.send_message(bot_id, chat_id, f"pong '{text}'")
             else:
                 self._database.add_chat_request(chat_id, bot_id)
+                self.broadcast_private("chats_updated")
                 print(f'request from not allowed chat {chat_id}')
             self._database.save_changes()
 

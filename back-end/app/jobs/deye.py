@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from app import Config
-from app.services import Services
+from app.services import Services, EventItem
 
 
 def register(config: Config, services: Services):
@@ -64,6 +64,7 @@ def _check_deye_status(services: Services):
                 continue
             services.database.add_station_data(station.station_id, station_data)
         services.db.session.commit()
+        services.events.broadcast_public("station_data_updated")
 
 
 def check_deye_status(config: Config, services: Services):

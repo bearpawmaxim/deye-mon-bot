@@ -52,7 +52,7 @@ const Component: FC<ComponentProps> = ({
   outagesSchedule,
   outagesScheduleError,
 }) => {
-  const isAuthenticated = Boolean(useAppSelector(authDataSelector));
+  const isAuthenticated = Boolean(useAppSelector(authDataSelector)?.accessToken);
   const dispatch = useAppDispatch();
 
   const fetchData = useCallback(() => {

@@ -39,6 +39,9 @@ class Config:
     if not JWT_SECRET_KEY:
         JWT_SECRET_KEY = generate_secret_key(64)
 
+    JWT_TOKEN_LOCATION = ["headers", "query_string"]
+    JWT_QUERY_STRING_NAME = "token"
+
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(
         seconds=int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600))
     )
