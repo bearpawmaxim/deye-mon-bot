@@ -1,5 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { StationDataItem } from "../types";
+import { StationDetailsData, StationDataItem } from "../types";
 import apiClient from "../../utils/apiClient";
 import { getErrorMessage } from "../../utils";
 
@@ -12,3 +12,15 @@ export const fetchStationsData = createAsyncThunk<Array<StationDataItem>, number
     return thunkAPI.rejectWithValue(getErrorMessage(error) || 'Failed to fetch stations data');
   }
 });
+
+export const fetchStationDetails = createAsyncThunk<StationDetailsData, { stationId: number, lastSeconds: number }>(
+  'stationsData/fetchStationDetails',
+  async ({ stationId, lastSeconds }, thunkAPI) => {
+    try {
+      const response = await apiClient.post<StationDetailsData>(`/stationsData/stationDetails/${stationId}`, { lastSeconds });
+      return response.data;
+    } catch (error: unknown) {
+      return thunkAPI.rejectWithValue(getErrorMessage(error) || 'Failed to fetch station details data');
+    }
+  }
+);
