@@ -1,14 +1,24 @@
-import { FC, ReactNode } from "react"
+import { FC, ReactNode, useCallback } from "react"
 import { BuildingListItem } from "../../../stores/types";
 import { StatsCard } from "../../../components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconName } from "@fortawesome/free-solid-svg-icons";
+import { openPowerLogsDialog } from "../../../dialogs";
 
 export type BuildingCardProps = {
   building: BuildingListItem;
 };
 
 export const BuildingCard: FC<BuildingCardProps> = ({ building }) => {
+  const handleIconClick = useCallback(() => {
+    if (building.id) {
+      openPowerLogsDialog({
+        buildingId: building.id,
+        buildingName: building.name,
+      });
+    }
+  }, [building.id, building.name]);
+
   const getBatteryIcon = (building: BuildingListItem): ReactNode | null => {
     const batteryPercent = building.batteryPercent ?? 0;
     let icon: IconName | null = null;
@@ -79,6 +89,7 @@ export const BuildingCard: FC<BuildingCardProps> = ({ building }) => {
       bgColor={building.color}
       icon={getGridIcon(building)}
       iconColor={building.isGridAvailable ? "green.9" : "red.9"}
+      onClick={handleIconClick}
       rows={rows}
     >
     </StatsCard>

@@ -569,6 +569,25 @@ class DatabaseService:
             print(f"Error saving ext data: {e}")
             return None
 
+    def get_ext_data_statistics(self, user_id: int, start_date: datetime, end_date: datetime):
+        """Get power statistics for a user between two dates"""
+        try:
+            records = (
+                self._session
+                .query(ExtData)
+                .filter(
+                    ExtData.user_id == user_id,
+                    ExtData.received_at >= start_date,
+                    ExtData.received_at <= end_date
+                )
+                .order_by(ExtData.received_at.asc())
+                .all()
+            )
+            return records
+        except Exception as e:
+            print(f'Error getting ext data statistics: {e}')
+            return []
+
     def delete_old_ext_data(self):
         timeout = datetime.now(timezone.utc) - timedelta(days=self._statistic_keep_days)
         self._session.query(ExtData).filter(ExtData.received_at < timeout).delete(synchronize_session=False)
