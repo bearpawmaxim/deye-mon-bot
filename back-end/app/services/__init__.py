@@ -11,7 +11,7 @@ from .telegram import TelegramConfig, TelegramService
 from .authorization import AuthorizationService
 from .visit_counter import VisitCounterService
 from .outages_schedule import OutagesScheduleService
-from .events import EventsService, EventItem
+from shared import EventsService, EventItem
 
 class Services:
     db: SQLAlchemy
@@ -57,7 +57,7 @@ def initialize_services(config: Config):
     db = SQLAlchemy()
 
     scheduler = APScheduler()
-    events = EventsService()
+    events = EventsService(config.REDIS_URL)
 
     deye_api_config = DeyeConfig(
         app_id = config.DEYE_APP_ID,

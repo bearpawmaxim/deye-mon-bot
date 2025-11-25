@@ -1,5 +1,5 @@
 import { Middleware, ThunkDispatch, Action } from "@reduxjs/toolkit";
-import { eventsService } from "../../services";
+import { EventItem, privateEventsService, publicEventsService } from "../../services";
 import {
   fetchVisitStats,
   fetchStations,
@@ -17,7 +17,7 @@ export const eventsMiddleware: Middleware<
   any,
   ThunkDispatch<unknown, unknown, Action>
 > = store => {
-  eventsService.subscribe(event => {
+  const handleEvent = (event: EventItem) => {
     const state = store.getState();
     const isAuthenticated = Boolean(state.auth?.profile);
     const userName = isAuthenticated ? state.auth?.profile?.userName : "nobody";
@@ -64,11 +64,17 @@ export const eventsMiddleware: Middleware<
       default:
         console.warn("Unhandled SSE event:", event.type);
     }
-  });
+  };
 
-  const preConnectState = store.getState();
-  const preConnectToken = preConnectState?.auth?.accessToken;
-  eventsService.connect(preConnectToken);
+  publicEventsService.subscribe(handleEvent);
+  privateEventsService.subscribe(handleEvent);
+
+  publicEventsService.connect();
+
+  const token = store.getState()?.auth?.accessToken;
+  if (token) {
+    privateEventsService.connect(token);
+  }
 
   return next => action => next(action);
 };

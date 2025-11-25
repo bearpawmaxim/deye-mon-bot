@@ -1,7 +1,7 @@
 from datetime import timedelta
 import os
 from dotenv import load_dotenv
-from app.utils import generate_secret_key
+from shared.utils import generate_secret_key
 
 
 base_path = os.path.dirname(__file__)
@@ -51,6 +51,8 @@ class Config:
 
     ADMIN_USER = os.getenv('ADMIN_USER')
     ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
+
+    REDIS_URL = os.getenv('REDIS_URL')
 
     HOST = '127.0.0.1'
 

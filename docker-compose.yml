@@ -1,31 +1,63 @@
 services:
-   nginx:
-      build: front-end/.
-      image: deye-mon-bot-ui
-      restart: always
-      ports:
-        - "5005:80"
-      networks:
-        - web_network
-      labels:
-        io.hass.type: "addon"
+  nginx:
+    build: front-end/.
+    image: deye-mon-bot-ui
+    restart: always
+    ports:
+      - "5005:80"
+    networks:
+      - web_network
+    labels:
+      io.hass.type: "addon"
 
-   back-end:
-      build: back-end/.
-      image: deye-mon-bot-api
-      restart: always
-      env_file: .env
-      environment:
-        - DEBUG=False
-      volumes:
-        - ./back-end/.env:/.env
-        - ./back-end/db.sqlite3:/deye-mon-bot-api/db.sqlite3
-      expose:
-        - "5000"
-      networks:
-        - web_network
-      labels:
-        io.hass.type: "addon"
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+    networks:
+      - web_network
+    labels:
+      io.hass.type: "addon"
+
+  back-end:
+    build: back-end/.
+    image: deye-mon-bot-api
+    restart: always
+    env_file: .env
+    environment:
+      - DEBUG=False
+    volumes:
+      - ./back-end/.env:/.env
+      - ./back-end/db.sqlite3:/deye-mon-bot-api/db.sqlite3
+    expose:
+      - "5000"
+    networks:
+      - web_network
+    labels:
+      io.hass.type: "addon"
+
+  sse-back-end:
+    build: sse-back-end/.
+    image: deye-mon-bot-sse-api
+    restart: always
+    env_file: .env
+    environment:
+      - DEBUG=False
+    volumes:
+      - ./back-end/.env:/.env
+    expose:
+      - "5000"
+    networks:
+      - web_network
+    labels:
+      io.hass.type: "addon"
+
+volumes:
+  redis-data:
 
 networks:
   web_network:

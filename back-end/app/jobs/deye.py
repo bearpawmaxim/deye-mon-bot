@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from app import Config
-from app.services import Services, EventItem
+from app.services import Services
 
 
 def register(config: Config, services: Services):

@@ -49,10 +49,10 @@ class EventsService {
     };
   }
 
-  reconnect(token?: string) {
-    console.log("[Events] Reconnecting with new token...");
-    this.connect(token);
+  disconnect() {
+    this.evt?.close();
   }
 }
 
-export const eventsService = new EventsService("/api/events");
+export const publicEventsService = new EventsService("/api/events/public");
+export const privateEventsService = new EventsService("/api/events/private");

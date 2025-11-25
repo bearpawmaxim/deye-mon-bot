@@ -4,7 +4,7 @@ import { removeTokens, setAuthorizationHeader, setTokens } from "../../utils";
 import { login, logout } from "../thunks";
 import { resetAuthData } from "../slices";
 import { AuthData } from "../../types";
-import { eventsService } from "../../services";
+import { privateEventsService } from "../../services";
 
 const authMiddleware = createListenerMiddleware();
 const startListening = authMiddleware.startListening.withTypes<
@@ -17,7 +17,7 @@ startListening({
   effect: ({ payload }: PayloadAction<AuthData>) => {
     setTokens(payload.accessToken!, payload.refreshToken!);
     setAuthorizationHeader(payload.accessToken);
-    eventsService.reconnect(payload.accessToken!);
+    privateEventsService.connect(payload.accessToken!);
   },
 });
 
@@ -26,7 +26,7 @@ startListening({
   effect: async () => {
     removeTokens();
     setAuthorizationHeader(null);
-    eventsService.reconnect(undefined);
+    privateEventsService.disconnect();
   },
 });
 

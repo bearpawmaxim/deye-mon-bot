@@ -1,14 +1,14 @@
-from flask import Response, stream_with_context, request
+from flask import Response, stream_with_context
 from queue import Queue
 import json
-from app.services import Services, EventItem
+from shared.services import EventsService, EventItem
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 
-def register(app, services: Services):
+def register(app, events: EventsService):
     @app.route("/api/events/public")
     def sse_public():
         q: "Queue[EventItem]" = Queue(maxsize=10)
-        services.events.add_public_client(q)
+        events.add_public_client(q)
 
         def generator():
             try:
@@ -16,7 +16,7 @@ def register(app, services: Services):
                     event = q.get()
                     yield f"data: {json.dumps(event.to_dict())}\n\n"
             except GeneratorExit:
-                services.events.remove_client(q)
+                events.events.remove_client(q)
 
         return Response(stream_with_context(generator()), mimetype="text/event-stream")
 
@@ -26,7 +26,7 @@ def register(app, services: Services):
         user_name = get_jwt_identity()
 
         q: "Queue[EventItem]" = Queue(maxsize=10)
-        services.events.add_private_client(q)
+        events.events.add_private_client(q)
 
         def generator():
             try:
@@ -35,6 +35,6 @@ def register(app, services: Services):
                     event.user = user_name
                     yield f"data: {json.dumps(event.to_dict())}\n\n"
             except GeneratorExit:
-                services.events.remove_client(q)
+                events.events.remove_client(q)
 
         return Response(stream_with_context(generator()), mimetype="text/event-stream")
