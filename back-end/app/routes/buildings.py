@@ -150,3 +150,86 @@ def register(app, services: Services):
         services.db.session.commit()
         services.events.broadcast_public("buildings_updated")
         return jsonify({ 'success': True, 'id': building_id }), 200
+    
+    @app.route('/api/buildings/<int:building_id>/power-logs', methods=['POST'])
+    def get_building_power_logs(building_id: int):
+        """Get power availability statistics for a building"""
+        building = services.database.get_building(building_id)
+        if not building:
+            return jsonify({'error': 'Building not found'}), 404
+        
+        data = request.get_json()
+        start_date_str = data.get('startDate')
+        end_date_str = data.get('endDate')
+        
+        if not start_date_str or not end_date_str:
+            return jsonify({'error': 'startDate and endDate are required'}), 400
+        
+        try:
+            start_date = datetime.fromisoformat(start_date_str.replace('Z', '+00:00'))
+            end_date = datetime.fromisoformat(end_date_str.replace('Z', '+00:00'))
+            
+            if start_date.tzinfo is None:
+                start_date = start_date.replace(tzinfo=timezone.utc)
+            if end_date.tzinfo is None:
+                end_date = end_date.replace(tzinfo=timezone.utc)
+            
+            if start_date >= end_date:
+                return jsonify({'error': 'startDate must be before endDate'}), 400
+                
+        except ValueError as e:
+            return jsonify({'error': f'Invalid date format: {str(e)}'}), 400
+        
+        records = services.database.get_ext_data_statistics(
+            building.report_user_id,
+            start_date,
+            end_date
+        )
+        
+        periods = []
+        total_available_seconds = 0
+        total_unavailable_seconds = 0
+        
+        if not records:
+            total_seconds = int((end_date - start_date).total_seconds())
+            return jsonify({
+                'periods': [],
+                'totalAvailableSeconds': 0,
+                'totalUnavailableSeconds': total_seconds,
+                'totalSeconds': total_seconds
+            })
+        
+        for record in records:
+            if record.received_at.tzinfo is None:
+                record.received_at = record.received_at.replace(tzinfo=timezone.utc)
+        
+        for i, current in enumerate(records):
+            current_time = current.received_at
+            
+            if i < len(records) - 1:
+                end_time = records[i + 1].received_at
+            else:
+                end_time = end_date
+            
+            duration_seconds = (end_time - current_time).total_seconds()
+            
+            if current.grid_state:
+                total_available_seconds += duration_seconds
+            else:
+                total_unavailable_seconds += duration_seconds
+            
+            periods.append({
+                'startTime': current_time.isoformat(),
+                'endTime': end_time.isoformat(),
+                'isAvailable': current.grid_state,
+                'durationSeconds': int(duration_seconds)
+            })
+        
+        total_seconds = int(total_available_seconds + total_unavailable_seconds)
+        
+        return jsonify({
+            'periods': periods,
+            'totalAvailableSeconds': int(total_available_seconds),
+            'totalUnavailableSeconds': int(total_unavailable_seconds),
+            'totalSeconds': total_seconds
+        })

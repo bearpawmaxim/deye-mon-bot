@@ -7,6 +7,7 @@ export * from './extData';
 export * from './dashboardConfig';
 export * from './messages';
 export * from './outagesSchedule';
+export * from './powerLogs';
 export * from './stations';
 export * from './stationsData';
 export * from './users';

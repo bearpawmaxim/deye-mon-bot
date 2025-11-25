@@ -1,5 +1,5 @@
 import { Action, combineReducers } from "redux";
-import { authReducer, botsReducer, chatsReducer, messagesReducer, stationsReducer, stationsDataReducer, buildingsReducer, usersReducer, extDataReducer, dashboardConfigReducer, visitCounterReducer, outagesScheduleReducer } from "./slices";
+import { authReducer, botsReducer, chatsReducer, messagesReducer, stationsReducer, stationsDataReducer, buildingsReducer, usersReducer, extDataReducer, dashboardConfigReducer, visitCounterReducer, outagesScheduleReducer, powerLogsReducer } from "./slices";
 import { logout } from "./thunks";
 
 const appReducer = combineReducers({
@@ -13,6 +13,7 @@ const appReducer = combineReducers({
   ['stationsData']: stationsDataReducer,
   ['messages']: messagesReducer,
   ['outagesSchedule']: outagesScheduleReducer,
+  ['powerLogs']: powerLogsReducer,
   ['users']: usersReducer,
   ['visitCounter']: visitCounterReducer,
 });
