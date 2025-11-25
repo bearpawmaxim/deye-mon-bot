@@ -13,6 +13,86 @@ type OpenPowerLogsDialogOptions = {
   buildingName: string;
 };
 
+const END_OF_DAY_THRESHOLD_HOURS = 23;
+const END_OF_DAY_THRESHOLD_MINUTES = 50;
+const HISTORY_DAYS = 30;
+const TIMER_INTERVAL_MS = 1000;
+
+const ANIMATION_STYLES = `
+  @keyframes pulse {
+    0%, 100% { 
+      opacity: 1; 
+      transform: scale(1);
+    }
+    50% { 
+      opacity: 0.4; 
+      transform: scale(1.2);
+    }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0.7; }
+    to { opacity: 1; }
+  }
+`;
+
+const getDateRange = (filter: 'today' | 'yesterday' | 'all') => {
+  const now = new Date();
+  const endDate = new Date(now);
+  endDate.setHours(23, 59, 59, 999);
+
+  const startDate = new Date(now);
+  
+  switch (filter) {
+    case 'today':
+      startDate.setHours(0, 0, 0, 0);
+      break;
+    case 'yesterday':
+      startDate.setDate(now.getDate() - 1);
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setDate(now.getDate() - 1);
+      endDate.setHours(23, 59, 59, 999);
+      break;
+    case 'all':
+      startDate.setDate(now.getDate() - HISTORY_DAYS);
+      startDate.setHours(0, 0, 0, 0);
+      break;
+  }
+
+  return {
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString(),
+  };
+};
+
+const isEndOfDayTime = (date: Date): boolean => {
+  const threshold = new Date(date);
+  threshold.setHours(END_OF_DAY_THRESHOLD_HOURS, END_OF_DAY_THRESHOLD_MINUTES, 0, 0);
+  return date >= threshold;
+};
+
+const checkIsOngoing = (
+  period: PowerLogPeriod,
+  isLastPeriod: boolean,
+  isToday: boolean,
+  currentTime: Date
+): boolean => {
+  if (!isLastPeriod || !isToday) return false;
+  
+  const endTime = new Date(period.endTime);
+  const startTime = new Date(period.startTime);
+  
+  return isEndOfDayTime(endTime) && currentTime > startTime;
+};
+
+const calculateOngoingDuration = (
+  startTime: Date,
+  currentTime: Date,
+  originalDuration: number
+): number => {
+  const currentDuration = Math.floor((currentTime.getTime() - startTime.getTime()) / 1000);
+  return currentDuration - originalDuration;
+};
+
 export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsDialogOptions) {
   type InnerProps = {
     loading: boolean;
@@ -32,39 +112,10 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
     const [dateFilter, setDateFilter] = useState<'today' | 'yesterday' | 'all'>('today');
     const [currentTime, setCurrentTime] = useState(new Date());
 
-    const getDateRange = useCallback((filter: 'today' | 'yesterday' | 'all') => {
-      const now = new Date();
-      const endDate = new Date(now);
-      endDate.setHours(23, 59, 59, 999);
-
-      const startDate = new Date(now);
-      
-      switch (filter) {
-        case 'today':
-          startDate.setHours(0, 0, 0, 0);
-          break;
-        case 'yesterday':
-          startDate.setDate(now.getDate() - 1);
-          startDate.setHours(0, 0, 0, 0);
-          endDate.setDate(now.getDate() - 1);
-          endDate.setHours(23, 59, 59, 999);
-          break;
-        case 'all':
-          startDate.setDate(now.getDate() - 30); // Last 30 days
-          startDate.setHours(0, 0, 0, 0);
-          break;
-      }
-
-      return {
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-      };
-    }, []);
-
     const loadData = useCallback((filter: 'today' | 'yesterday' | 'all') => {
       const { startDate, endDate } = getDateRange(filter);
       dispatch(fetchPowerLogs({ buildingId, startDate, endDate }));
-    }, [dispatch, getDateRange]);
+    }, [dispatch]);
 
     useEffect(() => {
       loadData(dateFilter);
@@ -76,18 +127,13 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
     useEffect(() => {
       const timer = setInterval(() => {
         setCurrentTime(new Date());
-      }, 1000);
+      }, TIMER_INTERVAL_MS);
       return () => clearInterval(timer);
     }, []);
 
-    const handleFilterChange = (value: string) => {
-      setDateFilter(value as 'today' | 'yesterday' | 'all');
-    };
-
-    const formatDuration = (seconds: number, roundUp: boolean = false): string => {
+    const formatDuration = useCallback((seconds: number, roundUp: boolean = false): string => {
       let totalSeconds = seconds;
       
-      // Round up to next minute if requested and there are any seconds
       if (roundUp && (seconds % 60) > 0) {
         totalSeconds = Math.ceil(seconds / 60) * 60;
       }
@@ -97,25 +143,22 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
       const secs = Math.floor(totalSeconds % 60);
       
       if (hours > 0) {
-        if (roundUp) {
-          return `${hours}h ${minutes}m`;
-        }
-        return `${hours}h ${minutes}m ${secs}s`;
+        return roundUp ? `${hours}h ${minutes}m` : `${hours}h ${minutes}m ${secs}s`;
       } else if (minutes > 0) {
-        if (roundUp) {
-          return `${minutes}m`;
-        }
-        return `${minutes}m ${secs}s`;
+        return roundUp ? `${minutes}m` : `${minutes}m ${secs}s`;
       }
       return `${secs}s`;
-    };
+    }, []);
 
-    const formatDateTime = useCallback((isoString: string, showDateOnly: boolean = false): string => {
+    const formatDateTime = useCallback((isoString: string): string => {
       const date = new Date(isoString);
+      const showFullDate = dateFilter === 'all';
       
-      // For Today and Yesterday filters, show only time
-      if ((dateFilter === 'today' || dateFilter === 'yesterday') && !showDateOnly) {
+      if (showFullDate) {
         return date.toLocaleString('en-US', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
           hour: '2-digit',
           minute: '2-digit',
           second: '2-digit',
@@ -123,11 +166,7 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
         });
       }
       
-      // For All filter, show full date and time
       return date.toLocaleString('en-US', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
@@ -135,57 +174,79 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
       });
     }, [dateFilter]);
 
+    const getColorScheme = useCallback((isDark: boolean) => ({
+      availableBg: isDark ? 'rgba(64, 192, 87, 0.15)' : 'rgba(64, 192, 87, 0.08)',
+      unavailableBg: isDark ? 'rgba(250, 82, 82, 0.15)' : 'rgba(250, 82, 82, 0.08)',
+      availableColor: isDark ? 'teal.4' : 'teal.7',
+      unavailableColor: isDark ? 'red.4' : 'red.7',
+    }), []);
+
+    const { totalAvailable, totalUnavailable } = useMemo(() => {
+      if (!data?.periods.length) {
+        return {
+          totalAvailable: formatDuration(data?.totalAvailableSeconds ?? 0, true),
+          totalUnavailable: formatDuration(data?.totalUnavailableSeconds ?? 0, true),
+        };
+      }
+
+      const lastPeriod = data.periods[data.periods.length - 1];
+      const isOngoing = checkIsOngoing(lastPeriod, true, dateFilter === 'today', currentTime);
+
+      if (!isOngoing) {
+        return {
+          totalAvailable: formatDuration(data.totalAvailableSeconds, true),
+          totalUnavailable: formatDuration(data.totalUnavailableSeconds, true),
+        };
+      }
+
+      const adjustment = calculateOngoingDuration(
+        new Date(lastPeriod.startTime),
+        currentTime,
+        lastPeriod.durationSeconds
+      );
+
+      if (lastPeriod.isAvailable) {
+        return {
+          totalAvailable: formatDuration(data.totalAvailableSeconds + adjustment, false),
+          totalUnavailable: formatDuration(data.totalUnavailableSeconds, true),
+        };
+      }
+
+      return {
+        totalAvailable: formatDuration(data.totalAvailableSeconds, true),
+        totalUnavailable: formatDuration(data.totalUnavailableSeconds + adjustment, false),
+      };
+    }, [data, dateFilter, currentTime, formatDuration]);
+
     const rows = useMemo(() => {
       if (!data?.periods) return [];
       const isDark = colorScheme === 'dark';
       const isToday = dateFilter === 'today';
+      const colors = getColorScheme(isDark);
       
       return data.periods.map((period: PowerLogPeriod, index: number) => {
-        // More subtle, harmonious colors
-        const availableBg = isDark ? 'rgba(64, 192, 87, 0.15)' : 'rgba(64, 192, 87, 0.08)';
-        const unavailableBg = isDark ? 'rgba(250, 82, 82, 0.15)' : 'rgba(250, 82, 82, 0.08)';
-        const availableColor = isDark ? 'teal.4' : 'teal.7';
-        const unavailableColor = isDark ? 'red.4' : 'red.7';
-        
-        // Check if this is the last period and it's ongoing
         const isLastPeriod = index === data.periods.length - 1;
-        const endTime = new Date(period.endTime);
+        const isOngoing = checkIsOngoing(period, isLastPeriod, isToday, currentTime);
         const startTime = new Date(period.startTime);
-        const now = currentTime;
-        
-        // Check if end time is close to end of day (23:50 - 23:59:59)
-        const endOfDay = new Date(endTime);
-        endOfDay.setHours(23, 50, 0, 0);
-        const isEndOfDay = endTime >= endOfDay;
-        
-        // This period is ongoing if it's the last one, today filter, and end time is near midnight
-        const isOngoing = isLastPeriod && isToday && isEndOfDay && now > startTime;
-        
-        // Calculate duration
-        const effectiveEndTime = isOngoing ? now : endTime;
+        const effectiveEndTime = isOngoing ? currentTime : new Date(period.endTime);
         const durationSeconds = Math.floor((effectiveEndTime.getTime() - startTime.getTime()) / 1000);
         
+        const bgColor = period.isAvailable ? colors.availableBg : colors.unavailableBg;
+        const textColor = period.isAvailable ? colors.availableColor : colors.unavailableColor;
+        
         return (
-          <Table.Tr key={index} bg={period.isAvailable ? availableBg : unavailableBg}>
+          <Table.Tr key={index} bg={bgColor}>
             <Table.Td>{formatDateTime(period.startTime)}</Table.Td>
             <Table.Td>
               {isOngoing ? (
                 <Group gap="xs" wrap="nowrap">
-                  <Text 
-                    fw={600}
-                    style={{ 
-                      animation: 'fadeIn 0.5s ease-in',
-                    }}
-                  >
-                    {formatDateTime(now.toISOString())}
+                  <Text fw={600} style={{ animation: 'fadeIn 0.5s ease-in' }}>
+                    {formatDateTime(currentTime.toISOString())}
                   </Text>
                   <Text 
-                    c={period.isAvailable ? availableColor : unavailableColor} 
+                    c={textColor} 
                     fw={700}
-                    style={{ 
-                      animation: 'pulse 2s ease-in-out infinite',
-                      fontSize: '1.2em',
-                    }}
+                    style={{ animation: 'pulse 2s ease-in-out infinite', fontSize: '1.2em' }}
                   >
                     ●
                   </Text>
@@ -197,14 +258,14 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
             <Table.Td>
               <Group gap="xs">
                 {period.isAvailable ? (
-                  <FontAwesomeIcon icon="lightbulb" color={availableColor} />
+                  <FontAwesomeIcon icon="lightbulb" color={textColor} />
                 ) : (
                   <span className="fa-layers fa-fw">
-                    <FontAwesomeIcon icon="lightbulb" color={unavailableColor} />
-                    <FontAwesomeIcon icon="slash" color={unavailableColor} />
+                    <FontAwesomeIcon icon="lightbulb" color={textColor} />
+                    <FontAwesomeIcon icon="slash" color={textColor} />
                   </span>
                 )}
-                <Text fw={600} c={period.isAvailable ? availableColor : unavailableColor}>
+                <Text fw={600} c={textColor}>
                   {period.isAvailable ? 'Grid On' : 'Grid Off'}
                   {isOngoing && ' (Now)'}
                 </Text>
@@ -214,7 +275,7 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
           </Table.Tr>
         );
       });
-    }, [data, colorScheme, dateFilter, currentTime, formatDateTime]);
+    }, [data, colorScheme, dateFilter, currentTime, formatDateTime, formatDuration, getColorScheme]);
 
     const handleClose = () => {
       if (id) {
@@ -226,11 +287,11 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
       <Stack gap="md">
         <SegmentedControl
           value={dateFilter}
-          onChange={handleFilterChange}
+          onChange={(value) => setDateFilter(value as 'today' | 'yesterday' | 'all')}
           data={[
             { label: 'Today', value: 'today' },
             { label: 'Yesterday', value: 'yesterday' },
-            { label: 'All (30 days)', value: 'all' },
+            { label: `All (${HISTORY_DAYS} days)`, value: 'all' },
           ]}
           fullWidth
         />
@@ -253,53 +314,13 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
               <Group justify="space-between">
                 <Text fw={600}>Total Grid On:</Text>
                 <Text c={colorScheme === 'dark' ? 'teal.4' : 'teal.7'}>
-                  {(() => {
-                    if (!data.periods.length) return formatDuration(data.totalAvailableSeconds, true);
-                    const lastPeriod = data.periods[data.periods.length - 1];
-                    const endTime = new Date(lastPeriod.endTime);
-                    const startTime = new Date(lastPeriod.startTime);
-                    const now = currentTime;
-                    
-                    // Check if end time is close to end of day
-                    const endOfDay = new Date(endTime);
-                    endOfDay.setHours(23, 50, 0, 0);
-                    const isEndOfDay = endTime >= endOfDay;
-                    const isOngoing = dateFilter === 'today' && isEndOfDay && now > startTime;
-                    
-                    if (isOngoing && lastPeriod.isAvailable) {
-                      const currentDuration = Math.floor((now.getTime() - startTime.getTime()) / 1000);
-                      const adjustment = currentDuration - lastPeriod.durationSeconds;
-                      // Don't round up for ongoing duration
-                      return formatDuration(data.totalAvailableSeconds + adjustment, false);
-                    }
-                    return formatDuration(data.totalAvailableSeconds, true);
-                  })()}
+                  {totalAvailable}
                 </Text>
               </Group>
               <Group justify="space-between">
                 <Text fw={600}>Total Grid Off:</Text>
                 <Text c={colorScheme === 'dark' ? 'red.4' : 'red.7'}>
-                  {(() => {
-                    if (!data.periods.length) return formatDuration(data.totalUnavailableSeconds, true);
-                    const lastPeriod = data.periods[data.periods.length - 1];
-                    const endTime = new Date(lastPeriod.endTime);
-                    const startTime = new Date(lastPeriod.startTime);
-                    const now = currentTime;
-                    
-                    // Check if end time is close to end of day
-                    const endOfDay = new Date(endTime);
-                    endOfDay.setHours(23, 50, 0, 0);
-                    const isEndOfDay = endTime >= endOfDay;
-                    const isOngoing = dateFilter === 'today' && isEndOfDay && now > startTime;
-                    
-                    if (isOngoing && !lastPeriod.isAvailable) {
-                      const currentDuration = Math.floor((now.getTime() - startTime.getTime()) / 1000);
-                      const adjustment = currentDuration - lastPeriod.durationSeconds;
-                      // Don't round up for ongoing duration
-                      return formatDuration(data.totalUnavailableSeconds + adjustment, false);
-                    }
-                    return formatDuration(data.totalUnavailableSeconds, true);
-                  })()}
+                  {totalUnavailable}
                 </Text>
               </Group>
             </Stack>
@@ -345,25 +366,9 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
     size: "xl",
     children: (
       <>
-        <style>{`
-          @keyframes pulse {
-            0%, 100% { 
-              opacity: 1; 
-              transform: scale(1);
-            }
-            50% { 
-              opacity: 0.4; 
-              transform: scale(1.2);
-            }
-          }
-          @keyframes fadeIn {
-            from { opacity: 0.7; }
-            to { opacity: 1; }
-          }
-        `}</style>
+        <style>{ANIMATION_STYLES}</style>
         <ConnectedInner />
       </>
     ),
   });
 }
-

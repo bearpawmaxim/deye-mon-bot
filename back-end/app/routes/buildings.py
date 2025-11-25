@@ -173,55 +173,63 @@ def register(app, services: Services):
                 start_date = start_date.replace(tzinfo=timezone.utc)
             if end_date.tzinfo is None:
                 end_date = end_date.replace(tzinfo=timezone.utc)
-        except ValueError:
-            return jsonify({'error': 'Invalid date format'}), 400
+            
+            if start_date >= end_date:
+                return jsonify({'error': 'startDate must be before endDate'}), 400
+                
+        except ValueError as e:
+            return jsonify({'error': f'Invalid date format: {str(e)}'}), 400
         
-        # Get all 
         records = services.database.get_ext_data_statistics(
             building.report_user_id,
             start_date,
             end_date
         )
         
-        # periods
         periods = []
         total_available_seconds = 0
         total_unavailable_seconds = 0
         
-        if records:
-            for i in range(len(records)):
-                current = records[i]
-                
-                current_time = current.received_at
-                if current_time.tzinfo is None:
-                    current_time = current_time.replace(tzinfo=timezone.utc)
-                
-                if i < len(records) - 1:
-                    next_record = records[i + 1]
-                    next_time = next_record.received_at
-                    if next_time.tzinfo is None:
-                        next_time = next_time.replace(tzinfo=timezone.utc)
-                    duration_seconds = (next_time - current_time).total_seconds()
-                    end_time = next_time
-                else:
-                    duration_seconds = (end_date - current_time).total_seconds()
-                    end_time = end_date
-                
-                if current.grid_state:
-                    total_available_seconds += duration_seconds
-                else:
-                    total_unavailable_seconds += duration_seconds
-                
-                periods.append({
-                    'startTime': current_time.isoformat(),
-                    'endTime': end_time.isoformat(),
-                    'isAvailable': current.grid_state,
-                    'durationSeconds': int(duration_seconds)
-                })
+        if not records:
+            total_seconds = int((end_date - start_date).total_seconds())
+            return jsonify({
+                'periods': [],
+                'totalAvailableSeconds': 0,
+                'totalUnavailableSeconds': total_seconds,
+                'totalSeconds': total_seconds
+            })
+        
+        for record in records:
+            if record.received_at.tzinfo is None:
+                record.received_at = record.received_at.replace(tzinfo=timezone.utc)
+        
+        for i, current in enumerate(records):
+            current_time = current.received_at
+            
+            if i < len(records) - 1:
+                end_time = records[i + 1].received_at
+            else:
+                end_time = end_date
+            
+            duration_seconds = (end_time - current_time).total_seconds()
+            
+            if current.grid_state:
+                total_available_seconds += duration_seconds
+            else:
+                total_unavailable_seconds += duration_seconds
+            
+            periods.append({
+                'startTime': current_time.isoformat(),
+                'endTime': end_time.isoformat(),
+                'isAvailable': current.grid_state,
+                'durationSeconds': int(duration_seconds)
+            })
+        
+        total_seconds = int(total_available_seconds + total_unavailable_seconds)
         
         return jsonify({
             'periods': periods,
             'totalAvailableSeconds': int(total_available_seconds),
             'totalUnavailableSeconds': int(total_unavailable_seconds),
-            'totalSeconds': int(total_available_seconds + total_unavailable_seconds)
+            'totalSeconds': total_seconds
         })
