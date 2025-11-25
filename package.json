@@ -1,0 +1,17 @@
+{
+  "name": "deye-mon-bot",
+  "version": "1.0.0",
+  "description": "Svitlo Power monitoring tool - Development Environment",
+  "scripts": {
+    "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"bgBlue.bold,bgMagenta.bold\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd back-end && cross-env DEBUG=True python run.py",
+    "dev:frontend": "cd front-end && npm run dev",
+    "build:frontend": "cd front-end && npm run build",
+    "init:all": "npm install && cd front-end && npm install && cd ../back-end && pip install -r requirements.txt"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3"
+  }
+}
+
