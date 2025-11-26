@@ -28,15 +28,14 @@ class DaySchedule(BaseModel):
 
 
 class UnitSchedule(BaseModel):
-    today: DaySchedule
-    tomorrow: DaySchedule
+    days: List[DaySchedule]
     updatedOn: datetime
 
 
 def keep_only_definite_slots(schedule: "SchedulesResponse") -> "SchedulesResponse":
     for unit in schedule.root.values():
-        unit.today.slots = [s for s in unit.today.slots if s.type == SlotType.Definite]
-        unit.tomorrow.slots = [s for s in unit.tomorrow.slots if s.type == SlotType.Definite]
+        for day in unit.days:
+            day.slots = [s for s in day.slots if s.type == SlotType.Definite]
     return schedule
 
 

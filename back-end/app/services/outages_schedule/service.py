@@ -9,7 +9,7 @@ class OutagesScheduleService(BaseService):
 
     def __init__(self, events):
         super().__init__(events)
-        self._cache = {}
+        self._cache = SchedulesResponse({})
 
     def get_schedule(self, queue: string):
         schedule = self._cache.root.get(queue)
@@ -33,15 +33,29 @@ class OutagesScheduleService(BaseService):
                 return None
 
             data = response.json()
-            parsed = SchedulesResponse.model_validate(data)
             
-            # Validate dates from YASNO API
+            transformed_data = {}
+            for queue, unit_data in data.items():
+                days_list = []
+                if 'today' in unit_data:
+                    days_list.append(unit_data['today'])
+                if 'tomorrow' in unit_data:
+                    days_list.append(unit_data['tomorrow'])
+                
+                transformed_data[queue] = {
+                    'days': days_list,
+                    'updatedOn': unit_data.get('updatedOn')
+                }
+            
+            parsed = SchedulesResponse.model_validate(transformed_data)
+            
             now = datetime.now(timezone.utc)
             for unit in parsed.root.values():
-                if unit.today.date.date() != now.date():
-                    unit.today.status = DayStatus.WaitingForSchedule
-                if unit.tomorrow.date.date() != (now.date() + timedelta(days=1)):
-                    unit.tomorrow.status = DayStatus.WaitingForSchedule
+                for day in unit.days:
+                    day_date = day.date.replace(tzinfo=timezone.utc) if day.date.tzinfo is None else day.date.astimezone(timezone.utc)
+                    days_diff = abs((day_date.date() - now.date()).days)
+                    if days_diff > 2:
+                        day.status = DayStatus.WaitingForSchedule
 
             self._cache = parsed
             self.broadcast_public("outages_updated")
