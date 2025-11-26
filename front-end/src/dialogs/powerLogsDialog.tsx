@@ -1,6 +1,7 @@
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { modals } from "@mantine/modals";
 import { Button, Group, Stack, Table, Text, SegmentedControl, Loader, Center, useMantineColorScheme } from "@mantine/core";
+import { DatePickerInput } from "@mantine/dates";
 import { RootState, useAppDispatch } from "../stores/store";
 import { fetchPowerLogs } from "../stores/thunks";
 import { clearPowerLogs } from "../stores/slices";
@@ -13,10 +14,9 @@ type OpenPowerLogsDialogOptions = {
   buildingName: string;
 };
 
-type DateFilter = 'today' | 'yesterday' | 'all';
+type DateFilter = 'today' | 'yesterday' | 'custom';
 
 const END_OF_DAY_THRESHOLD = { hours: 23, minutes: 50 };
-const HISTORY_DAYS = 30;
 const TIMER_INTERVAL_MS = 1000;
 
 const ANIMATION_STYLES = `
@@ -30,7 +30,22 @@ const ANIMATION_STYLES = `
   }
 `;
 
-const getDateRange = (filter: DateFilter) => {
+const getThisWeekDates = (): [Date, Date] => {
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  
+  const startDate = new Date(now);
+  startDate.setDate(now.getDate() - daysFromMonday);
+  startDate.setHours(0, 0, 0, 0);
+  
+  const endDate = new Date(now);
+  endDate.setHours(23, 59, 59, 999);
+  
+  return [startDate, endDate];
+};
+
+const getDateRange = (filter: DateFilter, customDates?: [Date | null, Date | null]) => {
   const now = new Date();
   const startDate = new Date(now);
   const endDate = new Date(now);
@@ -38,8 +53,15 @@ const getDateRange = (filter: DateFilter) => {
   if (filter === 'yesterday') {
     startDate.setDate(now.getDate() - 1);
     endDate.setDate(now.getDate() - 1);
-  } else if (filter === 'all') {
-    startDate.setDate(now.getDate() - HISTORY_DAYS);
+  } else if (filter === 'custom' && customDates?.[0] && customDates?.[1]) {
+    const customStart = new Date(customDates[0]);
+    const customEnd = new Date(customDates[1]);
+    customStart.setHours(0, 0, 0, 0);
+    customEnd.setHours(23, 59, 59, 999);
+    return {
+      startDate: customStart.toISOString(),
+      endDate: customEnd.toISOString(),
+    };
   }
 
   startDate.setHours(0, 0, 0, 0);
@@ -68,7 +90,7 @@ const createPaddingPeriod = (startTime: string, endTime: string, isAvailable: bo
 };
 
 const padPeriodsToFullDay = (periods: PowerLogPeriod[], filter: DateFilter): PowerLogPeriod[] => {
-  if (!periods.length || filter === 'all') return periods;
+  if (!periods.length || filter === 'custom') return periods;
 
   const now = new Date();
   const targetDate = filter === 'yesterday' 
@@ -133,17 +155,24 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
     const dispatch = useAppDispatch();
     const { colorScheme } = useMantineColorScheme();
     const [dateFilter, setDateFilter] = useState<DateFilter>('today');
+    const [customDateRange, setCustomDateRange] = useState<[Date | null, Date | null]>(getThisWeekDates());
     const [currentTime, setCurrentTime] = useState(new Date());
 
-    const loadData = useCallback((filter: DateFilter) => {
-      const { startDate, endDate } = getDateRange(filter);
+    const loadData = useCallback((filter: DateFilter, customDates?: [Date | null, Date | null]) => {
+      if (filter === 'custom' && (!customDates?.[0] || !customDates?.[1])) {
+        return;
+      }
+      const { startDate, endDate } = getDateRange(filter, customDates);
       dispatch(fetchPowerLogs({ buildingId, startDate, endDate }));
     }, [dispatch]);
 
     useEffect(() => {
-      loadData(dateFilter);
+      if (dateFilter === 'custom' && (!customDateRange[0] || !customDateRange[1])) {
+        return;
+      }
+      loadData(dateFilter, dateFilter === 'custom' ? customDateRange : undefined);
       return () => { dispatch(clearPowerLogs()); };
-    }, [dateFilter, loadData, dispatch]);
+    }, [dateFilter, customDateRange, loadData, dispatch]);
 
     useEffect(() => {
       const timer = setInterval(() => setCurrentTime(new Date()), TIMER_INTERVAL_MS);
@@ -168,7 +197,7 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
         minute: '2-digit',
         second: '2-digit',
         hour12: false,
-        ...(dateFilter === 'all' && { day: '2-digit', month: '2-digit', year: 'numeric' })
+        ...(dateFilter === 'custom' && { day: '2-digit', month: '2-digit', year: 'numeric' })
       };
       return date.toLocaleString('en-US', options);
     }, [dateFilter]);
@@ -297,15 +326,32 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
           data={[
             { label: 'Today', value: 'today' },
             { label: 'Yesterday', value: 'yesterday' },
-            { label: `All (${HISTORY_DAYS} days)`, value: 'all' },
+            { label: 'Custom', value: 'custom' },
           ]}
           fullWidth
         />
 
+        {dateFilter === 'custom' && (
+          <DatePickerInput
+            type="range"
+            label="Select Date Range"
+            placeholder="Pick dates range"
+            value={customDateRange}
+            onChange={(value) => setCustomDateRange(value as [Date | null, Date | null])}
+            maxDate={new Date()}
+          />
+        )}
+
         {loading && <Center p="xl"><Loader size="lg" /></Center>}
         {error && <Text c="red" ta="center">Error: {error}</Text>}
+        
+        {dateFilter === 'custom' && (!customDateRange[0] || !customDateRange[1]) && (
+          <Text c="dimmed" ta="center" py="xl">
+            Please select both start and end dates
+          </Text>
+        )}
 
-        {!loading && !error && data && (
+        {!loading && !error && data && (dateFilter !== 'custom' || (customDateRange[0] && customDateRange[1])) && (
           <>
             <Stack gap="xs">
               <Group justify="space-between">
