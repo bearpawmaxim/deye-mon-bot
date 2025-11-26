@@ -50,7 +50,7 @@ export const VisitTracker: FC = () => {
         Daily: {visitData.dailyVisitors}
       </Badge> }
       { isMobile
-        ? `${visitData.dailyVisitors} total`
+        ? `${visitData.totalVisitors} total`
           : <Badge variant="outline">
         <FontAwesomeIcon icon="eye" />&nbsp;
         Total: {visitData.totalVisitors}
