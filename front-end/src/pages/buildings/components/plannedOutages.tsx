@@ -1,9 +1,10 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ActionIcon, Alert, Box, Group, Loader, SimpleGrid, Stack, Text, Title, useMantineColorScheme } from "@mantine/core";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { toLocalDateTime } from "../../../utils";
 import { DayOutageSchedule } from "./dayOutageSchedule";
 import { OutagesScheduleData } from "../../../stores/types";
+import dayjs from "dayjs";
 
 type PlannedOutagesProps = {
   outageQueue: string;
@@ -16,6 +17,31 @@ type PlannedOutagesProps = {
 export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue, data, loading, error, onRefresh }) => {
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === "dark";
+
+  const days = useMemo(() => {
+    if (!data?.days || data.days.length === 0) return [];
+    
+    const now = dayjs();
+    const today = now.startOf('day');
+    
+    return data.days.map(day => {
+      const dayDate = dayjs(day.date);
+      const isToday = dayDate.isSame(today, 'day');
+      const isTomorrow = dayDate.isSame(today.add(1, 'day'), 'day');
+      
+      let title = dayDate.format('dddd, MMMM D');
+      if (isToday) title = `Today (${dayDate.format('MMM D')})`;
+      if (isTomorrow) title = `Tomorrow (${dayDate.format('MMM D')})`;
+      
+      return {
+        title,
+        data: day,
+        isToday,
+      };
+    }).sort((a, b) => {
+      return dayjs(a.data.date).unix() - dayjs(b.data.date).unix();
+    });
+  }, [data]);
 
   if (loading) {
     return (
@@ -36,7 +62,7 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue, data, loa
     );
   }
 
-  if (error) {
+  if (!data?.days || data.days.length === 0) {
     return (
       <Box ta="center" py="xl">
         <Alert color="yellow" title="No Data Available">
@@ -108,11 +134,15 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue, data, loa
       `}</style>
 
       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
-        {/* Today */}
-        <DayOutageSchedule title="Today" isDark={isDark} dayData={data?.today} isToday={true} />
-
-        {/* Tomorrow */}
-        <DayOutageSchedule title="Tomorrow" isDark={isDark} dayData={data?.tomorrow} isToday={false} />
+        {days.map((day, idx) => (
+          <DayOutageSchedule 
+            key={`day-${idx}-${day.data.date}`}
+            title={day.title} 
+            isDark={isDark} 
+            dayData={day.data} 
+            isToday={day.isToday} 
+          />
+        ))}
       </SimpleGrid>
 
       {/* Updated On */}

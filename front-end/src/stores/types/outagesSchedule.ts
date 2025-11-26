@@ -24,8 +24,7 @@ export type DayData = {
 };
 
 export type OutagesScheduleData = {
-  today?: DayData;
-  tomorrow?: DayData;
+  days?: DayData[];
   updatedOn?: string;
 };
 
