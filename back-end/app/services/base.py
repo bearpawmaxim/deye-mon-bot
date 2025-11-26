@@ -1,4 +1,4 @@
-from shared import EventsService, EventItem
+from shared import EventsService
 
 class BaseService:
     def __init__(self, events: EventsService):

@@ -59,6 +59,7 @@ class Config:
     STATISTIC_KEEP_DAYS = int(os.getenv('STATISTIC_KEEP_DAYS', 3))
 
     IS_MIGRATION_RUN = False
+    DEBUG = False
 
 class ProductionConfig(Config):
     DEBUG = False

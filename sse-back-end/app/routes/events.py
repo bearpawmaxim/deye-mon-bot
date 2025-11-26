@@ -1,40 +1,38 @@
-from flask import Response, stream_with_context
-from queue import Queue
 import json
-from shared.services import EventsService, EventItem
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from queue import Queue
+from flask import Response, jsonify
+from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
+from shared.services import EventItem, EventsService
 
-def register(app, events: EventsService):
-    @app.route("/api/events/public")
-    def sse_public():
-        q: "Queue[EventItem]" = Queue(maxsize=10)
-        events.add_public_client(q)
+def register(app, events_service: EventsService):
+    @app.route("/api/events")
+    def events():
+        q: "Queue[EventItem]" = Queue()
 
-        def generator():
+        user = None
+        is_authenticated = False
+        if verify_jwt_in_request(optional=True) is not None:
+            user = get_jwt_identity()
+            is_authenticated = user is not None
+
+        events_service.add_public_client(q)
+        if is_authenticated:
+            events_service.add_private_client(q)
+
+        def stream():
             try:
                 while True:
                     event = q.get()
+                    if event is None:
+                        break
+                    if event.private and not is_authenticated:
+                        break
+
+                    if user is not None:
+                        event.user = user
+
                     yield f"data: {json.dumps(event.to_dict())}\n\n"
-            except GeneratorExit:
-                events.events.remove_client(q)
+            finally:
+                events_service.remove_client(q)
 
-        return Response(stream_with_context(generator()), mimetype="text/event-stream")
-
-    @app.route("/api/events/private")
-    def sse_private():
-        verify_jwt_in_request()
-        user_name = get_jwt_identity()
-
-        q: "Queue[EventItem]" = Queue(maxsize=10)
-        events.events.add_private_client(q)
-
-        def generator():
-            try:
-                while True:
-                    event = q.get()
-                    event.user = user_name
-                    yield f"data: {json.dumps(event.to_dict())}\n\n"
-            except GeneratorExit:
-                events.events.remove_client(q)
-
-        return Response(stream_with_context(generator()), mimetype="text/event-stream")
+        return Response(stream(), mimetype="text/event-stream")

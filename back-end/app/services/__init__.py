@@ -57,7 +57,7 @@ def initialize_services(config: Config):
     db = SQLAlchemy()
 
     scheduler = APScheduler()
-    events = EventsService(config.REDIS_URL)
+    events = EventsService(config.REDIS_URL, config.DEBUG)
 
     deye_api_config = DeyeConfig(
         app_id = config.DEYE_APP_ID,

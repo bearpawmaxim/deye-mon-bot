@@ -54,5 +54,4 @@ class EventsService {
   }
 }
 
-export const publicEventsService = new EventsService("/api/events/public");
-export const privateEventsService = new EventsService("/api/events/private");
+export const eventsService = new EventsService("/api/events");

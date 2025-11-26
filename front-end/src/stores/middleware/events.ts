@@ -1,5 +1,5 @@
 import { Middleware, ThunkDispatch, Action } from "@reduxjs/toolkit";
-import { EventItem, privateEventsService, publicEventsService } from "../../services";
+import { EventItem, eventsService } from "../../services";
 import {
   fetchVisitStats,
   fetchStations,
@@ -66,14 +66,13 @@ export const eventsMiddleware: Middleware<
     }
   };
 
-  publicEventsService.subscribe(handleEvent);
-  privateEventsService.subscribe(handleEvent);
-
-  publicEventsService.connect();
+  eventsService.subscribe(handleEvent);
 
   const token = store.getState()?.auth?.accessToken;
   if (token) {
-    privateEventsService.connect(token);
+    eventsService.connect(token);
+  } else {
+    eventsService.connect();
   }
 
   return next => action => next(action);
