@@ -17,7 +17,8 @@ startListening({
   effect: ({ payload }: PayloadAction<AuthData>) => {
     setTokens(payload.accessToken!, payload.refreshToken!);
     setAuthorizationHeader(payload.accessToken);
-    eventsService.reconnect(payload.accessToken!);
+    eventsService.disconnect();
+    eventsService.connect(payload.accessToken!);
   },
 });
 
@@ -26,7 +27,8 @@ startListening({
   effect: async () => {
     removeTokens();
     setAuthorizationHeader(null);
-    eventsService.reconnect(undefined);
+    eventsService.disconnect();
+    eventsService.connect();
   },
 });
 

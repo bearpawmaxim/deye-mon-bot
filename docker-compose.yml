@@ -1,31 +1,82 @@
 services:
-   nginx:
-      build: front-end/.
-      image: deye-mon-bot-ui
-      restart: always
-      ports:
-        - "5005:80"
-      networks:
-        - web_network
-      labels:
-        io.hass.type: "addon"
+  nginx:
+    build: front-end/.
+    image: deye-mon-bot-ui
+    restart: always
+    ports:
+      - "5005:80"
+    networks:
+      - web_network
+    labels:
+      io.hass.type: "addon"
+    depends_on:
+      back-end:
+        condition: service_started
+        restart: true
+      sse-back-end:
+        condition: service_started
+        restart: true
 
-   back-end:
-      build: back-end/.
-      image: deye-mon-bot-api
-      restart: always
-      env_file: .env
-      environment:
-        - DEBUG=False
-      volumes:
-        - ./back-end/.env:/.env
-        - ./back-end/db.sqlite3:/deye-mon-bot-api/db.sqlite3
-      expose:
-        - "5000"
-      networks:
-        - web_network
-      labels:
-        io.hass.type: "addon"
+  deye-mon-bot-rds:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - rds_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+    networks:
+      - web_network
+    labels:
+      io.hass.type: "addon"
+
+  back-end:
+    build:
+      context: .
+      dockerfile: back-end/Dockerfile
+    image: deye-mon-bot-api
+    restart: always
+    env_file: .env
+    environment:
+      - DEBUG=False
+    volumes:
+      - ./back-end/.env:/.env
+      - ./back-end/db.sqlite3:/deye-mon-bot-api/db.sqlite3
+    expose:
+      - "5005"
+    networks:
+      - web_network
+    labels:
+      io.hass.type: "addon"
+    depends_on:
+      deye-mon-bot-rds:
+        condition: service_started
+        restart: true
+
+  sse-back-end:
+    build:
+      context: .
+      dockerfile: sse-back-end/Dockerfile
+    image: deye-mon-bot-sse-api
+    restart: always
+    env_file: .env
+    environment:
+      - DEBUG=False
+    volumes:
+      - ./back-end/.env:/.env
+    expose:
+      - "5005"
+    networks:
+      - web_network
+    labels:
+      io.hass.type: "addon"
+    depends_on:
+      deye-mon-bot-rds:
+        condition: service_started
+        restart: true
+
+volumes:
+  rds_data:
 
 networks:
   web_network:

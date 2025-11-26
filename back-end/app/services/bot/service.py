@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from app.services.database.service import DatabaseService
 from app.services.deye_api.service import DeyeApiService
 from app.services.telegram.service import TelegramService
-from app.services.events.service import EventsService
+from shared import EventsService
 from app.services.base import BaseService
 from app.utils import generate_message, get_send_timeout, get_should_send
 from .models import BotConfig, MessageItem

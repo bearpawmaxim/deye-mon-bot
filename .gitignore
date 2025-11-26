@@ -33,3 +33,5 @@ apps/static/assets/.temp
 
 node_modules
 yarn.lock
+
+shared.egg-info

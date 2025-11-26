@@ -1,23 +1,23 @@
 import json
-from flask import Response, jsonify
 from queue import Queue
-from app.services import Services, EventItem
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from flask import Response, jsonify
+from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
+from shared.services import EventItem, EventsService
 
-def register(app, services: Services):
+def register(app, events_service: EventsService):
     @app.route("/api/events")
     def events():
         q: "Queue[EventItem]" = Queue()
 
-        is_authenticated = False
         user = None
+        is_authenticated = False
         if verify_jwt_in_request(optional=True) is not None:
             user = get_jwt_identity()
             is_authenticated = user is not None
 
-        services.events.add_public_client(q)
+        events_service.add_public_client(q)
         if is_authenticated:
-            services.events.add_private_client(q)
+            events_service.add_private_client(q)
 
         def stream():
             try:
@@ -33,6 +33,6 @@ def register(app, services: Services):
 
                     yield f"data: {json.dumps(event.to_dict())}\n\n"
             finally:
-                services.events.remove_client(q)
+                events_service.remove_client(q)
 
         return Response(stream(), mimetype="text/event-stream")

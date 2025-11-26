@@ -49,9 +49,8 @@ class EventsService {
     };
   }
 
-  reconnect(token?: string) {
-    console.log("[Events] Reconnecting with new token...");
-    this.connect(token);
+  disconnect() {
+    this.evt?.close();
   }
 }
 

@@ -1,7 +1,7 @@
 from flask import jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.services import Services
-from app.utils.key_generation import generate_api_token
+from shared.utils import generate_api_token
 from app.utils.jwt_decorators import jwt_required
 
 

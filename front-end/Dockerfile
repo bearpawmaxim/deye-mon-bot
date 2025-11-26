@@ -20,8 +20,11 @@ FROM nginx:latest
 # Copy build files from the previous stage to the Nginx web root
 COPY --from=build /app/dist /var/www/front-end
 
-# Copy a custom Nginx configuration file (optional)
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy global nginx settings (worker_processes, worker_connections)
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Copy a site Nginx configuration file
+COPY nginx-site.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80
 EXPOSE 80

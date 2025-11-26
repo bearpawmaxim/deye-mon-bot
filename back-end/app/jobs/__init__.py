@@ -1,6 +1,6 @@
 import os
 from app.services import Services
-from app.utils.registration import load_and_register_modules
+from shared.utils.registration import load_and_register_modules
 from app import Config
 
 

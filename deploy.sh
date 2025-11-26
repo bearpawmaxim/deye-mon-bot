@@ -17,7 +17,7 @@ docker compose build --no-cache
 
 # Step 3: Start containers in detached mode
 echo "Step 3: Starting containers..."
-docker compose up -d
+docker compose up -d --scale sse-back-end=3
 
 # Step 4: Remove orphan images
 echo "Cleaning up unused Docker resources..."
