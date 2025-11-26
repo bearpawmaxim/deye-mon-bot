@@ -224,8 +224,8 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
       const isToday = dateFilter === 'today';
       const colors = getColorScheme(isDark);
       
-      return data.periods.map((period: PowerLogPeriod, index: number) => {
-        const isLastPeriod = index === data.periods.length - 1;
+      return [...data.periods].reverse().map((period: PowerLogPeriod, index: number) => {
+        const isLastPeriod = index === 0;
         const isOngoing = checkIsOngoing(period, isLastPeriod, isToday, currentTime);
         const startTime = new Date(period.startTime);
         const effectiveEndTime = isOngoing ? currentTime : new Date(period.endTime);
