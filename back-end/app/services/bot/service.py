@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta, timezone
 from functools import partial
+from typing import List
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from app.services.database.service import DatabaseService
 from app.services.deye_api.service import DeyeApiService
 from app.services.telegram.service import TelegramService
+from app.models import Message, Station
 from shared import EventsService
 from app.services.base import BaseService
 from app.utils import generate_message, get_send_timeout, get_should_send
@@ -40,7 +42,7 @@ class BotService(BaseService):
                 print(f'request from not allowed chat {chat_id}')
             self._database.save_changes()
 
-    def _populate_stations_data(self, template_data, stations, channel, force):
+    def _populate_stations_data(self, template_data, stations: List[Station], force):
         message_station = None
         for station in stations:
             if not station.enabled and not force:
@@ -57,9 +59,10 @@ class BotService(BaseService):
             }
             template_data['stations'].append(station_data)
 
-            if channel.station_id == station.id:
+            if len(stations) == 1:
                 template_data['station'] = station_data
                 message_station = station
+
         return message_station
 
     def _get_average_method(self, station_id, start_date = None):
@@ -100,15 +103,24 @@ class BotService(BaseService):
         except Exception as e:
             print(f"Error sending message: {e}")
 
-    def _prepare_message(self, stations, message, force = False, include_data = False):
+    def _prepare_message(self, message: Message, stations: List[Station], force = False, include_data = False):
         template_data = {
             'stations': [],
             'now': datetime.now(self._message_timezone),
             'timedelta': timedelta,
         }
-        message_station = self._populate_stations_data(template_data, stations, message, force)
-        if message.station_id is not None and message_station is None:
-            print(f"message's {message.id} station is disabled")
+
+        message_stations = message.stations
+        if len(message_stations) == 0:
+            message_stations = stations
+
+        if not any(station.enabled for station in message_stations):
+            print(f"All stations for message '{message.name}' are disabled")
+            return None
+
+        message_station = self._populate_stations_data(template_data, message_stations, force)
+        if len(message_stations) == 1 and message_station is None:
+            print(f"The station for message '{message.name}' is disabled")
             return None
 
         self._add_average_methods(template_data, message.last_sent_time)
@@ -133,7 +145,7 @@ class BotService(BaseService):
 
         for message in messages:
             try:
-                info = self._prepare_message(stations, message)
+                info = self._prepare_message(message, stations)
                 if info is None:
                     continue
                 if info.should_send and info.next_send_time <= datetime.now(timezone.utc):
@@ -143,4 +155,4 @@ class BotService(BaseService):
 
     def get_message(self, message):
         stations = self._database.get_stations()
-        return self._prepare_message(stations, message, True, True)
+        return self._prepare_message(message, stations, True, True)
