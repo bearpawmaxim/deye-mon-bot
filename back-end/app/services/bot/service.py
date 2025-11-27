@@ -103,23 +103,19 @@ class BotService(BaseService):
         except Exception as e:
             print(f"Error sending message: {e}")
 
-    def _prepare_message(self, message: Message, stations: List[Station], force = False, include_data = False):
+    def _prepare_message(self, message: Message, force = False, include_data = False):
         template_data = {
             'stations': [],
             'now': datetime.now(self._message_timezone),
             'timedelta': timedelta,
         }
 
-        message_stations = message.stations
-        if len(message_stations) == 0:
-            message_stations = stations
-
-        if not any(station.enabled for station in message_stations):
+        if not any(station.enabled for station in message.stations):
             print(f"All stations for message '{message.name}' are disabled")
             return None
 
-        message_station = self._populate_stations_data(template_data, message_stations, force)
-        if len(message_stations) == 1 and message_station is None:
+        message_station = self._populate_stations_data(template_data, message.stations, force)
+        if len(message.stations) == 1 and message_station is None:
             print(f"The station for message '{message.name}' is disabled")
             return None
 
@@ -140,12 +136,11 @@ class BotService(BaseService):
         )
 
     def periodic_send(self):
-        stations = self._database.get_stations()
         messages = self._database.get_messages()
 
         for message in messages:
             try:
-                info = self._prepare_message(message, stations)
+                info = self._prepare_message(message)
                 if info is None:
                     continue
                 if info.should_send and info.next_send_time <= datetime.now(timezone.utc):
@@ -154,5 +149,4 @@ class BotService(BaseService):
                 print(f"Error sending message '{message.name}': {e}")
 
     def get_message(self, message):
-        stations = self._database.get_stations()
-        return self._prepare_message(message, stations, True, True)
+        return self._prepare_message(message, True, True)
