@@ -191,6 +191,37 @@ def register(app, services: Services):
         total_unavailable_seconds = 0
         
         if not records:
+            last_record = services.database.get_last_ext_data_before_date(
+                building.report_user_id,
+                start_date
+            )
+            if last_record:
+                if last_record.received_at.tzinfo is None:
+                    last_record.received_at = last_record.received_at.replace(tzinfo=timezone.utc)
+                
+                duration_seconds = (end_date - start_date).total_seconds()
+                
+                if last_record.grid_state:
+                    total_available_seconds = duration_seconds
+                else:
+                    total_unavailable_seconds = duration_seconds
+                
+                periods.append({
+                    'startTime': start_date.isoformat(),
+                    'endTime': end_date.isoformat(),
+                    'isAvailable': last_record.grid_state,
+                    'durationSeconds': int(duration_seconds)
+                })
+                
+                total_seconds = int(duration_seconds)
+                
+                return jsonify({
+                    'periods': periods,
+                    'totalAvailableSeconds': int(total_available_seconds),
+                    'totalUnavailableSeconds': int(total_unavailable_seconds),
+                    'totalSeconds': total_seconds
+                })
+            
             total_seconds = int((end_date - start_date).total_seconds())
             return jsonify({
                 'periods': [],
@@ -198,6 +229,26 @@ def register(app, services: Services):
                 'totalUnavailableSeconds': total_seconds,
                 'totalSeconds': total_seconds
             })
+        
+        # If the first record is not at the start of the period, create a synthetic start event
+        first_record = records[0]
+        if first_record.received_at.tzinfo is None:
+            first_record.received_at = first_record.received_at.replace(tzinfo=timezone.utc)
+        
+        if first_record.received_at > start_date:
+            last_record_before = services.database.get_last_ext_data_before_date(
+                building.report_user_id,
+                start_date
+            )
+            
+            if last_record_before:
+                from app.models import ExtData
+                synthetic_record = ExtData()
+                synthetic_record.received_at = start_date
+                synthetic_record.grid_state = last_record_before.grid_state
+                synthetic_record.user_id = building.report_user_id
+
+                records.insert(0, synthetic_record)
         
         for record in records:
             if record.received_at.tzinfo is None:

@@ -45,65 +45,19 @@ data class PowerLogResponse(
         }
     }
     
-    // Pad periods to full day (24 hours)
     fun getPaddedPeriods(): List<PowerPeriod> {
-        if (periods.isEmpty()) return periods
-        
-        val now = java.time.ZonedDateTime.now()
-        val dayStart = now.withHour(0).withMinute(0).withSecond(0).withNano(0)
-        val dayEnd = now.withHour(23).withMinute(59).withSecond(59).withNano(999000000)
-        
-        val result = mutableListOf<PowerPeriod>()
-        
-        val firstPeriod = periods.first()
-        val firstStart = java.time.ZonedDateTime.parse(firstPeriod.startTime)
-        
-        // Add padding at the beginning if needed
-        if (firstStart.isAfter(dayStart)) {
-            val paddingSeconds = java.time.Duration.between(dayStart, firstStart).seconds.toInt()
-            result.add(
-                PowerPeriod(
-                    startTime = dayStart.toString(),
-                    endTime = firstPeriod.startTime,
-                    durationSeconds = paddingSeconds,
-                    isAvailable = !firstPeriod.isAvailable
-                )
-            )
-        }
-        
-        // Add all original periods
-        result.addAll(periods)
-        
-        // Add padding at the end if needed (only if not near end of day)
-        val lastPeriod = periods.last()
-        val lastEnd = java.time.ZonedDateTime.parse(lastPeriod.endTime)
-        val endOfDayThreshold = now.withHour(23).withMinute(50).withSecond(0).withNano(0)
-        
-        if (lastEnd.isBefore(dayEnd) && lastEnd.isBefore(endOfDayThreshold)) {
-            val paddingSeconds = java.time.Duration.between(lastEnd, dayEnd).seconds.toInt()
-            result.add(
-                PowerPeriod(
-                    startTime = lastPeriod.endTime,
-                    endTime = dayEnd.toString(),
-                    durationSeconds = paddingSeconds,
-                    isAvailable = !lastPeriod.isAvailable
-                )
-            )
-        }
-        
-        return result
+        // Backend now handles start padding with correct status from last known state
+        return periods
     }
     
-    // Check if last period is ongoing (for today)
     fun isLastPeriodOngoing(): Boolean {
         if (periods.isEmpty()) return false
         
         val now = java.time.ZonedDateTime.now()
         val lastPeriod = periods.last()
         val lastEnd = java.time.ZonedDateTime.parse(lastPeriod.endTime)
-        val endOfDayThreshold = now.withHour(23).withMinute(50).withSecond(0).withNano(0)
         
-        return lastEnd.isAfter(endOfDayThreshold) && now.isAfter(java.time.ZonedDateTime.parse(lastPeriod.startTime))
+        return lastEnd.hour >= 23 && now.isAfter(java.time.ZonedDateTime.parse(lastPeriod.startTime))
     }
 }
 
