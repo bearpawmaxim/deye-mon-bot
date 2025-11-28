@@ -62,3 +62,8 @@ class Station(Base):
             'order': self.order,
             'enabled': self.enabled
         }
+
+    @classmethod
+    def get_lookup_values(cls, session):
+        stations = session.query(cls).all()
+        return [{'value': s.id, 'text': s.station_name} for s in stations]

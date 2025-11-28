@@ -93,14 +93,14 @@ class DatabaseService:
         try:
             return self._session.query(AllowedChat).all()
         except Exception as e:
-            print(e)
+            print(f'Error getting allowed chats {str(e)}')
             return []
 
     def get_chat_requests(self):
         try:
             return self._session.query(ChatRequest).all()
         except Exception as e:
-            print(f'Error getting chat requests: {e}')
+            print(f'Error getting chat requests: {str(e)}')
             return []
 
     def add_chat_request(self, chat_id, bot_id):
@@ -591,6 +591,20 @@ class DatabaseService:
     def delete_old_ext_data(self):
         timeout = datetime.now(timezone.utc) - timedelta(days=self._statistic_keep_days)
         self._session.query(ExtData).filter(ExtData.received_at < timeout).delete(synchronize_session=False)
+
+    def get_lookup_values(self, lookup_name: str):        
+        lookup_map = {
+            'building': Building,
+            'message': Message,
+            'station': Station,
+            'user': User
+        }
+
+        model_class = lookup_map.get(lookup_name)
+        if model_class is None:
+            return []
+
+        return model_class.get_lookup_values(self._session)
 
     def save_changes(self):
         self._session.commit()

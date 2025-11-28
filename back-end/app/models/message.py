@@ -23,3 +23,8 @@ class Message(Base):
         return (f"Message(id={self.id}, channel_id='{self.channel_id}', "
                 f"template='{self.template}', station_id={self.station_id}, "
                 f"last_sent_time={self.last_sent_time}, enabled={self.enabled})")
+
+    @classmethod
+    def get_lookup_values(cls, session):
+        messages = session.query(cls).all()
+        return [{'value': m.id, 'text': m.name} for m in messages]

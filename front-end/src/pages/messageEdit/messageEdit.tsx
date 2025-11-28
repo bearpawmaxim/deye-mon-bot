@@ -75,10 +75,6 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loadin
   } as ComboboxItem));
 
   const getStationOptions = (): ComboboxItem[] => ([
-    {
-      label: 'All stations',
-      value: '0',
-    },
     ...(stations ?? []).map((station, index) => ({
       key: `station_${index}`,
       value: station.id.toString(),
@@ -159,14 +155,14 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loadin
         }
       },
       {
-        name: 'stationId',
-        title: 'Station',
+        name: 'stations',
+        title: 'Stations',
         required: true,
         render: (context) => {
           return <Controller
-            name="stationId"
+            name="stations"
             control={context.helpers.control}
-            defaultValue={0}
+            defaultValue={[]}
             render={({ field }) => (
               <Select
                 required
@@ -174,8 +170,8 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loadin
                 {...field}
                 label={context.title}
                 value={field.value?.toString() ?? ''}
-                error={context.helpers.getFieldError('stationId')}
-                onChange={(value) => context.helpers.setControlValue('stationId', parseInt(value!), true, false)}
+                error={context.helpers.getFieldError('stations')}
+                onChange={(value) => context.helpers.setControlValue('stations', parseInt(value!), true, false)}
               />
             )}
           />;
@@ -248,13 +244,13 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loadin
 
   const onOpenPreview = () => {
     const name = getControlValue('name') as string;
-    const stationId = getControlValue('stationId') as number | null;
+    const stations = getControlValue('stations') as number[];
     const shouldSendTemplate = getControlValue('shouldSendTemplate') as string;
     const timeoutTemplate = getControlValue('timeoutTemplate') as string;
     const messageTemplate = getControlValue('messageTemplate') as string;
     openMessagePreviewDialog({
       name,
-      stationId,
+      stations,
       shouldSendTemplate,
       timeoutTemplate,
       messageTemplate,
@@ -268,7 +264,7 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loadin
       <Divider />
       <SimpleGrid cols={{ xs: 1, sm: 2, }} mt='xs' mb='xs'>
         {renderField('botId')}
-        {renderField('stationId')}
+        {renderField('stations')}
       </SimpleGrid>
       <Divider />
       {renderField('channelId')}

@@ -4,6 +4,7 @@ import { BaseEditableState, BaseResponse } from "./base";
 export type BaseServerMessageListItem = {
   id?: number;
   name: string;
+  stations: number[];
   lastSentTime: Date;
   enabled: boolean;
 };
@@ -13,13 +14,11 @@ export type BaseServerMessageItem = BaseServerMessageListItem & {
   messageTemplate: string;
   shouldSendTemplate: string;
   timeoutTemplate: string;
-  stationId?: number;
   botId: number;
 };
 
 type MessageDetailsItem = {
   channelName: string;
-  stationName: string;
   botName: string;
 };
 

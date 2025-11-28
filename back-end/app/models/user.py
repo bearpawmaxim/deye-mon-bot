@@ -15,3 +15,8 @@ class User(Base):
 
     def __str__(self):
         return (f"User(id={self.id}, name='{self.name}', password='***', is_active={self.is_active}")
+
+    @classmethod
+    def get_lookup_values(cls, session):
+        users = session.query(cls).all()
+        return [{'value': u.id, 'text': u.name} for u in users]

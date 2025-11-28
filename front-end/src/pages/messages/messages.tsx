@@ -6,10 +6,13 @@ import { ServerMessageListItem } from "../../stores/types";
 import { useNavigate } from "react-router-dom";
 import { PageHeaderButton, useHeaderContent } from "../../providers";
 import { DataTable, ErrorMessage, Page } from "../../components";
-import { ColumnDataType } from "../../types";
+import { ColumnDataType, LookupSchema } from "../../types";
 import { selectMessagesChanged } from "../../stores/selectors";
 import { updateMessageState } from "../../stores/slices";
 import { modals } from "@mantine/modals";
+import { StationsCell } from "./components";
+import { useLookup } from "../../hooks";
+import { Row } from "@tanstack/react-table";
 
 type ComponentProps = {
   messages: Array<ServerMessageListItem>;
@@ -75,6 +78,8 @@ const Component: FC<ComponentProps> = ({ messages, loading, error, dataChanged }
     fetchData();
   }, [fetchData]);
 
+  const { data: stations } = useLookup(LookupSchema.Station, { autoFetch: true });
+
   if (dataChanged != initiallyChanged) {
     setInitiallyChanged(!initiallyChanged);
     setTimeout(() => {
@@ -90,6 +95,7 @@ const Component: FC<ComponentProps> = ({ messages, loading, error, dataChanged }
   if (error) {
     return <ErrorMessage content={error} />;
   }
+
 
   return <Page loading={loading}>
     <DataTable<ServerMessageListItem>
@@ -109,10 +115,25 @@ const Component: FC<ComponentProps> = ({ messages, loading, error, dataChanged }
           enableSorting: true,
         },
         {
-          id: 'station',
+          id: 'stations',
           header: 'Stations',
-          accessorKey: 'stationName',
+          accessorKey: 'stations',
           enableSorting: true,
+          cell: ({ row }) => <StationsCell stations={row.original.stations} stationsLookup={stations} />,
+          meta: {
+            textAlign: 'center',
+            dataType: ColumnDataType.Text,
+          },
+          sortingFn: (rowA: Row<ServerMessageListItem>, rowB: Row<ServerMessageListItem>) => {
+            const mapToNames = (stationIDs: number[]) => {
+              return stationIDs
+                .map(stationId => stations.find(s => parseInt(s.value!) === stationId))
+                .join(',');
+            }
+            const convertedA = mapToNames(rowA.original.stations);
+            const convertedB = mapToNames(rowB.original.stations);
+            return convertedA.localeCompare(convertedB);
+          },
         },
         {
           id: 'bot',

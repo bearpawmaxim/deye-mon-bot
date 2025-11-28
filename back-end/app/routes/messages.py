@@ -21,7 +21,7 @@ def register(app, services: Services):
             print(f'Cannot get channel info for channel {channel_id}')
             return 'Invalid channel identifier'
 
-    @app.route('/api/messages/messages', methods=['POST'])
+    @app.route('/api/messages/messages', methods=['GET'])
     @jwt_required()
     def get_messages():
         messages = services.database.get_messages(all=True)
@@ -29,12 +29,12 @@ def register(app, services: Services):
         def process_message(message):
             bot_name = _get_bot_name(message.bot_id)
             channel_name = _get_channel_name(message.channel_id, message.bot_id)
-            station_name = message.station.station_name if message.station else ''
+            stations = [station.id for station in message.stations]
             return {
                 'id': message.id,
                 'name': message.name,
                 'channelName': channel_name,
-                'stationName': station_name,
+                'stations': stations,
                 'botName': bot_name,
                 'lastSentTime': message.last_sent_time,
                 'enabled': message.enabled,
@@ -54,7 +54,7 @@ def register(app, services: Services):
         channel_name = _get_channel_name(channel_id, bot_id)
         return jsonify({ 'success': True, 'channelName': channel_name })
 
-    @app.route('/api/messages/message/<message_id>', methods=['POST'])
+    @app.route('/api/messages/message/<message_id>', methods=['GET'])
     @jwt_required()
     def get_message(message_id: int):
         message = services.database.get_message(message_id)
@@ -69,7 +69,7 @@ def register(app, services: Services):
             'messageTemplate': message.message_template,
             'shouldSendTemplate': message.should_send_template,
             'timeoutTemplate': message.timeout_template,
-            'stationId': message.station_id,
+            'stationIds': message.stations,
             'stationName': station_name,
             'botId': message.bot_id,
             'botName': bot_name,

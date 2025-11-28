@@ -32,12 +32,11 @@ export const messageSchema = v.object({
     v.trim(),
     v.minLength(1, 'Timeout template is required'),
   ),
-  stationId: v.nullable(
-    v.pipe(
+  stations: v.pipe(
+    v.array(
       v.number(),
-      v.minValue(0, 'Station is required'),
-      v.transform((x) => x === 0 ? null : x),
     ),
+    v.minLength(1, 'At least one station should be specified'),
   ),
   botId: v.pipe(
     v.number('Bot is required'),

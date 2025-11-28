@@ -8,7 +8,6 @@ def register(app, services: Services):
     def tg_callback(bot_id: int):
         try:
             if request.method == "POST":
-                print(request.json)
                 services.bot.update(bot_id, request.json)
         except Exception as e:
             print(f'Error processing request: {e}')

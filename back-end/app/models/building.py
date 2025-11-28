@@ -23,3 +23,8 @@ class Building(Base):
             'station_id': self.station_id,
             'report_user_id': self.report_user_id
         }
+
+    @classmethod
+    def get_lookup_values(cls, session):
+        buildings = session.query(cls).all()
+        return [{'value': b.id, 'text': b.name} for b in buildings]

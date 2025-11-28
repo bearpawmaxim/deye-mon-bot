@@ -69,7 +69,6 @@ class TelegramChatInfo:
 
     @classmethod
     def from_json(cls, data: dict):
-        print(type(data))
         return cls(
             id = data['id'],
             type = data['type'],

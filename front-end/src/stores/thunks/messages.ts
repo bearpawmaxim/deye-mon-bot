@@ -9,7 +9,7 @@ import { messageStateSaved } from "../slices";
 
 export const fetchMessages = createAsyncThunk('messages/fetchMessages', async (_, thunkAPI) => {
   try {
-    const response = await apiClient.post<Array<ServerMessageListItem>>('/messages/messages');
+    const response = await apiClient.get<Array<ServerMessageListItem>>('/messages/messages');
     return response.data;
   } catch (error: unknown) {
     return thunkAPI.rejectWithValue(getErrorMessage(error) || 'Failed to fetch messages');
@@ -34,7 +34,7 @@ export const getChannel = createAsyncThunk<string, void>('messages/getChannel', 
 export const editMessage = createAsyncThunk<MessageType, number>('messages/editMessage',
     async (message_id: number): Promise<MessageType> => {
   try {
-    const response = await apiClient.post<MessageType>(`/messages/message/${message_id}`);
+    const response = await apiClient.get<MessageType>(`/messages/message/${message_id}`);
     return response.data;
   } catch (error: unknown) {
     return Promise.reject(getErrorMessage(error) || 'Failed to fetch messages');
@@ -42,7 +42,7 @@ export const editMessage = createAsyncThunk<MessageType, number>('messages/editM
 });
 
 type TemplatePreviewArgs = {
-  stationId: number | null;
+  stations: number[];
   shouldSendTemplate: string;
   timeoutTemplate: string;
   messageTemplate: string;
@@ -62,7 +62,7 @@ export const getTemplatePreview = createAsyncThunk<TemplatePreviewResponse, Temp
       messageTemplate: args.messageTemplate,
       shouldSendTemplate: args.shouldSendTemplate,
       timeoutTemplate: args.timeoutTemplate,
-      stationId: args.stationId,
+      stations: args.stations,
     } as TemplatePreviewRequest;
     const response = await apiClient.post<TemplatePreviewResponse>('/messages/getPreview', request);
     if (response.data.success) {

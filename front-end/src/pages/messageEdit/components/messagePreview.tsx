@@ -10,7 +10,7 @@ import { modals } from '@mantine/modals'
 
 type OpenMessagePreviewOptions = {
   name: string,
-  stationId: number | null;
+  stations: number[];
   shouldSendTemplate: string;
   timeoutTemplate: string;
   messageTemplate: string;
@@ -18,7 +18,7 @@ type OpenMessagePreviewOptions = {
 
 export function openMessagePreviewDialog({
   name,
-  stationId,
+  stations,
   shouldSendTemplate,
   timeoutTemplate,
   messageTemplate,
@@ -30,7 +30,7 @@ export function openMessagePreviewDialog({
     const error = useAppSelector((s: RootState) => s.messages.previewError) as string | undefined;
 
     useEffect(() => {
-      dispatch(getTemplatePreview({ stationId, shouldSendTemplate, timeoutTemplate, messageTemplate }));
+      dispatch(getTemplatePreview({ stations, shouldSendTemplate, timeoutTemplate, messageTemplate }));
     }, [dispatch]);
 
     const handleClose = () => {
