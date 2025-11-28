@@ -16,7 +16,6 @@ type OpenPowerLogsDialogOptions = {
 
 type DateFilter = 'today' | 'yesterday' | 'custom';
 
-const END_OF_DAY_THRESHOLD = { hours: 23, minutes: 50 };
 const TIMER_INTERVAL_MS = 1000;
 
 const ANIMATION_STYLES = `
@@ -73,65 +72,14 @@ const getDateRange = (filter: DateFilter, customDates?: [Date | null, Date | nul
   };
 };
 
-const isEndOfDayTime = (date: Date): boolean => {
-  const threshold = new Date(date);
-  threshold.setHours(END_OF_DAY_THRESHOLD.hours, END_OF_DAY_THRESHOLD.minutes, 0, 0);
-  return date >= threshold;
-};
-
-const createPaddingPeriod = (startTime: string, endTime: string, isAvailable: boolean): PowerLogPeriod => {
-  const durationMs = new Date(endTime).getTime() - new Date(startTime).getTime();
-  return {
-    startTime,
-    endTime,
-    isAvailable,
-    durationSeconds: Math.floor(durationMs / 1000),
-  };
-};
-
-const padPeriodsToFullDay = (periods: PowerLogPeriod[], filter: DateFilter): PowerLogPeriod[] => {
-  if (!periods.length || filter === 'custom') return periods;
-
-  const now = new Date();
-  const targetDate = filter === 'yesterday' 
-    ? new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
-    : new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-  const dayStart = new Date(targetDate).setHours(0, 0, 0, 0);
-  const dayEnd = new Date(targetDate).setHours(23, 59, 59, 999);
-
-  const firstPeriod = periods[0];
-  const lastPeriod = periods[periods.length - 1];
-  const firstStart = new Date(firstPeriod.startTime).getTime();
-  const lastEnd = new Date(lastPeriod.endTime).getTime();
-
-  const result: PowerLogPeriod[] = [];
-
-  if (firstStart > dayStart) {
-    result.push(createPaddingPeriod(
-      new Date(dayStart).toISOString(),
-      firstPeriod.startTime,
-      !firstPeriod.isAvailable
-    ));
-  }
-
-  result.push(...periods);
-
-  const shouldPadEnd = filter === 'yesterday' || !isEndOfDayTime(new Date(lastEnd));
-  if (shouldPadEnd && lastEnd < dayEnd) {
-    result.push(createPaddingPeriod(
-      lastPeriod.endTime,
-      new Date(dayEnd).toISOString(),
-      !lastPeriod.isAvailable
-    ));
-  }
-
-  return result;
+const padPeriodsToFullDay = (periods: PowerLogPeriod[]): PowerLogPeriod[] => {
+  return periods;
 };
 
 const checkIsOngoing = (period: PowerLogPeriod, isLastPeriod: boolean, isToday: boolean, currentTime: Date): boolean => {
   if (!isLastPeriod || !isToday) return false;
-  return isEndOfDayTime(new Date(period.endTime)) && currentTime > new Date(period.startTime);
+  const endTime = new Date(period.endTime);
+  return endTime.getHours() >= 23 && currentTime > new Date(period.startTime);
 };
 
 const calculateOngoingDuration = (startTime: Date, currentTime: Date, originalDuration: number): number => {
@@ -210,8 +158,8 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
     }), []);
 
     const paddedPeriods = useMemo(() => 
-      data?.periods ? padPeriodsToFullDay(data.periods, dateFilter) : []
-    , [data, dateFilter]);
+      data?.periods ? padPeriodsToFullDay(data.periods) : []
+    , [data]);
 
     const { totalAvailable, totalUnavailable } = useMemo(() => {
       if (!paddedPeriods.length) {

@@ -569,6 +569,24 @@ class DatabaseService:
             print(f"Error saving ext data: {e}")
             return None
 
+    def get_last_ext_data_before_date(self, user_id: int, before_date: datetime):
+        """Get the last ext_data record before a specific date"""
+        try:
+            record = (
+                self._session
+                .query(ExtData)
+                .filter(
+                    ExtData.user_id == user_id,
+                    ExtData.received_at < before_date
+                )
+                .order_by(ExtData.received_at.desc())
+                .first()
+            )
+            return record
+        except Exception as e:
+            print(f'Error getting last ext data before date: {e}')
+            return None
+
     def get_ext_data_statistics(self, user_id: int, start_date: datetime, end_date: datetime):
         """Get power statistics for a user between two dates"""
         try:
