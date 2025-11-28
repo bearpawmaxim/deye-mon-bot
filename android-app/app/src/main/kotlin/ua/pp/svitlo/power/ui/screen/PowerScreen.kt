@@ -8,13 +8,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ua.pp.svitlo.power.data.model.Building
 import ua.pp.svitlo.power.data.model.PowerStatus
@@ -33,10 +37,19 @@ fun PowerScreen(
 ) {
     val buildingsState by viewModel.buildingsState.collectAsState()
     val configState by viewModel.configState.collectAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    
+    // Refresh data when screen becomes visible (app returns from background)
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            viewModel.loadBuildings(silent = true) // Silent refresh in background
+        }
+    }
     
     val appTitle = when (val state = configState) {
-        is UiState.Success -> state.data.title
-        else -> "Svitlo Power"
+        //is UiState.Success -> state.data.title
+        is UiState.Success -> "Power Grid"
+        else -> "Power Grid"
     }
     
     Scaffold(

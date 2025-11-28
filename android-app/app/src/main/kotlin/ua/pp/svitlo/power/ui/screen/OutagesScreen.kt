@@ -15,8 +15,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
 import ua.pp.svitlo.power.data.model.DaySchedule
@@ -42,6 +45,14 @@ fun OutagesScreen(
 ) {
     val outagesState by viewModel.outagesState.collectAsState()
     val currentQueue by viewModel.currentQueue.collectAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    
+    // Refresh data when screen becomes visible (app returns from background)
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            viewModel.loadOutages(silent = true) // Silent refresh in background
+        }
+    }
     
     // Real-time updates
     var currentTime by remember { mutableStateOf(System.currentTimeMillis()) }

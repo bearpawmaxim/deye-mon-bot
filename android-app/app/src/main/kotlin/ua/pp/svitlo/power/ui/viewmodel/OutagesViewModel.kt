@@ -22,12 +22,20 @@ class OutagesViewModel : ViewModel() {
         loadOutages()
     }
     
-    fun loadOutages() {
+    fun loadOutages(silent: Boolean = false) {
         viewModelScope.launch {
-            _outagesState.value = UiState.Loading
+            // Only show loading state if we don't have data yet (initial load)
+            if (!silent || _outagesState.value is UiState.Loading || _outagesState.value is UiState.Error) {
+                _outagesState.value = UiState.Loading
+            }
             repository.getOutagesSchedule(_currentQueue.value)
                 .onSuccess { _outagesState.value = UiState.Success(it) }
-                .onFailure { _outagesState.value = UiState.Error(it.message ?: "Unknown error") }
+                .onFailure { 
+                    // Only show error if we don't have existing data
+                    if (_outagesState.value !is UiState.Success) {
+                        _outagesState.value = UiState.Error(it.message ?: "Unknown error")
+                    }
+                }
         }
     }
     

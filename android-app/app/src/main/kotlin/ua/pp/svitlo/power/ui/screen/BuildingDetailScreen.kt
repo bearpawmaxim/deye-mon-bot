@@ -13,8 +13,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ua.pp.svitlo.power.data.model.PowerPeriod
 import ua.pp.svitlo.power.ui.components.ErrorContent
@@ -33,12 +36,20 @@ fun BuildingDetailScreen(
     viewModel: BuildingDetailViewModel = viewModel()
 ) {
     val powerLogsState by viewModel.powerLogsState.collectAsState()
+    val lifecycleOwner = LocalLifecycleOwner.current
     
     // Real-time updates for ongoing period
     var currentTime by remember { mutableStateOf(System.currentTimeMillis()) }
     
     LaunchedEffect(buildingId) {
         viewModel.loadPowerLogs(buildingId)
+    }
+    
+    // Refresh data when screen becomes visible (app returns from background)
+    LaunchedEffect(lifecycleOwner, buildingId) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            viewModel.loadPowerLogs(buildingId, silent = true) // Silent refresh in background
+        }
     }
     
     // Update time every second for ongoing periods

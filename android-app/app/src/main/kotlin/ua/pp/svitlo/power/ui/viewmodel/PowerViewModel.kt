@@ -30,21 +30,35 @@ class PowerViewModel : ViewModel() {
         loadConfig()
     }
     
-    fun loadBuildings() {
+    fun loadBuildings(silent: Boolean = false) {
         viewModelScope.launch {
-            _buildingsState.value = UiState.Loading
+            // Only show loading state if we don't have data yet (initial load)
+            if (!silent || _buildingsState.value is UiState.Loading || _buildingsState.value is UiState.Error) {
+                _buildingsState.value = UiState.Loading
+            }
             repository.getBuildings()
                 .onSuccess { _buildingsState.value = UiState.Success(it) }
-                .onFailure { _buildingsState.value = UiState.Error(it.message ?: "Unknown error") }
+                .onFailure { 
+                    // Only show error if we don't have existing data
+                    if (_buildingsState.value !is UiState.Success) {
+                        _buildingsState.value = UiState.Error(it.message ?: "Unknown error")
+                    }
+                }
         }
     }
     
-    private fun loadConfig() {
+    private fun loadConfig(silent: Boolean = false) {
         viewModelScope.launch {
-            _configState.value = UiState.Loading
+            if (!silent || _configState.value is UiState.Loading || _configState.value is UiState.Error) {
+                _configState.value = UiState.Loading
+            }
             repository.getDashboardConfig()
                 .onSuccess { _configState.value = UiState.Success(it) }
-                .onFailure { _configState.value = UiState.Error(it.message ?: "Unknown error") }
+                .onFailure { 
+                    if (_configState.value !is UiState.Success) {
+                        _configState.value = UiState.Error(it.message ?: "Unknown error")
+                    }
+                }
         }
     }
 }
