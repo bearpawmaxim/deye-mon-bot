@@ -127,7 +127,7 @@ const Component: FC<ComponentProps> = ({ messages, loading, error, dataChanged }
           sortingFn: (rowA: Row<ServerMessageListItem>, rowB: Row<ServerMessageListItem>) => {
             const mapToNames = (stationIDs: number[]) => {
               return stationIDs
-                .map(stationId => stations.find(s => parseInt(s.value!) === stationId))
+                .map(stationId => stations.find(s => s.value! === stationId))
                 .join(',');
             }
             const convertedA = mapToNames(rowA.original.stations);

@@ -2,6 +2,8 @@ from datetime import datetime, timedelta, timezone
 from functools import partial
 from typing import List
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+import io
+from contextlib import redirect_stdout
 from app.services.database.service import DatabaseService
 from app.services.deye_api.service import DeyeApiService
 from app.services.telegram.service import TelegramService
@@ -149,4 +151,14 @@ class BotService(BaseService):
                 print(f"Error sending message '{message.name}': {e}")
 
     def get_message(self, message):
-        return self._prepare_message(message, True, True)
+        stdout_buffer = io.StringIO()
+        
+        info = None
+        with redirect_stdout(stdout_buffer):
+            info = self._prepare_message(message, True, True)
+
+        if info is None:
+            captured_output = stdout_buffer.getvalue()
+            raise Exception(captured_output)
+
+        return info

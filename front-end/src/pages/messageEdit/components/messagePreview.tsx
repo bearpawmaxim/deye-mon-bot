@@ -30,7 +30,7 @@ export function openMessagePreviewDialog({
     const error = useAppSelector((s: RootState) => s.messages.previewError) as string | undefined;
 
     useEffect(() => {
-      dispatch(getTemplatePreview({ stations, shouldSendTemplate, timeoutTemplate, messageTemplate }));
+      dispatch(getTemplatePreview({ name, stations, shouldSendTemplate, timeoutTemplate, messageTemplate }));
     }, [dispatch]);
 
     const handleClose = () => {

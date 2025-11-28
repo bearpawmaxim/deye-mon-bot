@@ -42,6 +42,7 @@ export const editMessage = createAsyncThunk<MessageType, number>('messages/editM
 });
 
 type TemplatePreviewArgs = {
+  name: string;
   stations: number[];
   shouldSendTemplate: string;
   timeoutTemplate: string;
@@ -57,6 +58,7 @@ export const getTemplatePreview = createAsyncThunk<TemplatePreviewResponse, Temp
       return rejectWithValue('No message is currently editing');
     }
     const request = {
+      name: args.name,
       botId: message.botId,
       channelId: message.channelId,
       messageTemplate: args.messageTemplate,

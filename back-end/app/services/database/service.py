@@ -46,7 +46,7 @@ class DatabaseService:
                     name = message.name,
                     channel_id = message.channel_id,
                     bot_id = message.bot_id,
-                    station_id = message.station_id,
+                    stations = message.stations,
                     message_template = message.message_template,
                     timeout_template = message.timeout_template,
                     should_send_template = message.should_send_template,
@@ -58,7 +58,7 @@ class DatabaseService:
             else:
                 existing_message.channel_id = message.channel_id
                 existing_message.bot_id = message.bot_id
-                existing_message.station_id = message.station_id
+                existing_message.stations = message.stations
                 existing_message.message_template = message.message_template
                 existing_message.timeout_template = message.timeout_template
                 existing_message.should_send_template = message.should_send_template
@@ -555,7 +555,7 @@ class DatabaseService:
             if not user_obj:
                 print(f"User not found: {user}")
                 return None
-            
+
             new_data = ExtData(
                 user_id = user_obj.id,
                 grid_state = grid_state,

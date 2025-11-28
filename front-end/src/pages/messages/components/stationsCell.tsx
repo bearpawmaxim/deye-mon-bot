@@ -11,7 +11,7 @@ export const StationsCell: FC<StationsCellProps> = ({ stations, stationsLookup }
   return <>
     {stations.map((station, idx) => <Text key={`st_${idx}`}>
       <Anchor href={`/stations/details/${station}`}>
-        {stationsLookup.find(f => parseInt(f.value!) === station)?.text}
+        {stationsLookup.find(f => f.value === station)?.text}
       </Anchor>
     </Text>)}
   </>;

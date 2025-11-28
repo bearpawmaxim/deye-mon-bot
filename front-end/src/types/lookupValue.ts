@@ -6,6 +6,6 @@ export enum LookupSchema {
 };
 
 export type LookupValue = {
-  value?: string;
+  value?: number;
   text: string;
 };

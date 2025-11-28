@@ -4,16 +4,17 @@ import { useHeaderContent } from "../../providers";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { editMessage, fetchBots, fetchStations, getChannel, saveMessage } from "../../stores/thunks";
 import { createMessage, finishEditingMessage, updateMessage } from "../../stores/slices";
-import { BotItem, ServerStationItem } from "../../stores/types";
+import { BotItem } from "../../stores/types";
 import { connect } from "react-redux";
 import { createSelector } from "@reduxjs/toolkit";
 import { FormPage, FormSubmitButtons } from "../../components";
-import { ActionIcon, Badge, ComboboxItem, Divider, Select, SimpleGrid, Switch, Tabs, TextInput, Title, Button, Loader } from "@mantine/core";
-import { useFormHandler } from "../../hooks";
+import { ActionIcon, Badge, ComboboxItem, Divider, Select, SimpleGrid, Switch, Tabs, TextInput, Title, Button, Loader, MultiSelect } from "@mantine/core";
+import { useFormHandler, useLookup } from "../../hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { messageSchema, MessageType } from "../../schemas";
 import { Controller } from "react-hook-form";
 import { openMessagePreviewDialog, TemplateEditor } from "./components";
+import { LookupSchema } from "../../types";
 
 type ComponentOwnProps = {
   isEdit: boolean;
@@ -21,7 +22,6 @@ type ComponentOwnProps = {
 
 type ComponentProps = {
   bots: BotItem[];
-  stations: ServerStationItem[];
   message?: MessageType;
   loading: boolean;
   stationsLoading: boolean;
@@ -39,18 +39,16 @@ const selectLoading = createSelector(
 
 const mapStateToProps = (state: RootState, ownProps: ComponentOwnProps): ComponentProps => ({
   bots: state.bots.bots,
-  stations: state.stations.stations,
   message: state.messages.editingMessage,
   loading: selectLoading(state),
   stationsLoading: state.stations.loading,
   isEdit: ownProps.isEdit
 });
 
-const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loading, stationsLoading }: ComponentProps) => {
+const Component: FC<ComponentProps> = ({ isEdit, bots, message, loading, stationsLoading }: ComponentProps) => {
   const dispatch = useAppDispatch();
   const { messageId } = useParams();
   const messageIdInt = parseInt(messageId!);
-  
 
   const messageRef = useRef(message);
   useEffect(() => {
@@ -68,19 +66,21 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loadin
     dispatch(fetchStations());
   }, [dispatch]);
 
-  const getBotOptions = (): ComboboxItem[] => (bots ?? []).map((bot, index) => ({
+  const getBotOptions = useCallback((): ComboboxItem[] => (bots ?? []).map((bot, index) => ({
     key: `bot_${index}`,
     value: bot.id?.toString(),
     label: bot.name,
-  } as ComboboxItem));
+  } as ComboboxItem)), [bots]);
 
-  const getStationOptions = (): ComboboxItem[] => ([
+  const { data: stations } = useLookup(LookupSchema.Station, { autoFetch: true });
+
+  const getStationOptions = useCallback((): ComboboxItem[] => ([
     ...(stations ?? []).map((station, index) => ({
       key: `station_${index}`,
-      value: station.id.toString(),
-      label: station.stationName,
+      value: station.value!.toString(),
+      label: station.text,
     } as ComboboxItem)),
-  ]);
+  ]), [stations]);
 
   const handleSave = (data: MessageType) => {
     dispatch(updateMessage(data));
@@ -164,14 +164,24 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loadin
             control={context.helpers.control}
             defaultValue={[]}
             render={({ field }) => (
-              <Select
+              <MultiSelect
                 required
                 data={getStationOptions()}
                 {...field}
                 label={context.title}
-                value={field.value?.toString() ?? ''}
+                value={field.value?.map(m => m.toString()) ?? []}
                 error={context.helpers.getFieldError('stations')}
-                onChange={(value) => context.helpers.setControlValue('stations', parseInt(value!), true, false)}
+                styles={{
+                  pill: {
+                    backgroundColor: "var(--mantine-primary-color-filled)",
+                    color: "white",
+                    fontWeight: 700,
+                  }
+                }}
+                onChange={(value) => {
+                  const stationIds = value.map(m => parseInt(m));
+                  context.helpers.setControlValue('stations', stationIds, true, false);
+                }}
               />
             )}
           />;
