@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,7 +19,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleStartEffect
+import kotlinx.coroutines.launch
 import ua.pp.svitlo.power.data.preferences.PreferencesManager
+import ua.pp.svitlo.power.fcm.FcmTopicsManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,11 +32,13 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val preferencesManager = remember { PreferencesManager(context) }
+    val coroutineScope = rememberCoroutineScope()
     val systemInDarkTheme = isSystemInDarkTheme()
     val savedDarkMode by preferencesManager.darkModeFlow.collectAsState(initial = null)
+    val autoRefreshInterval by preferencesManager.autoRefreshIntervalFlow.collectAsState(initial = 300)
+    val notificationsEnabled by preferencesManager.notificationsEnabledFlow.collectAsState(initial = true)
     
-    var autoRefresh by remember { mutableStateOf(true) }
-    var notificationsEnabled by remember { mutableStateOf(false) }
+    var showIntervalDialog by remember { mutableStateOf(false) }
     
     // Show of system tema shows
     val isUsingSystemTheme = savedDarkMode == null
@@ -40,6 +46,22 @@ fun SettingsScreen(
         "Following system theme (currently ${if (systemInDarkTheme) "dark" else "light"})"
     } else {
         "Custom theme selected"
+    }
+    
+    val intervalText = when (autoRefreshInterval) {
+        30 -> "30 seconds"
+        60 -> "1 minute"
+        180 -> "3 minutes"
+        300 -> "5 minutes"
+        600 -> "10 minutes"
+        900 -> "15 minutes"
+        else -> "Never"
+    }
+    
+    val notificationsDescription = if (notificationsEnabled) {
+        "You will receive alerts about power outages"
+    } else {
+        "Notifications are disabled"
     }
     
     Scaffold(
@@ -67,11 +89,10 @@ fun SettingsScreen(
             
             item {
                 SettingsCard {
-                    SettingSwitch(
+                    SettingSelector(
                         title = "Auto Refresh",
-                        description = "Automatically refresh data every 5 minutes",
-                        checked = autoRefresh,
-                        onCheckedChange = { autoRefresh = it }
+                        description = "Automatically refresh data: $intervalText",
+                        onClick = { showIntervalDialog = true }
                     )
                 }
             }
@@ -80,10 +101,25 @@ fun SettingsScreen(
                 SettingsCard {
                     SettingSwitch(
                         title = "Notifications",
-                        description = "Receive alerts about power outages (Coming soon)",
+                        description = notificationsDescription,
                         checked = notificationsEnabled,
-                        onCheckedChange = { notificationsEnabled = it },
-                        enabled = false
+                        onCheckedChange = { enabled ->
+                            coroutineScope.launch {
+                                preferencesManager.setNotificationsEnabled(enabled)
+                                
+                                // Управление подписками на топики
+                                if (enabled) {
+                                    // Подписаться на все топики
+                                    FcmTopicsManager.subscribeToDefaultTopics()
+                                } else {
+                                    // Отписаться от всех топиков
+                                    FcmTopicsManager.unsubscribeFromTopic(FcmTopicsManager.Topics.ALL_USERS)
+                                    FcmTopicsManager.unsubscribeFromTopic(FcmTopicsManager.Topics.POWER_ALERTS)
+                                    FcmTopicsManager.unsubscribeFromTopic(FcmTopicsManager.Topics.SCHEDULE_UPDATES)
+                                    FcmTopicsManager.unsubscribeFromTopic(FcmTopicsManager.Topics.BATTERY_ALERTS)
+                                }
+                            }
+                        }
                     )
                 }
             }
@@ -193,6 +229,62 @@ fun SettingsScreen(
                 }
             }
         }
+    }
+    
+    // Auto Refresh Interval Dialog
+    if (showIntervalDialog) {
+        AlertDialog(
+            onDismissRequest = { showIntervalDialog = false },
+            title = { Text("Auto Refresh Interval") },
+            text = {
+                Column {
+                    val intervals = listOf(
+                        -1 to "Never",
+                        30 to "30 seconds",
+                        60 to "1 minute",
+                        180 to "3 minutes",
+                        300 to "5 minutes",
+                        600 to "10 minutes",
+                        900 to "15 minutes"
+                    )
+                    
+                    intervals.forEach { (seconds, label) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    coroutineScope.launch {
+                                        preferencesManager.setAutoRefreshInterval(seconds)
+                                        showIntervalDialog = false
+                                    }
+                                }
+                                .padding(vertical = 12.dp, horizontal = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = autoRefreshInterval == seconds,
+                                onClick = {
+                                    coroutineScope.launch {
+                                        preferencesManager.setAutoRefreshInterval(seconds)
+                                        showIntervalDialog = false
+                                    }
+                                }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showIntervalDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 
@@ -322,6 +414,41 @@ fun AuthorItem(
             contentDescription = "Open",
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(20.dp)
+        )
+    }
+}
+
+@Composable
+fun SettingSelector(
+    title: String,
+    description: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Medium
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Icon(
+            Icons.Default.ArrowDropDown,
+            contentDescription = "Select",
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

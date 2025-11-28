@@ -93,3 +93,7 @@ Thumbs.db
 
 # DataStore
 *.preferences_pb
+
+# Google Play Console
+google-play-console/
+google-services.json

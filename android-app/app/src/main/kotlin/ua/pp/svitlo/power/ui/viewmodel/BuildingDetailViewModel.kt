@@ -15,13 +15,21 @@ class BuildingDetailViewModel : ViewModel() {
     private val _powerLogsState = MutableStateFlow<UiState<PowerLogResponse>>(UiState.Loading)
     val powerLogsState: StateFlow<UiState<PowerLogResponse>> = _powerLogsState.asStateFlow()
     
-    fun loadPowerLogs(buildingId: Int) {
+    fun loadPowerLogs(buildingId: Int, silent: Boolean = false) {
         viewModelScope.launch {
-            _powerLogsState.value = UiState.Loading
+            // Only show loading state if we don't have data yet (initial load)
+            if (!silent || _powerLogsState.value is UiState.Loading || _powerLogsState.value is UiState.Error) {
+                _powerLogsState.value = UiState.Loading
+            }
             val (startDate, endDate) = repository.getTodayDateRange()
             repository.getPowerLogs(buildingId, startDate, endDate)
                 .onSuccess { _powerLogsState.value = UiState.Success(it) }
-                .onFailure { _powerLogsState.value = UiState.Error(it.message ?: "Unknown error") }
+                .onFailure { 
+                    // Only show error if we don't have existing data
+                    if (_powerLogsState.value !is UiState.Success) {
+                        _powerLogsState.value = UiState.Error(it.message ?: "Unknown error")
+                    }
+                }
         }
     }
 }

@@ -1,13 +1,18 @@
 package ua.pp.svitlo.power
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -15,6 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -26,6 +32,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import kotlinx.coroutines.launch
 import ua.pp.svitlo.power.data.preferences.PreferencesManager
+import ua.pp.svitlo.power.fcm.FcmTokenManager
+import ua.pp.svitlo.power.fcm.FcmTopicsManager
 import ua.pp.svitlo.power.ui.navigation.Screen
 import ua.pp.svitlo.power.ui.screen.BuildingDetailScreen
 import ua.pp.svitlo.power.ui.screen.OutagesScreen
@@ -36,10 +44,24 @@ import ua.pp.svitlo.power.ui.theme.SvitloPowerTheme
 class MainActivity : ComponentActivity() {
     private lateinit var preferencesManager: PreferencesManager
     
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            Log.d("MainActivity", "Notification permission granted")
+            initializeFcm()
+        } else {
+            Log.d("MainActivity", "Notification permission denied")
+        }
+    }
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         preferencesManager = PreferencesManager(this)
+        
+        // Request notification permission for Android 13+
+        requestNotificationPermission()
         
         setContent {
             val systemInDarkTheme = isSystemInDarkTheme()
@@ -59,6 +81,46 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when {
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    // Permission already granted
+                    initializeFcm()
+                }
+                else -> {
+                    // Request permission
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        } else {
+            // No permission needed for older versions
+            initializeFcm()
+        }
+    }
+    
+    private fun initializeFcm() {
+        lifecycleScope.launch {
+            try {
+                val token = FcmTokenManager.getCurrentToken()
+                if (token != null) {
+                    Log.d("MainActivity", "FCM Token: $token")
+                    FcmTokenManager.registerToken(this@MainActivity, token)
+                    
+                    // Subscribe to default topics
+                    FcmTopicsManager.subscribeToDefaultTopics()
+                } else {
+                    Log.w("MainActivity", "Failed to get FCM token")
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error initializing FCM", e)
+            }
+        }
+    }
 }
 
 sealed class BottomNavItem(
@@ -66,7 +128,7 @@ sealed class BottomNavItem(
     val icon: ImageVector,
     val label: String
 ) {
-    object Power : BottomNavItem(Screen.Power.route, Icons.Default.Home, "Power")
+    object Power : BottomNavItem(Screen.Power.route, Icons.Default.FlashOn, "Power")
     object Outages : BottomNavItem(Screen.Outages.route, Icons.Default.Schedule, "Outages")
     object Settings : BottomNavItem(Screen.Settings.route, Icons.Default.Settings, "Settings")
 }
