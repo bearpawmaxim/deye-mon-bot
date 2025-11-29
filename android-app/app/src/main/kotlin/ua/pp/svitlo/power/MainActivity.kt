@@ -9,8 +9,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.Schedule
@@ -30,19 +33,28 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.analytics.logEvent
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
+import ua.pp.svitlo.power.data.api.RetrofitClient
 import ua.pp.svitlo.power.data.preferences.PreferencesManager
 import ua.pp.svitlo.power.fcm.FcmTokenManager
 import ua.pp.svitlo.power.fcm.FcmTopicsManager
+import ua.pp.svitlo.power.ui.components.UpdateDialog
 import ua.pp.svitlo.power.ui.navigation.Screen
 import ua.pp.svitlo.power.ui.screen.BuildingDetailScreen
 import ua.pp.svitlo.power.ui.screen.OutagesScreen
 import ua.pp.svitlo.power.ui.screen.PowerScreen
 import ua.pp.svitlo.power.ui.screen.SettingsScreen
 import ua.pp.svitlo.power.ui.theme.SvitloPowerTheme
+import ua.pp.svitlo.power.update.UpdateManager
 
 class MainActivity : ComponentActivity() {
     private lateinit var preferencesManager: PreferencesManager
+    private var lastUpdateCheckTime = 0L
+    private val updateCheckInterval = 6 * 60 * 60 * 1000L // 6 hours in milliseconds
     
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -59,6 +71,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         preferencesManager = PreferencesManager(this)
+        
+        // Initialize base URL from Firebase
+        initializeBaseUrl()
         
         // Request notification permission for Android 13+
         requestNotificationPermission()
@@ -78,6 +93,66 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 )
+            }
+        }
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        // Check for updates when app is resumed
+        checkForUpdatesOnResume()
+    }
+    
+    private fun checkForUpdatesOnResume() {
+        val currentTime = System.currentTimeMillis()
+        
+        // Check only if enough time has passed since last check
+        if (currentTime - lastUpdateCheckTime < updateCheckInterval) {
+            Log.d("MainActivity", "Skipping update check, last check was ${(currentTime - lastUpdateCheckTime) / 1000 / 60} minutes ago")
+            return
+        }
+        
+        lifecycleScope.launch {
+            try {
+                Log.d("MainActivity", "Checking for updates on resume...")
+                val updateInfo = UpdateManager.checkForUpdate()
+                lastUpdateCheckTime = currentTime
+                
+                if (updateInfo.isUpdateAvailable) {
+                    Log.i("MainActivity", "Update available on resume: ${updateInfo.currentVersion} -> ${updateInfo.latestVersion}")
+                } else {
+                    Log.d("MainActivity", "No updates available")
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error checking for updates on resume", e)
+            }
+        }
+    }
+    
+    private fun initializeBaseUrl() {
+        lifecycleScope.launch {
+            try {
+                RetrofitClient.initializeBaseUrl()
+                Log.d("MainActivity", "Base URL initialized from Firebase")
+                
+                // Check for app updates after base URL is initialized
+                checkForUpdates()
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error initializing base URL", e)
+            }
+        }
+    }
+    
+    private fun checkForUpdates() {
+        lifecycleScope.launch {
+            try {
+                val updateInfo = UpdateManager.checkForUpdate()
+                if (updateInfo.isUpdateAvailable) {
+                    Log.i("MainActivity", "Update available: ${updateInfo.currentVersion} -> ${updateInfo.latestVersion}")
+                    // Update dialog will be shown in MainScreen
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Error checking for updates", e)
             }
         }
     }
@@ -133,11 +208,14 @@ sealed class BottomNavItem(
     object Settings : BottomNavItem(Screen.Settings.route, Icons.Default.Settings, "Settings")
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MainScreen(
     darkMode: Boolean,
     onDarkModeChange: (Boolean) -> Unit
 ) {
+    val context = LocalContext.current
+    val firebaseAnalytics = remember { Firebase.analytics }
     val navController = rememberNavController()
     val items = listOf(
         BottomNavItem.Outages,
@@ -145,8 +223,54 @@ fun MainScreen(
         BottomNavItem.Settings
     )
     
+    // Track screen views
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    
+    LaunchedEffect(currentRoute) {
+        currentRoute?.let { route ->
+            val screenName = when {
+                route.startsWith(Screen.Power.route) -> "power_screen"
+                route.startsWith(Screen.Outages.route) -> "outages_screen"
+                route.startsWith(Screen.Settings.route) -> "settings_screen"
+                route.startsWith("building_detail") -> "building_detail_screen"
+                else -> route
+            }
+            
+            firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW) {
+                param(FirebaseAnalytics.Param.SCREEN_NAME, screenName)
+                param(FirebaseAnalytics.Param.SCREEN_CLASS, "MainActivity")
+            }
+            
+            Log.d("Analytics", "Screen view logged: $screenName")
+        }
+    }
+    
+    // Check for updates
+    var updateInfo by remember { mutableStateOf<UpdateManager.UpdateInfo?>(null) }
+    var showUpdateDialog by remember { mutableStateOf(false) }
+    
+    LaunchedEffect(Unit) {
+        try {
+            val info = UpdateManager.checkForUpdate()
+            if (info.isUpdateAvailable) {
+                updateInfo = info
+                showUpdateDialog = true
+            }
+        } catch (e: Exception) {
+            Log.e("MainScreen", "Error checking for updates", e)
+        }
+    }
+    
+    // Show update dialog
+    if (showUpdateDialog && updateInfo != null) {
+        UpdateDialog(
+            currentVersion = updateInfo!!.currentVersion,
+            latestVersion = updateInfo!!.latestVersion,
+            updateUrl = updateInfo!!.updateUrl,
+            onDismiss = { showUpdateDialog = false }
+        )
+    }
     
     // Show bottom bar only on main screens
     val showBottomBar = currentRoute in listOf(
@@ -155,24 +279,60 @@ fun MainScreen(
         Screen.Settings.route
     )
     
+    // Pager state for swipe navigation
+    val pagerState = rememberPagerState(
+        initialPage = 0,
+        pageCount = { items.size }
+    )
+    val coroutineScope = rememberCoroutineScope()
+    
+    // Synchronize pager with navigation clicks
+    LaunchedEffect(currentRoute) {
+        when (currentRoute) {
+            Screen.Outages.route -> {
+                if (pagerState.currentPage != 0) {
+                    pagerState.animateScrollToPage(0)
+                }
+            }
+            Screen.Power.route -> {
+                if (pagerState.currentPage != 1) {
+                    pagerState.animateScrollToPage(1)
+                }
+            }
+            Screen.Settings.route -> {
+                if (pagerState.currentPage != 2) {
+                    pagerState.animateScrollToPage(2)
+                }
+            }
+        }
+    }
+    
+    // Synchronize navigation with pager swipes
+    LaunchedEffect(pagerState.currentPage) {
+        val targetRoute = items[pagerState.currentPage].route
+        if (currentRoute != targetRoute) {
+            navController.navigate(targetRoute) {
+                popUpTo(navController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+    }
+    
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
                 NavigationBar {
-                    val currentDestination = navBackStackEntry?.destination
-                    
-                    items.forEach { item ->
+                    items.forEachIndexed { index, item ->
                         NavigationBarItem(
                             icon = { Icon(item.icon, contentDescription = item.label) },
                             label = { Text(item.label) },
-                            selected = currentDestination?.hierarchy?.any { it.route == item.route } == true,
+                            selected = pagerState.currentPage == index,
                             onClick = {
-                                navController.navigate(item.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(index)
                                 }
                             }
                         )
@@ -181,41 +341,63 @@ fun MainScreen(
             }
         }
     ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Outages.route,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(Screen.Power.route) {
-                PowerScreen(
-                    onBuildingClick = { buildingId, buildingName ->
-                        navController.navigate(Screen.BuildingDetail.createRoute(buildingId, buildingName))
-                    }
-                )
+        if (showBottomBar) {
+            // Main screens with swipe navigation
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.padding(innerPadding)
+            ) { page ->
+                when (page) {
+                    0 -> OutagesScreen()
+                    1 -> PowerScreen(
+                        onBuildingClick = { buildingId, buildingName ->
+                            navController.navigate(Screen.BuildingDetail.createRoute(buildingId, buildingName))
+                        }
+                    )
+                    2 -> SettingsScreen(
+                        darkMode = darkMode,
+                        onDarkModeChange = onDarkModeChange
+                    )
+                }
             }
-            composable(Screen.Outages.route) {
-                OutagesScreen()
-            }
-            composable(Screen.Settings.route) {
-                SettingsScreen(
-                    darkMode = darkMode,
-                    onDarkModeChange = onDarkModeChange
-                )
-            }
-            composable(
-                route = Screen.BuildingDetail.route,
-                arguments = listOf(
-                    navArgument("buildingId") { type = NavType.IntType },
-                    navArgument("buildingName") { type = NavType.StringType }
-                )
-            ) { backStackEntry ->
-                val buildingId = backStackEntry.arguments?.getInt("buildingId") ?: 0
-                val buildingName = backStackEntry.arguments?.getString("buildingName") ?: ""
-                BuildingDetailScreen(
-                    buildingId = buildingId,
-                    buildingName = buildingName,
-                    onNavigateBack = { navController.popBackStack() }
-                )
+        } else {
+            // Detail screens without pager
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Outages.route,
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                composable(Screen.Power.route) {
+                    PowerScreen(
+                        onBuildingClick = { buildingId, buildingName ->
+                            navController.navigate(Screen.BuildingDetail.createRoute(buildingId, buildingName))
+                        }
+                    )
+                }
+                composable(Screen.Outages.route) {
+                    OutagesScreen()
+                }
+                composable(Screen.Settings.route) {
+                    SettingsScreen(
+                        darkMode = darkMode,
+                        onDarkModeChange = onDarkModeChange
+                    )
+                }
+                composable(
+                    route = Screen.BuildingDetail.route,
+                    arguments = listOf(
+                        navArgument("buildingId") { type = NavType.IntType },
+                        navArgument("buildingName") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val buildingId = backStackEntry.arguments?.getInt("buildingId") ?: 0
+                    val buildingName = backStackEntry.arguments?.getString("buildingName") ?: ""
+                    BuildingDetailScreen(
+                        buildingId = buildingId,
+                        buildingName = buildingName,
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
             }
         }
     }
