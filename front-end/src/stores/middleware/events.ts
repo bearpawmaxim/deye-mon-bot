@@ -60,6 +60,9 @@ export const eventsMiddleware: Middleware<
         store.dispatch<unknown>(fetchAllowedChats());
         store.dispatch<unknown>(fetchChatRequests());
         break;
+      
+      case "ping":
+        break;
 
       default:
         console.warn("Unhandled SSE event:", event.type);
