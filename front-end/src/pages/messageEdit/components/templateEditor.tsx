@@ -3,19 +3,19 @@ import EditorView, { minimalSetup } from '@uiw/react-codemirror';
 import { langs } from '@uiw/codemirror-extensions-langs';
 import { autocompletion } from "@codemirror/autocomplete";
 import { jinja2Autocomplete } from "../../../utils";
-import { MessageType } from "../../../schemas";
+import { MessageEdit } from "../../../schemas";
 import { Control, Controller, UseFormTrigger } from "react-hook-form";
 import { ErrorMessage } from "../../../components";
 
 type ComponentProps = {
   name: 'messageTemplate' | 'timeoutTemplate' | 'shouldSendTemplate';
-  control: Control<MessageType>;
-  trigger: UseFormTrigger<MessageType>;
+  control: Control<MessageEdit>;
+  trigger: UseFormTrigger<MessageEdit>;
 };
 
 const Component: FC<ComponentProps> = ({ name, control, trigger }: ComponentProps) => {
   return <>
-    <Controller<MessageType>
+    <Controller<MessageEdit>
       control={control}
       name={name}
       render={({ field, fieldState: { error } }) => 

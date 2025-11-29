@@ -3,7 +3,7 @@ import { BaseSaveDataResponse, ServerMessageListItem,
   TemplatePreviewRequest, TemplatePreviewResponse } from "../types";
 import { RootState } from "../store";
 import apiClient from "../../utils/apiClient";
-import { MessageType } from "../../schemas";
+import { MessageEdit } from "../../schemas";
 import { getErrorMessage } from "../../utils";
 import { messageStateSaved } from "../slices";
 
@@ -31,10 +31,10 @@ export const getChannel = createAsyncThunk<string, void>('messages/getChannel', 
   }
 });
 
-export const editMessage = createAsyncThunk<MessageType, number>('messages/editMessage',
-    async (message_id: number): Promise<MessageType> => {
+export const editMessage = createAsyncThunk<MessageEdit, number>('messages/editMessage',
+    async (message_id: number): Promise<MessageEdit> => {
   try {
-    const response = await apiClient.get<MessageType>(`/messages/message/${message_id}`);
+    const response = await apiClient.get<MessageEdit>(`/messages/message/${message_id}`);
     return response.data;
   } catch (error: unknown) {
     return Promise.reject(getErrorMessage(error) || 'Failed to fetch messages');

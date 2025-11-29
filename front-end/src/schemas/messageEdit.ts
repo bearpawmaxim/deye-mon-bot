@@ -1,6 +1,6 @@
 import * as v from 'valibot';
 
-export const messageSchema = v.object({
+export const messageEditSchema = v.object({
   id: v.nullable(
     v.number(),
   ),
@@ -43,4 +43,4 @@ export const messageSchema = v.object({
   ),
 });
 
-export type MessageType = v.InferInput<typeof messageSchema>;
+export type MessageEdit = v.InferInput<typeof messageEditSchema>;

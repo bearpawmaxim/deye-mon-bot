@@ -1,4 +1,4 @@
-import { MessageType } from "../../schemas";
+import { MessageEdit } from "../../schemas";
 import { BaseEditableState, BaseResponse } from "./base";
 
 export type BaseServerMessageListItem = {
@@ -41,7 +41,7 @@ export type TemplatePreviewRequest = Omit<BaseServerMessageItem, 'id'|'name'|'la
 
 export type MessagesState = BaseEditableState & {
   messages: Array<ServerMessageListItem>;
-  editingMessage?: MessageType;
+  editingMessage?: MessageEdit;
   templatePreview?: TemplatePreview;
   loadingPreview: boolean;
   previewError?: string;

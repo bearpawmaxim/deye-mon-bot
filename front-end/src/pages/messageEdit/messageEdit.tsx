@@ -11,7 +11,7 @@ import { FormPage, FormSubmitButtons } from "../../components";
 import { ActionIcon, Badge, ComboboxItem, Divider, Select, SimpleGrid, Switch, Tabs, TextInput, Title, Button, Loader, MultiSelect } from "@mantine/core";
 import { useFormHandler, useLookup } from "../../hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { messageSchema, MessageType } from "../../schemas";
+import { messageEditSchema, MessageEdit } from "../../schemas";
 import { Controller } from "react-hook-form";
 import { openMessagePreviewDialog, TemplateEditor } from "./components";
 import { LookupSchema } from "../../types";
@@ -22,7 +22,7 @@ type ComponentOwnProps = {
 
 type ComponentProps = {
   bots: BotItem[];
-  message?: MessageType;
+  message?: MessageEdit;
   loading: boolean;
   stationsLoading: boolean;
   isEdit: boolean;
@@ -82,7 +82,7 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, message, loading, station
     } as ComboboxItem)),
   ]), [stations]);
 
-  const handleSave = (data: MessageType) => {
+  const handleSave = (data: MessageEdit) => {
     dispatch(updateMessage(data));
     dispatch(saveMessage())
       .unwrap()
@@ -98,13 +98,13 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, message, loading, station
     trigger,
     getControlValue,
     isValid,
-  } = useFormHandler<MessageType>({
+  } = useFormHandler<MessageEdit>({
     formKey: 'message',
     isEdit: isEdit,
     cleanupAction: () => dispatch(finishEditingMessage()),
     fetchDataAction: editOrCreateMessage,
     saveAction: handleSave,
-    validationSchema: messageSchema,
+    validationSchema: messageEditSchema,
     loading: loading || stationsLoading,
     initialData: message,
     fields: [
@@ -142,13 +142,14 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, message, loading, station
             render={({ field }) => (
               <Select
                 required
+                allowDeselect={false}
                 data={getBotOptions()}
                 {...field}
                 label={context.title}
                 leftSection={stationsLoading ? <Loader size="xs" /> : null}
                 value={field.value?.toString() ?? ''}
                 error={context.helpers.getFieldError('botId')}
-                onChange={(value) => context.helpers.setControlValue('botId', value!, true, false)}
+                onChange={(value) => context.helpers.setControlValue('botId', parseInt(value!), true, false)}
               />
             )}
           />;
