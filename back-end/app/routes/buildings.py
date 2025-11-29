@@ -29,7 +29,7 @@ def register(app, services: Services):
                 if station_data is None:
                     return result_dict
 
-                is_discharging = (station_data.discharge_power or 0) > 0
+                is_discharging = (station_data.discharge_power or 0) > 200
                 is_charging = (station_data.charge_power or 0) * -1 > 200
 
                 result_dict['isCharging'] = is_charging
