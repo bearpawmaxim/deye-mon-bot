@@ -12,3 +12,4 @@ export * from './stations/stations';
 export * from './stations/stationDetails';
 export * from './users/users';
 export * from './buildings/buildings';
+export * from './public';
