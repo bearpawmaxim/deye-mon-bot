@@ -1,10 +1,11 @@
-import { Container, Title, Text, Button, Group, Stack, Card, Grid, Box, ActionIcon, useMantineColorScheme } from '@mantine/core';
+import { Container, Title, Text, Button, Group, Stack, Card, Grid, Box, SimpleGrid, Image, useMantineColorScheme } from '@mantine/core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IconName } from '@fortawesome/fontawesome-svg-core';
 import { useState, useEffect } from 'react';
+import { ThemePicker } from '../../components';
 import classes from './appLanding.module.css';
-import iconLightWithText from '../../assets/icon_light_with_text.png';
-import iconDarkWithText from '../../assets/icon_light_with_text.png';
+import iconDark from '../../assets/icon_dark_with_text.png';
+import iconLight from '../../assets/icon_light_with_text.png';
 import appImage1 from '../../assets/app/app01.png';
 import appImage2 from '../../assets/app/app02.png';
 import appImage3 from '../../assets/app/app03.png';
@@ -16,12 +17,12 @@ interface FeatureCardProps {
 }
 
 const FeatureCard = ({ icon, title, description }: FeatureCardProps) => (
-  <Card shadow="md" radius="lg" p="xl" className={classes.featureCard}>
+  <Card shadow="sm" padding="lg" radius="md" withBorder>
     <Stack gap="md" align="center">
       <Box className={classes.iconWrapper}>
-        <FontAwesomeIcon icon={icon} size="3x" />
+        <FontAwesomeIcon icon={icon} size="2x" />
       </Box>
-      <Title order={3} ta="center">{title}</Title>
+      <Title order={4} ta="center">{title}</Title>
       <Text size="sm" c="dimmed" ta="center">
         {description}
       </Text>
@@ -30,12 +31,12 @@ const FeatureCard = ({ icon, title, description }: FeatureCardProps) => (
 );
 
 export const AppLandingPage = () => {
-  const { colorScheme, setColorScheme } = useMantineColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { colorScheme } = useMantineColorScheme();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [appVersion, setAppVersion] = useState<string>('');
   
+  const iconSrc = colorScheme === 'dark' ? iconLight : iconDark;
   const appImages = [appImage1, appImage2, appImage3];
 
   useEffect(() => {
@@ -98,158 +99,130 @@ export const AppLandingPage = () => {
   };
 
   return (
-    <Box className={classes.wrapper}>
-      {/* Theme Toggle */}
-      <Box className={classes.themeToggle}>
-        <ActionIcon
-          onClick={() => setColorScheme(isDark ? 'light' : 'dark')}
-          variant="default"
-          size="xl"
-          aria-label="Toggle color scheme"
-        >
-          <FontAwesomeIcon icon={isDark ? 'sun' : 'moon'} size="lg" />
-        </ActionIcon>
-      </Box>
+    <Container size="xl">
+      <Stack gap="xl" py="xl">
+        {/* Header with Theme Switcher */}
+        <Group justify="space-between" align="center">
+          <Box style={{ flex: 1 }} />
+          <ThemePicker isNavbarCollapsed={false} size="md" />
+        </Group>
 
-      {/* Hero Section */}
-      <Box className={classes.hero}>
-        <Container size="lg" py={80}>
-          <Grid align="center">
-            <Grid.Col span={{ base: 12, md: 6 }}>
-              <Stack gap="xl">
-                <Group gap="md" align="center">
-                  <img 
-                    src={isDark ? iconDarkWithText : iconLightWithText}
-                    alt="Svitlo Power Logo" 
-                    className={classes.titleLogo}
+        {/* Hero Section */}
+        <Grid gutter="xl">
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <Stack gap="lg">
+              <Image 
+                h={60} 
+                w="auto" 
+                src={iconSrc} 
+                alt="Svitlo Power Logo"
+                fit="contain"
+                style={{ alignSelf: 'flex-start' }}
+              />
+              <Title order={2} c="dimmed" fw={500}>
+                Complete Power Monitoring for Sviltopark Residential Complex
+              </Title>
+              <Text size="lg">
+                Modern mobile app for monitoring power stations and tracking power outage schedules 
+                in Sviltopark. Stay informed about power status and plan your electricity usage 
+                with real-time outage updates and schedules.
+              </Text>
+              <Group>
+                <Button 
+                  size="lg" 
+                  leftSection={<FontAwesomeIcon icon="download" />}
+                  onClick={handleDownload}
+                  disabled={!downloadUrl}
+                >
+                  Download APK
+                </Button>
+              </Group>
+              <Group gap="md">
+                <Text size="sm" c="dimmed">
+                  <FontAwesomeIcon icon="mobile" /> Android 13.0 or higher required
+                </Text>
+                {appVersion && (
+                  <>
+                    <Text size="sm" c="dimmed">•</Text>
+                    <Text size="sm" c="dimmed">
+                      Version {appVersion}
+                    </Text>
+                  </>
+                )}
+              </Group>
+            </Stack>
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <Box className={classes.heroImageWrapper}>
+              <Box className={classes.phonePreview}>
+                {appImages.map((image, index) => (
+                  <img
+                    key={index}
+                    src={image}
+                    alt={`Svitlo Power App Screenshot ${index + 1}`}
+                    className={`${classes.appScreenshot} ${
+                      index === currentImageIndex ? classes.active : ''
+                    }`}
                   />
-                 
-                </Group>
-                <Text size="xl" className={classes.subtitle}>
-                  Complete Power Monitoring for Sviltopark Residential Complex
-                </Text>
-                <Text size="md" className={classes.description}>
-                  Modern mobile app for monitoring power stations and tracking power outage schedules 
-                  in Sviltopark. Stay informed about power status and plan your electricity usage 
-                  with real-time outage updates and schedules.
-                </Text>
-                <Group>
-                  <Button 
-                    size="xl" 
-                    leftSection={<FontAwesomeIcon icon="download" />}
-                    onClick={handleDownload}
-                    className={classes.primaryButton}
-                    disabled={!downloadUrl}
-                  >
-                    Download APK
-                  </Button>
-                </Group>
-                <Group gap="md">
-                  <Text size="sm" c="dimmed">
-                    <FontAwesomeIcon icon="mobile" /> Android 13.0 or higher required
-                  </Text>
-                  {appVersion && (
-                    <>
-                      <Text size="sm" c="dimmed">•</Text>
-                      <Text size="sm" c="dimmed">
-                        Version {appVersion}
-                      </Text>
-                    </>
-                  )}
-                </Group>
-              </Stack>
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, md: 6 }}>
-              <Box className={classes.heroImageWrapper}>
-                <Box className={classes.phonePreview}>
-                  {appImages.map((image, index) => (
-                    <img
-                      key={index}
-                      src={image}
-                      alt={`Svitlo Power App Screenshot ${index + 1}`}
-                      className={`${classes.appScreenshot} ${
-                        index === currentImageIndex ? classes.active : ''
-                      }`}
-                    />
-                  ))}
-                </Box>
-                <Box className={classes.carouselDots}>
-                  {appImages.map((_, index) => (
-                    <button
-                      key={index}
-                      className={`${classes.dot} ${
-                        index === currentImageIndex ? classes.activeDot : ''
-                      }`}
-                      onClick={() => setCurrentImageIndex(index)}
-                      aria-label={`Go to screenshot ${index + 1}`}
-                    />
-                  ))}
-                </Box>
+                ))}
               </Box>
-            </Grid.Col>
-          </Grid>
-        </Container>
-      </Box>
+              <Box className={classes.carouselDots}>
+                {appImages.map((_, index) => (
+                  <button
+                    key={index}
+                    className={`${classes.dot} ${
+                      index === currentImageIndex ? classes.activeDot : ''
+                    }`}
+                    onClick={() => setCurrentImageIndex(index)}
+                    aria-label={`Go to screenshot ${index + 1}`}
+                  />
+                ))}
+              </Box>
+            </Box>
+          </Grid.Col>
+        </Grid>
 
-      {/* Features Section */}
-      <Box className={classes.features}>
-        <Container size="lg" py={80}>
-          <Stack gap="xl" align="center" mb={60}>
-            <Title order={2} ta="center" className={classes.sectionTitle}>
+        {/* Features Section */}
+        <Box mt="xl">
+          <Stack gap="md" mb="xl">
+            <Title order={2} ta="center">
               App Features
             </Title>
-            <Text size="lg" c="dimmed" ta="center" maw={600}>
+            <Text size="lg" c="dimmed" ta="center">
               Svitlo Power provides all the essential tools for effective monitoring 
               of power status and tracking outage schedules in Sviltopark
             </Text>
           </Stack>
           
-          <Grid gutter="xl">
+          <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="lg">
             {features.map((feature, index) => (
-              <Grid.Col key={index} span={{ base: 12, sm: 6, lg: 3 }}>
-                <FeatureCard {...feature} />
-              </Grid.Col>
+              <FeatureCard key={index} {...feature} />
             ))}
-          </Grid>
-        </Container>
-      </Box>
+          </SimpleGrid>
+        </Box>
 
-      {/* CTA Section */}
-      <Box className={classes.cta}>
-        <Container size="lg" py={80}>
-          <Stack gap="xl" align="center">
-            <Title order={2} ta="center" className={classes.ctaTitle}>
+        {/* CTA Section */}
+        <Card shadow="sm" padding="xl" radius="md" withBorder mt="xl">
+          <Stack gap="md" align="center">
+            <Title order={3} ta="center">
               Ready to Get Started?
             </Title>
-            <Text size="lg" ta="center" className={classes.ctaDescription} maw={600}>
+            <Text size="md" ta="center" c="dimmed">
               Download Svitlo Power now and stay informed about power status, 
               outage schedules, and electricity monitoring in Sviltopark residential complex
             </Text>
             <Button 
-              size="xl" 
+              size="lg" 
               leftSection={<FontAwesomeIcon icon="download" />}
               onClick={handleDownload}
-              className={classes.primaryButton}
+              disabled={!downloadUrl}
             >
               Download APK
             </Button>
           </Stack>
-        </Container>
-      </Box>
-
-      {/* Footer */}
-      <Box className={classes.footer}>
-        <Container size="lg" py={40}>
-          <Stack gap="md" align="center">
-            <Group gap="xl">
-              <Text size="sm" c="dimmed">© {new Date().getFullYear()} Svitlo Power</Text>
-              <Text size="sm" c="dimmed">•</Text>
-              <Text size="sm" c="dimmed">Sviltopark Power Monitoring</Text>
-            </Group>
-          </Stack>
-        </Container>
-      </Box>
-    </Box>
+        </Card>
+      </Stack>
+    </Container>
   );
 };
 
