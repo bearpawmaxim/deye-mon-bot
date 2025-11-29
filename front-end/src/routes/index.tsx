@@ -3,7 +3,7 @@ import { ProtectedRoute } from "./protectedRoute";
 import { LoginPage, HomePage, StationsPage, StationDetailsPage, BotsPage,
   ChatsPage, MessagesPage, MessageEditPage, UsersPage, 
   BuildingsPage, ExtDataPage, NotFoundPage, 
-  ChangePasswordPage} from "../pages";
+  ChangePasswordPage, AppLandingPage} from "../pages";
 import { FC } from "react";
 import { useAppSelector } from "../stores/store";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
@@ -115,6 +115,10 @@ const Routes: FC = () => {
     changePasswordRoute,
     loginRoute,
     {
+      path: "/app",
+      element: <AppLandingPage />,
+    },
+    {
       path: "/",
       element: (<ProtectedRoute/>),
       children: RootRoutes,
@@ -124,6 +128,10 @@ const Routes: FC = () => {
   const routesForNotAuthenticated: RouteObject[] = [
     changePasswordRoute,
     loginRoute,
+    {
+      path: "/app",
+      element: <AppLandingPage />,
+    },
     {
       path: "/",
       element: <PublicLayout>
