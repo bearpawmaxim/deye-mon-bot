@@ -1,13 +1,13 @@
 import json
-from queue import Queue
-from flask import Response, jsonify
+from shared import BoundedQueue
+from flask import Response
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
-from shared.services import EventItem, EventsService
+from shared.services import EventsService
 
 def register(app, events_service: EventsService):
     @app.route("/api/events")
     def events():
-        q: "Queue[EventItem]" = Queue()
+        q = BoundedQueue(maxsize=100)
 
         user = None
         is_authenticated = False
