@@ -59,6 +59,9 @@ class Config:
     STATISTIC_KEEP_DAYS = int(os.getenv('STATISTIC_KEEP_DAYS', 3))
 
     IS_MIGRATION_RUN = False
+
+    SSE_PING_INTERVAL = int(os.getenv('SSE_PING_INTERVAL', 45))
+
     DEBUG = False
 
 class ProductionConfig(Config):
