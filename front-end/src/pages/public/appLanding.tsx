@@ -41,25 +41,22 @@ export const AppLandingPage = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % appImages.length);
-    }, 3000); // Change image every 3 seconds
+    }, 3000); 
 
     return () => clearInterval(interval);
   }, [appImages.length]);
 
   useEffect(() => {
-    // Fetch download URL from Firestore
     const fetchDownloadUrl = async () => {
       try {
-        const response = await fetch(
-          'https://firestore.googleapis.com/v1/projects/svitlo-power/databases/(default)/documents/sites/app'
-        );
+        const response = await fetch('/api/app/info');
         const data = await response.json();
         
-        if (data.fields?.updateUrl?.stringValue) {
-          setDownloadUrl(data.fields.updateUrl.stringValue);
+        if (data.updateUrl) {
+          setDownloadUrl(data.updateUrl);
         }
-        if (data.fields?.ver?.stringValue) {
-          setAppVersion(data.fields.ver.stringValue);
+        if (data.version) {
+          setAppVersion(data.version);
         }
       } catch (error) {
         console.error('Failed to fetch download URL:', error);
