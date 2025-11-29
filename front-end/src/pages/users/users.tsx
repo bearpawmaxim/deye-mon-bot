@@ -1,14 +1,14 @@
 import { FC, useCallback, useEffect, useRef, useState } from "react"
 import { connect } from "react-redux";
 import { RootState, useAppDispatch } from "../../stores/store";
-import { cancelPasswordReset, cancelUsersEditing, deleteUser, deleteUserToken, fetchUsers, generateUserToken, requestPasswordReset, saveUsers } from "../../stores/thunks";
-import { cancelCreatingUser, createUser, startCreatingUser, updateUser } from "../../stores/slices";
+import { cancelPasswordReset, cancelUsersEditing, createUser, CreateUserResponse, deleteUser, deleteUserToken, fetchUsers, generateUserToken, requestPasswordReset, saveUsers } from "../../stores/thunks";
+import { cancelCreatingUser, startCreatingUser, updateUser } from "../../stores/slices";
 import { PageHeaderButton, useHeaderContent } from "../../providers";
 import { createSelector } from "@reduxjs/toolkit";
 import { UserItem } from "../../stores/types";
 import { DataTable, ErrorMessage, Page } from "../../components";
 import { ColumnDataType } from "../../types";
-import { Anchor, Badge, Button, Code, CopyButton, Group, Modal, PasswordInput, Stack, Switch, Tabs, Text, Textarea, TextInput } from "@mantine/core";
+import { Badge, Button, Code, CopyButton, Group, Modal, Stack, Switch, Tabs, Text, Textarea, TextInput } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -46,7 +46,7 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
   const [editingUser, setEditingUser] = useState<UserItem | null>(null);
   const [viewingToken, setViewingToken] = useState<string | null>(null);
   const [viewingTokenUser, setViewingTokenUser] = useState<UserItem | null>(null);
-  const [formData, setFormData] = useState({ name: '', password: '', isReporter: false, isActive: true });
+  const [formData, setFormData] = useState({ name: '', isReporter: false, isActive: true });
 
   const fetchData = useCallback(() => dispatch(fetchUsers()), [dispatch]);
 
@@ -56,14 +56,14 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
   
   const openCreateDialog = useCallback(() => {
     setEditingUser(null);
-    setFormData({ name: '', password: '', isReporter: false, isActive: true });
+    setFormData({ name: '', isReporter: false, isActive: true });
     dispatch(startCreatingUser());
     open();
   }, [dispatch, open]);
 
   const openEditDialog = useCallback((user: UserItem) => {
     setEditingUser(user);
-    setFormData({ name: user.name, password: '', isReporter: user.isReporter, isActive: user.isActive });
+    setFormData({ name: user.name, isReporter: user.isReporter, isActive: user.isActive });
     open();
   }, [open]);
 
@@ -72,18 +72,72 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
       dispatch(updateUser({
         id: editingUser.id,
         name: formData.name,
-        password: formData.password || undefined,
         isReporter: formData.isReporter,
         isActive: formData.isActive,
       }));
+      close();
     } else {
+      // Create new user - will get reset token in response
       dispatch(createUser({
         name: formData.name,
-        password: formData.password,
         isReporter: formData.isReporter,
-      }));
+      }))
+        .unwrap()
+        .then((result: CreateUserResponse) => {
+          close();
+          if (result.resetToken && !formData.isReporter) {
+            const baseUrl = getApiBaseUrl();
+            const link = baseUrl + generatePasswordResetLink(formData.name, result.resetToken);
+            modals.open({
+              title: "User Created - Password Reset Link",
+              size: "lg",
+              children: <>
+                <Text size="sm" mb="md">
+                  User <Text span fw={600}>"{formData.name}"</Text> has been created successfully!
+                </Text>
+                <Text size="sm" fw={500} mb="xs">
+                  <FontAwesomeIcon icon="share" /> Share this link with the user to set their password:
+                </Text>
+                <Textarea 
+                  value={link} 
+                  autosize 
+                  minRows={3}
+                  styles={{
+                    input: {
+                      fontFamily: 'monospace',
+                      fontSize: '12px',
+                    }
+                  }}
+                  readOnly
+                  onClick={(e) => e.currentTarget.select()}
+                />
+                <Text c='red.8' mt="md" size="sm">
+                  <FontAwesomeIcon icon="exclamation-triangle" />
+                  &nbsp;Important: This link expires in 2.5 hours!
+                </Text>
+                <Group justify="space-between" mt="xl">
+                  <CopyButton value={link}>
+                    {({ copied, copy }) => (
+                      <Button
+                        size="md"
+                        leftSection={<FontAwesomeIcon icon={copied ? 'check' : 'copy'} />}
+                        color={copied ? 'teal' : 'blue'}
+                        onClick={copy}
+                        variant={copied ? 'light' : 'filled'}
+                      >
+                        {copied ? 'Link Copied!' : 'Copy Link to Share'}
+                      </Button>
+                    )}
+                  </CopyButton>
+                  <Button variant="default" onClick={() => modals.closeAll()}>
+                    Close
+                  </Button>
+                </Group>
+              </>
+            });
+          }
+        });
     }
-    close();
   }, [editingUser, formData, dispatch, close]);
 
   const handleCancel = useCallback(() => {
@@ -186,37 +240,54 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
           const baseUrl = getApiBaseUrl();
           const link = baseUrl + generatePasswordResetLink(editingUser.name, token);
           const id = modals.open({
-            title: "Password reset link",
+            title: "Password Reset Link",
+            size: "lg",
             children: <>
-              <Text>Either follow this&nbsp;
-                <Anchor href={link} target="_blank">link</Anchor>&nbsp;
-                to change the password or send it to the person who requested the password change.
+              <Text size="sm" mb="md">
+                A password reset link has been generated for user <Text span fw={600}>"{editingUser.name}"</Text>.
               </Text>
-              <Textarea value={link} autosize />
-              <Text c='red.8'>
+              <Text size="sm" fw={500} mb="xs">
+                <FontAwesomeIcon icon="share" /> Share this link to allow password change:
+              </Text>
+              <Textarea 
+                value={link} 
+                autosize 
+                minRows={3}
+                styles={{
+                  input: {
+                    fontFamily: 'monospace',
+                    fontSize: '12px',
+                  }
+                }}
+                readOnly
+                onClick={(e) => e.currentTarget.select()}
+              />
+              <Text c='red.8' mt="md" size="sm">
                 <FontAwesomeIcon icon="exclamation-triangle" />
-                The link is valid 1 hour!
+                &nbsp;Important: This link expires in 2.5 hours!
               </Text>
-              <Group justify="space-between" mt="md">
-                <CopyButton value={viewingToken || ''}>
-                  {({ copied, copy }) => (
-                    <Button
-                      leftSection={<FontAwesomeIcon icon={copied ? 'check' : 'copy'} />}
-                      color={copied ? 'teal' : 'blue'}
-                      onClick={copy}
-                    >
-                      {copied ? 'Copied!' : 'Copy to Clipboard'}
-                    </Button>
-                  )}
-                </CopyButton>
+              <Group justify="space-between" mt="xl">
                 <Group>
+                  <CopyButton value={link}>
+                    {({ copied, copy }) => (
+                      <Button
+                        leftSection={<FontAwesomeIcon icon={copied ? 'check' : 'copy'} />}
+                        color={copied ? 'teal' : 'blue'}
+                        onClick={copy}
+                        variant={copied ? 'light' : 'filled'}
+                      >
+                        {copied ? 'Link Copied!' : 'Copy Link'}
+                      </Button>
+                    )}
+                  </CopyButton>
                   <Button
-                    variant="default"
+                    variant="light"
+                    color="red"
                     onClick={() => {
                       modals.openConfirmModal({
                         title: 'Cancel password reset',
                         children: `Are you sure you want to cancel password reset for user ${editingUser.name}?`,
-                        labels: { confirm: 'Ok', cancel: 'Cancel' },
+                        labels: { confirm: 'Yes, Cancel Reset', cancel: 'No, Keep Link' },
                         confirmProps: { color: 'red' },
                         onConfirm: () => {
                           modals.close(id);
@@ -225,12 +296,13 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
                       });
                     }}
                   >
-                    Cancel
-                  </Button>
-                  <Button onClick={() => modals.close(id)}>
-                    Ok
+                    <FontAwesomeIcon icon="times" />
+                    &nbsp;Cancel Reset
                   </Button>
                 </Group>
+                <Button variant="default" onClick={() => modals.close(id)}>
+                  Close
+                </Button>
               </Group>
             </>
           });
@@ -368,13 +440,6 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           required
         />
-        { !editingUser && <PasswordInput
-          label={"Password"}
-          placeholder="Enter password"
-          value={formData.password}
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-          required={!editingUser}
-        /> }
         <Switch
           label="Active"
           checked={formData.isActive}
@@ -386,15 +451,15 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
           onChange={(e) => setFormData({ ...formData, isReporter: e.currentTarget.checked })}
         />
         <Group justify="space-between" mt="md">
-          <Button
+          {editingUser && <Button
             color='orange'
             onClick={handleChangePassword}
           >
             Change password
-          </Button>
-          <Group justify="flex-end">
+          </Button>}
+          <Group justify="flex-end" ml="auto">
             <Button variant="default" onClick={handleCancel}>Cancel</Button>
-            <Button onClick={handleSave} disabled={!formData.name || (!editingUser && !formData.password)}>
+            <Button onClick={handleSave} disabled={!formData.name}>
               {editingUser ? 'Update' : 'Create'}
             </Button>
           </Group>

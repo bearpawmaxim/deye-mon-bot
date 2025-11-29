@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { BaseServerUserItem, BaseSaveDataResponse, ServerUserItem, GenerateTokenResponse } from "../types";
-import { userSaved } from "../slices";
+import { userSaved, CreateUserPayload } from "../slices";
 import { RootState } from "../store";
 import apiClient from "../../utils/apiClient";
 import { getErrorMessage } from "../../utils";
@@ -70,6 +70,29 @@ export const deleteUserToken = createAsyncThunk<void, number>(
       await apiClient.delete(`/users/delete-token/${userId}`);
     } catch (error: unknown) {
       return thunkAPI.rejectWithValue(getErrorMessage(error) || 'Failed to delete token');
+    }
+  }
+);
+
+export type CreateUserResponse = BaseSaveDataResponse & {
+  resetToken?: string;
+};
+
+export const createUser = createAsyncThunk<CreateUserResponse, CreateUserPayload>(
+  'users/createUser',
+  async (payload, thunkAPI) => {
+    try {
+      const serverDto = {
+        id: undefined,
+        name: payload.name,
+        isActive: true,
+        isReporter: payload.isReporter,
+      } as BaseServerUserItem;
+      const response = await apiClient.put<CreateUserResponse>('/users/save', serverDto);
+      thunkAPI.dispatch(fetchUsers());
+      return response.data;
+    } catch (error: unknown) {
+      return thunkAPI.rejectWithValue(getErrorMessage(error) || 'Failed to create user');
     }
   }
 );

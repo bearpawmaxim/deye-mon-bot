@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { UsersState, ServerUserItem } from "../types";
-import { fetchUsers, saveUsers, generateUserToken, deleteUserToken } from "../thunks";
+import { fetchUsers, saveUsers, generateUserToken, deleteUserToken, createUser } from "../thunks";
 
 const initialState: UsersState = {
   users: [],
@@ -19,7 +19,6 @@ export type UpdateUserActionPayload = {
 
 export type CreateUserPayload = {
   name: string;
-  password: string;
   isReporter: boolean;
 };
 
@@ -49,17 +48,6 @@ export const usersSlice = createSlice({
     cancelCreatingUser(state) {
       state.creating = false;
     },
-    createUser(state, { payload }: PayloadAction<CreateUserPayload>) {
-      state.creating = false;
-      state.users.push({
-        id: -Date.now(),
-        name: payload.name,
-        password: payload.password,
-        isActive: true,
-        isReporter: payload.isReporter,
-        changed: true
-      })
-    }
   },
   extraReducers: (builder) => {
     builder
@@ -125,9 +113,22 @@ export const usersSlice = createSlice({
         state.loading = false;
         state.error = typeof action.payload === 'string' ? action.payload : action.error?.message || 'Failed to delete token';
       });
+    builder
+      .addCase(createUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createUser.fulfilled, (state) => {
+        state.loading = false;
+        state.creating = false;
+      })
+      .addCase(createUser.rejected, (state, action) => {
+        state.loading = false;
+        state.creating = false;
+        state.error = typeof action.payload === 'string' ? action.payload : action.error?.message || 'Failed to create user';
+      });
   },
 });
 
-export const { updateUser, userSaved, startCreatingUser, cancelCreatingUser, createUser } = usersSlice.actions;
+export const { updateUser, userSaved, startCreatingUser, cancelCreatingUser } = usersSlice.actions;
 export const usersReducer = usersSlice.reducer;
-

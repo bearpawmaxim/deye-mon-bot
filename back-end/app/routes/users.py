@@ -39,7 +39,18 @@ def register(app, services: Services):
         
         user_id = services.database.save_user(id, name, hashed_password, is_active, is_reporter)
         services.db.session.commit()
-        return jsonify({ 'success': True, 'id': user_id }), 200
+        
+        reset_token = None
+        if not id and user_id and not is_reporter:
+            user = services.database.get_user_by_id(user_id)
+            if user:
+                reset_token = services.authorization._generate_passwd_reset_token(user, hours=2.5)
+        
+        return jsonify({ 
+            'success': True, 
+            'id': user_id,
+            'resetToken': reset_token
+        }), 200
     
     @app.route('/api/users/delete/<int:user_id>', methods=['DELETE'])
     @jwt_required()

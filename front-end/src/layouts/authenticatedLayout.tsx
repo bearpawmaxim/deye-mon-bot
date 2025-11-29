@@ -1,4 +1,4 @@
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { FC, Suspense, useCallback, useEffect } from "react";
 import { RootRoutes } from "../routes";
 import { useHeaderContent } from "../providers";
@@ -29,7 +29,6 @@ const mapStateToProps = (state: RootState): ComponentProps => ({
 const Component: FC<ComponentProps> = ({ authData, profile }) => {
   const dispatch = useAppDispatch()
   const location = useLocation();
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (authData?.accessToken && !profile) {
@@ -54,7 +53,7 @@ const Component: FC<ComponentProps> = ({ authData, profile }) => {
   };
 
   const onProfileEditClick = () => {
-    openProfileEditDialog({ navigate });
+    openProfileEditDialog();
   };
 
   return (
@@ -84,7 +83,7 @@ const Component: FC<ComponentProps> = ({ authData, profile }) => {
           onLogoutClick={onLogoutClick}
         />
       </AppShell.Header>
-      <AppShell.Navbar data-collpased={isNavbarCollapsed}>
+      <AppShell.Navbar data-collapsed={isNavbarCollapsed}>
         <Navbar
           user={profile}
           isNavbarCollapsed={isNavbarCollapsed}

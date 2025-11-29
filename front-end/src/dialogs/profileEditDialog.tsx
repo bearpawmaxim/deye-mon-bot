@@ -4,17 +4,13 @@ import { Button, Divider,  Group, Stack, TextInput } from "@mantine/core";
 import { useFormHandler } from "../hooks";
 import { RootState, useAppDispatch } from "../stores/store";
 import { ProfileEdit, withUniqueNameValidation } from "../schemas";
-import { fetchUsers, requestPasswordReset, saveProfile } from "../stores/thunks";
+import { fetchUsers, logout, requestPasswordReset, saveProfile } from "../stores/thunks";
 import { createSelector } from "@reduxjs/toolkit";
 import { editProfile, finishEditingProfile, startEditingProfile } from "../stores/slices";
 import { connect } from "react-redux";
-import { createSearchParams, NavigateFunction } from "react-router-dom";
+import { createSearchParams } from "react-router-dom";
 
-type OpenProfileEditOptions = {
-  navigate: NavigateFunction;
-}
-
-export function openProfileEditDialog({ navigate }: OpenProfileEditOptions) {
+export function openProfileEditDialog() {
   type InnerProps = {
     profile: ProfileEdit;
     userNames: Array<string>;
@@ -115,7 +111,11 @@ export function openProfileEditDialog({ navigate }: OpenProfileEditOptions) {
               username: userName,
               token: token,
           }).toString();
-          navigate(`/changePassword?${search}`)
+          const url = `/changePassword?${search}`;
+          // Logout first, then redirect using window.location to avoid routing issues (in case user is already logged in) and  )))
+          dispatch(logout()).finally(() => {
+            window.location.href = url;
+          });
         })
         .catch((error) => {
           setValidationErrors({ 'repeatNewPassword': error });

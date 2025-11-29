@@ -469,10 +469,9 @@ class DatabaseService:
         try:
             user = self._session.query(User).filter_by(id=id).with_for_update().first()   
             if not user:
-                hashed_password = password if password else ''
                 new_record = User(
                     name = name,
-                    password = hashed_password,
+                    password = None,  # No password for new users :)
                     is_active = is_active,
                     is_reporter = is_reporter
                 )
