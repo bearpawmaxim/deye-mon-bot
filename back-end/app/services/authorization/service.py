@@ -34,14 +34,18 @@ class AuthorizationService():
         refresh_token = create_refresh_token(identity=user.name)
         return access_token, refresh_token
 
-    def _generate_passwd_reset_token(self, user: User):
+    def _generate_passwd_reset_token(self, user: User, hours: int = 1):
         user.password_reset_token = secrets.token_urlsafe(64)
-        user.reset_token_expiration = datetime.now(timezone.utc) + timedelta(hours=1)
+        user.reset_token_expiration = datetime.now(timezone.utc) + timedelta(hours=hours)
         self._database.save_changes()
         return user.password_reset_token
 
     def _validate_reset_token(self, user: User):
-        if user.reset_token_expiration < datetime.now(timezone.utc):
+        expiration = user.reset_token_expiration
+        if expiration.tzinfo is None:
+            expiration = expiration.replace(tzinfo=timezone.utc)
+        
+        if expiration < datetime.now(timezone.utc):
             user.reset_token_expiration = None
             user.password_reset_token = None
             self._database.save_changes()
@@ -56,12 +60,12 @@ class AuthorizationService():
         hashed_password = self._bcrypt.generate_password_hash(password)
         self._database.create_user(user_name, hashed_password)
 
-    def start_change_password(self, user_name: str):
+    def start_change_password(self, user_name: str, hours: int = 1):
         user = self._database.get_user(user_name)
         if user is None:
             raise ValueError(f"Cannot find user '{user_name}'")
 
-        token = self._generate_passwd_reset_token(user)
+        token = self._generate_passwd_reset_token(user, hours)
         return token
     
     def cancel_change_password(self, user_name: str):
@@ -78,7 +82,7 @@ class AuthorizationService():
         if user is None:
             raise ValueError("Cannot find user")
 
-        self._validate_reset_token(token)
+        self._validate_reset_token(user)
 
         hashed_new_password = self._bcrypt.generate_password_hash(new_password)
         self._database.change_password(user.id, hashed_new_password)

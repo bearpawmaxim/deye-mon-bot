@@ -111,9 +111,9 @@ const Routes: FC = () => {
     </AnonymousLayout>),
   } as RouteObject;
 
-  const routesForAuthenticatedOnly: MenuItem[] = [
-    loginRoute,
+  const routesForAuthenticatedOnly: RouteObject[] = [
     changePasswordRoute,
+    loginRoute,
     {
       path: "/",
       element: (<ProtectedRoute/>),
@@ -122,8 +122,8 @@ const Routes: FC = () => {
   ];
 
   const routesForNotAuthenticated: RouteObject[] = [
-    loginRoute,
     changePasswordRoute,
+    loginRoute,
     {
       path: "/",
       element: <PublicLayout>
@@ -136,12 +136,11 @@ const Routes: FC = () => {
     },
   ];
 
-  const router = createBrowserRouter([
-    ...(!authData?.accessToken ? routesForNotAuthenticated : []),
-    ...routesForAuthenticatedOnly,
-  ]);
+  const router = createBrowserRouter(
+    authData?.accessToken ? routesForAuthenticatedOnly : routesForNotAuthenticated
+  );
 
-  return <RouterProvider router={router} />;
+  return <RouterProvider key={authData?.accessToken ? 'authenticated' : 'anonymous'} router={router} />;
 };
 
 export default Routes;

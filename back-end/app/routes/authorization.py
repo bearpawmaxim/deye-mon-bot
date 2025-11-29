@@ -50,7 +50,7 @@ def register(app, services: Services):
     def start_password_change():
         user_name = request.json.get("userName", None)
         try:
-            token = services.authorization.start_change_password(user_name)
+            token = services.authorization.start_change_password(user_name, hours=2.5)
             return { "success": True, "resetToken": token }
         except ValueError as e:
             print(f'Error changing password: {e}')
