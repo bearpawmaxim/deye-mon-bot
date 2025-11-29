@@ -21,7 +21,7 @@ export const buildingEditSchema = v.object({
   ),
   reportUserId: v.pipe(
     v.number(),
-    v.minValue(0, 'Report User is required'),
+    v.minValue(1, 'Report User is required'),
   ),
 });
 

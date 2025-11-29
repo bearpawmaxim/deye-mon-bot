@@ -1,4 +1,4 @@
-import { Box, Card, Flex, Group, MantineColor, Text, ThemeIcon, useMantineTheme, useMantineColorScheme, getContrastColor, Title, alpha, lighten, parseThemeColor } from "@mantine/core"
+import { Box, Card, Flex, Group, MantineColor, Text, ThemeIcon, useMantineTheme, useMantineColorScheme, getContrastColor, Title, alpha, lighten, parseThemeColor, Progress, ProgressProps } from "@mantine/core"
 import { FC, ReactNode, useMemo } from "react"
 import classes from './styles/statCard.module.css';
 
@@ -13,6 +13,7 @@ type StatsCardProps = {
   bgColor: MantineColor;
   icon?: ReactNode;
   iconColor: MantineColor;
+  progress: ProgressProps | null;
   onClick?: () => void;
   rows?: Row[];
 };
@@ -24,6 +25,7 @@ export const StatsCard: FC<StatsCardProps> = ({
   iconColor,
   onClick,
   rows,
+  progress,
 }) => {
   const theme = useMantineTheme();
   const { colorScheme } = useMantineColorScheme();
@@ -80,14 +82,30 @@ export const StatsCard: FC<StatsCardProps> = ({
         </Box>
         <Box
           className={classes.innerCircleBox}
-          style={{ background: resolvedCircleColor }}
+          style={{ background: resolvedCircleColor, zIndex: 20, }}
         ></Box>
         <Box
           className={classes.outerCircleBox}
-          style={{ background: resolvedCircleColor }}
+          style={{ background: resolvedCircleColor, zIndex: 21, }}
         ></Box>
       </Group>
       <Card.Section pt='lg'>
+        {progress && <Progress
+          radius={0}
+          styles={{
+            root: {
+              position: 'absolute',
+              width: '100%',
+              height: '15px',
+              zIndex: 10,
+            },
+            section: {
+              marginTop: '3px',
+              height: '9px'
+            }
+          }}
+          {...progress}
+        />}
         <Flex w="100%" bg={resolvedStatBgColor} p={20} gap={10} direction="column" align="start">
           {rows?.map((row, i) => (
             <Group key={i} w="100%" p="apart" align="center" gap="sm">

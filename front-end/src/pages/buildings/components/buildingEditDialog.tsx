@@ -1,15 +1,14 @@
-import { FC, useEffect } from "react";
+import { FC, useMemo } from "react";
 import { modals } from "@mantine/modals";
-import { Button, ColorInput, ComboboxItem, Group, Loader, parseThemeColor, Select, Stack, TextInput, useMantineColorScheme, useMantineTheme } from "@mantine/core";
-import { useFormHandler } from "../../../hooks";
+import { Button, ColorInput, Group, Loader, parseThemeColor, Select, Stack, TextInput, useMantineColorScheme, useMantineTheme } from "@mantine/core";
+import { useFormHandler, useLookup } from "../../../hooks";
 import { RootState, useAppDispatch } from "../../../stores/store";
 import { buildingEditSchema, BuildingEditType } from "../../../schemas";
-import { startEditingBuilding, fetchStations, fetchUsers } from "../../../stores/thunks";
+import { startEditingBuilding } from "../../../stores/thunks";
 import { cancelEditingOrCreatingBuilding, finishCreatingBuilding, finishEditingBuilding, startCreatingBuilding } from "../../../stores/slices";
 import { connect } from "react-redux";
-import { ServerUserItem, StationItem } from "../../../stores/types";
-import { createSelector } from "@reduxjs/toolkit";
 import { Controller } from "react-hook-form";
+import { LookupSchema } from "../../../types";
 
 type OpenBuildingEditOptions = {
   creating?: boolean;
@@ -22,54 +21,31 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
     building: BuildingEditType;
     loading: boolean;
     buildingId?: number;
-    users: Array<ComboboxItem>;
-    usersLoading: boolean;
-    stations: Array<ComboboxItem>;
-    stationsLoading: boolean;
   };
-
-  const selectUsers = (state: RootState): Array<ServerUserItem> =>
-    state.users.users ?? [];
-
-  const selectUserOptions = createSelector(
-    [selectUsers],
-    (users) => users.filter(u => u.isReporter).map((user) => ({
-      value: user.id!.toString(),
-      label: user.name,
-    })),
-  );
-
-  const selectStations = (state: RootState): Array<StationItem> =>
-    state.stations.stations ?? [];
-
-  const selectStationOptions = createSelector(
-    [selectStations],
-    (stations) => stations.map((station) => ({
-      value: station.id!.toString(),
-      label: station.stationName,
-    })),
-  );
 
   const mapStateToProps = (state: RootState): InnerProps => ({
     buildingId: buildingId,
     building: state.buildings.editingItem!,
     loading: state.buildings.loading,
-    users: selectUserOptions(state),
-    usersLoading: state.users.loading,
-    stations: selectStationOptions(state),
-    stationsLoading: state.stations.loading,
   });
 
-  const Inner: FC<InnerProps> = ({ building, loading, stations, stationsLoading, users, usersLoading, buildingId }) => {
+  const Inner: FC<InnerProps> = ({ building, loading, buildingId }) => {
     const dispatch = useAppDispatch();
 
     const theme = useMantineTheme();
     const { colorScheme } = useMantineColorScheme();
 
-    useEffect(() => {
-      dispatch(fetchUsers());
-      dispatch(fetchStations());
-    }, [dispatch]);
+    const { data: stations, loading: stationsLoading } = useLookup(LookupSchema.Station);
+    const { data: users, loading: usersLoading } = useLookup(LookupSchema.User);
+    
+    const stationOptions = useMemo(() => stationsLoading ? [] : stations.map(station => ({
+      label: station.text,
+      value: station.value!.toString(),
+    })), [stations, stationsLoading]);
+    const userOptions = useMemo(() => usersLoading ? [] : users.map(user => ({
+      label: user.text,
+      value: user.value!.toString(),
+    })), [users, usersLoading])
 
     const {
       handleFormSubmit,
@@ -148,15 +124,17 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
               defaultValue={0}
               render={({ field }) => (
                 <Select
-                  required
-                  allowDeselect={false}
-                  data={stations}
+                  clearable
+                  data={stationOptions}
                   {...field}
                   leftSection={stationsLoading ? <Loader size="xs" /> : null}
                   label={context.title}
                   value={field.value?.toString() ?? ''}
                   error={context.helpers.getFieldError('stationId')}
-                  onChange={(value) => context.helpers.setControlValue('stationId', parseInt(value!), true, false)}
+                  onChange={(value) => {
+                    const convertedValue = value ? parseInt(value) : null;
+                    context.helpers.setControlValue('stationId', convertedValue, true, false);
+                  }}
                 />
               )}
             />;
@@ -174,13 +152,14 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
                 <Select
                   required
                   allowDeselect={false}
-                  data={users}
+                  data={userOptions}
                   {...field}
-                  rightSection={usersLoading ? <Loader size="xs" /> : null}
+                  leftSection={usersLoading ? <Loader size="xs" /> : null}
                   label={context.title}
                   value={field.value?.toString() ?? ''}
                   error={context.helpers.getFieldError('reportUserId')}
-                  onChange={(value) => context.helpers.setControlValue('reportUserId', parseInt(value!), true, false)}
+                  onChange={(value) => context.helpers
+                    .setControlValue('reportUserId', parseInt(value!), true, false)}
                 />
               )}
             />;
