@@ -49,20 +49,6 @@ const Component: FC<ComponentProps> = ({ authData, profile }) => {
     setNavbarCollapsed(!isNavbarCollapsed);
   }, [isNavbarCollapsed, setNavbarCollapsed]);
 
-  useEffect(() => {
-    const navbar = document.querySelector('.mantine-AppShell-navbar');
-    if (navbar) {
-      console.log(
-        'Navbar width var:',
-        getComputedStyle(navbar).getPropertyValue('--app-shell-navbar-width')
-      );
-      console.log(
-        'Navbar computed width:',
-        getComputedStyle(navbar).width
-      );
-    }
-  }, [isNavbarCollapsed, opened]);
-
   const onLogoutClick = () => {
     dispatch(logout());
   };
