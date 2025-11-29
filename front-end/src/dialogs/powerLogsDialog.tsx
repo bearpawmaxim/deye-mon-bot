@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { modals } from "@mantine/modals";
-import { Button, Group, Stack, Table, Text, SegmentedControl, Loader, Center, useMantineColorScheme } from "@mantine/core";
+import { Button, Group, Stack, Table, Text, SegmentedControl, Loader, Center, useMantineColorScheme, ScrollArea } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
 import { RootState, useAppDispatch } from "../stores/store";
 import { fetchPowerLogs } from "../stores/thunks";
@@ -347,6 +347,7 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
     title: `Power Statistics: ${buildingName}`,
     centered: true,
     size: "xl",
+    scrollAreaComponent: ScrollArea.Autosize,
     children: (
       <>
         <style>{ANIMATION_STYLES}</style>
