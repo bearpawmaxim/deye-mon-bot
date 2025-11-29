@@ -190,7 +190,7 @@ fun BuildingCard(
                 if (building.isGridAvailable != null) {
                     CompactStatItem(
                         icon = if (building.isGridAvailable == true) Icons.Default.PowerInput else Icons.Default.PowerOff,
-                        label = "Grid",
+                        label = "Apartment grid",
                         value = if (building.isGridAvailable == true) "Available" else "Unavailable",
                         iconTint = if (building.isGridAvailable == true) PowerGreen else PowerRed
                     )

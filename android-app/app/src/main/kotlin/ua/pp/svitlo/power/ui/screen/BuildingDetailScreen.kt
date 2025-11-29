@@ -63,7 +63,19 @@ fun BuildingDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(buildingName) },
+                title = { 
+                    Column {
+                        Text(
+                            text = buildingName,
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                        Text(
+                            text = "Apartment Grid",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")

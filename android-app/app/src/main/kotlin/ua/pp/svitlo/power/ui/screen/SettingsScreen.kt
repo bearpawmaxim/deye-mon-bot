@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleStartEffect
 import kotlinx.coroutines.launch
+import ua.pp.svitlo.power.BuildConfig
 import ua.pp.svitlo.power.data.preferences.PreferencesManager
 import ua.pp.svitlo.power.fcm.FcmTopicsManager
 
@@ -160,7 +161,7 @@ fun SettingsScreen(
                     SettingItem(
                         icon = Icons.Default.Info,
                         title = "App Version",
-                        description = "1.0.0"
+                        description = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
                     )
                 }
             }
