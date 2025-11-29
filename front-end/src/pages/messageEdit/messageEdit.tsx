@@ -4,16 +4,17 @@ import { useHeaderContent } from "../../providers";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { editMessage, fetchBots, fetchStations, getChannel, saveMessage } from "../../stores/thunks";
 import { createMessage, finishEditingMessage, updateMessage } from "../../stores/slices";
-import { BotItem, ServerStationItem } from "../../stores/types";
+import { BotItem } from "../../stores/types";
 import { connect } from "react-redux";
 import { createSelector } from "@reduxjs/toolkit";
 import { FormPage, FormSubmitButtons } from "../../components";
-import { ActionIcon, Badge, ComboboxItem, Divider, Select, SimpleGrid, Switch, Tabs, TextInput, Title, Button, Loader } from "@mantine/core";
-import { useFormHandler } from "../../hooks";
+import { ActionIcon, Badge, ComboboxItem, Divider, Select, SimpleGrid, Switch, Tabs, TextInput, Title, Button, Loader, MultiSelect } from "@mantine/core";
+import { useFormHandler, useLookup } from "../../hooks";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { messageSchema, MessageType } from "../../schemas";
+import { messageEditSchema, MessageEdit } from "../../schemas";
 import { Controller } from "react-hook-form";
 import { openMessagePreviewDialog, TemplateEditor } from "./components";
+import { LookupSchema } from "../../types";
 
 type ComponentOwnProps = {
   isEdit: boolean;
@@ -21,8 +22,7 @@ type ComponentOwnProps = {
 
 type ComponentProps = {
   bots: BotItem[];
-  stations: ServerStationItem[];
-  message?: MessageType;
+  message?: MessageEdit;
   loading: boolean;
   stationsLoading: boolean;
   isEdit: boolean;
@@ -39,18 +39,16 @@ const selectLoading = createSelector(
 
 const mapStateToProps = (state: RootState, ownProps: ComponentOwnProps): ComponentProps => ({
   bots: state.bots.bots,
-  stations: state.stations.stations,
   message: state.messages.editingMessage,
   loading: selectLoading(state),
   stationsLoading: state.stations.loading,
   isEdit: ownProps.isEdit
 });
 
-const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loading, stationsLoading }: ComponentProps) => {
+const Component: FC<ComponentProps> = ({ isEdit, bots, message, loading, stationsLoading }: ComponentProps) => {
   const dispatch = useAppDispatch();
   const { messageId } = useParams();
   const messageIdInt = parseInt(messageId!);
-  
 
   const messageRef = useRef(message);
   useEffect(() => {
@@ -68,25 +66,23 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loadin
     dispatch(fetchStations());
   }, [dispatch]);
 
-  const getBotOptions = (): ComboboxItem[] => (bots ?? []).map((bot, index) => ({
+  const getBotOptions = useCallback((): ComboboxItem[] => (bots ?? []).map((bot, index) => ({
     key: `bot_${index}`,
     value: bot.id?.toString(),
     label: bot.name,
-  } as ComboboxItem));
+  } as ComboboxItem)), [bots]);
 
-  const getStationOptions = (): ComboboxItem[] => ([
-    {
-      label: 'All stations',
-      value: '0',
-    },
+  const { data: stations } = useLookup(LookupSchema.Station, { autoFetch: true });
+
+  const getStationOptions = useCallback((): ComboboxItem[] => ([
     ...(stations ?? []).map((station, index) => ({
       key: `station_${index}`,
-      value: station.id.toString(),
-      label: station.stationName,
+      value: station.value!.toString(),
+      label: station.text,
     } as ComboboxItem)),
-  ]);
+  ]), [stations]);
 
-  const handleSave = (data: MessageType) => {
+  const handleSave = (data: MessageEdit) => {
     dispatch(updateMessage(data));
     dispatch(saveMessage())
       .unwrap()
@@ -102,13 +98,13 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loadin
     trigger,
     getControlValue,
     isValid,
-  } = useFormHandler<MessageType>({
+  } = useFormHandler<MessageEdit>({
     formKey: 'message',
     isEdit: isEdit,
     cleanupAction: () => dispatch(finishEditingMessage()),
     fetchDataAction: editOrCreateMessage,
     saveAction: handleSave,
-    validationSchema: messageSchema,
+    validationSchema: messageEditSchema,
     loading: loading || stationsLoading,
     initialData: message,
     fields: [
@@ -146,36 +142,47 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loadin
             render={({ field }) => (
               <Select
                 required
+                allowDeselect={false}
                 data={getBotOptions()}
                 {...field}
                 label={context.title}
                 leftSection={stationsLoading ? <Loader size="xs" /> : null}
                 value={field.value?.toString() ?? ''}
                 error={context.helpers.getFieldError('botId')}
-                onChange={(value) => context.helpers.setControlValue('botId', value!, true, false)}
+                onChange={(value) => context.helpers.setControlValue('botId', parseInt(value!), true, false)}
               />
             )}
           />;
         }
       },
       {
-        name: 'stationId',
-        title: 'Station',
+        name: 'stations',
+        title: 'Stations',
         required: true,
         render: (context) => {
           return <Controller
-            name="stationId"
+            name="stations"
             control={context.helpers.control}
-            defaultValue={0}
+            defaultValue={[]}
             render={({ field }) => (
-              <Select
+              <MultiSelect
                 required
                 data={getStationOptions()}
                 {...field}
                 label={context.title}
-                value={field.value?.toString() ?? ''}
-                error={context.helpers.getFieldError('stationId')}
-                onChange={(value) => context.helpers.setControlValue('stationId', parseInt(value!), true, false)}
+                value={field.value?.map(m => m.toString()) ?? []}
+                error={context.helpers.getFieldError('stations')}
+                styles={{
+                  pill: {
+                    backgroundColor: "var(--mantine-primary-color-filled)",
+                    color: "white",
+                    fontWeight: 700,
+                  }
+                }}
+                onChange={(value) => {
+                  const stationIds = value.map(m => parseInt(m));
+                  context.helpers.setControlValue('stations', stationIds, true, false);
+                }}
               />
             )}
           />;
@@ -248,13 +255,13 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loadin
 
   const onOpenPreview = () => {
     const name = getControlValue('name') as string;
-    const stationId = getControlValue('stationId') as number | null;
+    const stations = getControlValue('stations') as number[];
     const shouldSendTemplate = getControlValue('shouldSendTemplate') as string;
     const timeoutTemplate = getControlValue('timeoutTemplate') as string;
     const messageTemplate = getControlValue('messageTemplate') as string;
     openMessagePreviewDialog({
       name,
-      stationId,
+      stations,
       shouldSendTemplate,
       timeoutTemplate,
       messageTemplate,
@@ -268,7 +275,7 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, stations, message, loadin
       <Divider />
       <SimpleGrid cols={{ xs: 1, sm: 2, }} mt='xs' mb='xs'>
         {renderField('botId')}
-        {renderField('stationId')}
+        {renderField('stations')}
       </SimpleGrid>
       <Divider />
       {renderField('channelId')}

@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { MessagesState, ServerMessageListItem, TemplatePreviewResponse } from "../types";
 import { editMessage, fetchMessages, getChannel, getTemplatePreview, saveMessage } from "../thunks";
-import { MessageType } from "../../schemas";
+import { MessageEdit } from "../../schemas";
 
 
 const initialState: MessagesState = {
@@ -38,7 +38,7 @@ export const messagesSlice = createSlice({
           station.changed = false;
         }
       },
-      updateMessage(state, { payload }: PayloadAction<MessageType>) {
+      updateMessage(state, { payload }: PayloadAction<MessageEdit>) {
         state.editingMessage = payload;
         state.changed = true;
       },
@@ -47,7 +47,7 @@ export const messagesSlice = createSlice({
         state.editingMessage = {
           name: `New message ${messageNumber + 1}`,
           enabled: false,
-        } as MessageType;
+        } as MessageEdit;
       },
       finishEditingMessage(state) {
         delete state.editingMessage;
@@ -73,7 +73,7 @@ export const messagesSlice = createSlice({
           state.loading = true;
           state.error = null;
         })
-        .addCase(editMessage.fulfilled, (state, action: PayloadAction<MessageType>) => {
+        .addCase(editMessage.fulfilled, (state, action: PayloadAction<MessageEdit>) => {
           state.loading = false;
           state.creating = false;
           state.changed = false;

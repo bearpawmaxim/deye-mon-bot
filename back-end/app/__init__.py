@@ -53,6 +53,7 @@ def create_app(config=None, services=None):
     if config is None:
         config = Config()
         config.IS_MIGRATION_RUN = True
+        config.DEBUG = True
     if services is None:
         services = setup_services(config)
     

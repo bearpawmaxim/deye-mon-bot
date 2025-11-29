@@ -46,7 +46,7 @@ class DatabaseService:
                     name = message.name,
                     channel_id = message.channel_id,
                     bot_id = message.bot_id,
-                    station_id = message.station_id,
+                    stations = message.stations,
                     message_template = message.message_template,
                     timeout_template = message.timeout_template,
                     should_send_template = message.should_send_template,
@@ -58,7 +58,7 @@ class DatabaseService:
             else:
                 existing_message.channel_id = message.channel_id
                 existing_message.bot_id = message.bot_id
-                existing_message.station_id = message.station_id
+                existing_message.stations = message.stations
                 existing_message.message_template = message.message_template
                 existing_message.timeout_template = message.timeout_template
                 existing_message.should_send_template = message.should_send_template
@@ -93,14 +93,14 @@ class DatabaseService:
         try:
             return self._session.query(AllowedChat).all()
         except Exception as e:
-            print(e)
+            print(f'Error getting allowed chats {str(e)}')
             return []
 
     def get_chat_requests(self):
         try:
             return self._session.query(ChatRequest).all()
         except Exception as e:
-            print(f'Error getting chat requests: {e}')
+            print(f'Error getting chat requests: {str(e)}')
             return []
 
     def add_chat_request(self, chat_id, bot_id):
@@ -555,7 +555,7 @@ class DatabaseService:
             if not user_obj:
                 print(f"User not found: {user}")
                 return None
-            
+
             new_data = ExtData(
                 user_id = user_obj.id,
                 grid_state = grid_state,
@@ -609,6 +609,20 @@ class DatabaseService:
     def delete_old_ext_data(self):
         timeout = datetime.now(timezone.utc) - timedelta(days=self._statistic_keep_days)
         self._session.query(ExtData).filter(ExtData.received_at < timeout).delete(synchronize_session=False)
+
+    def get_lookup_values(self, lookup_name: str):        
+        lookup_map = {
+            'building': Building,
+            'message': Message,
+            'station': Station,
+            'user': User
+        }
+
+        model_class = lookup_map.get(lookup_name)
+        if model_class is None:
+            return []
+
+        return model_class.get_lookup_values(self._session)
 
     def save_changes(self):
         self._session.commit()

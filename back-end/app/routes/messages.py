@@ -21,7 +21,7 @@ def register(app, services: Services):
             print(f'Cannot get channel info for channel {channel_id}')
             return 'Invalid channel identifier'
 
-    @app.route('/api/messages/messages', methods=['POST'])
+    @app.route('/api/messages/messages', methods=['GET'])
     @jwt_required()
     def get_messages():
         messages = services.database.get_messages(all=True)
@@ -29,12 +29,12 @@ def register(app, services: Services):
         def process_message(message):
             bot_name = _get_bot_name(message.bot_id)
             channel_name = _get_channel_name(message.channel_id, message.bot_id)
-            station_name = message.station.station_name if message.station else ''
+            stations = [station.id for station in message.stations]
             return {
                 'id': message.id,
                 'name': message.name,
                 'channelName': channel_name,
-                'stationName': station_name,
+                'stations': stations,
                 'botName': bot_name,
                 'lastSentTime': message.last_sent_time,
                 'enabled': message.enabled,
@@ -54,13 +54,13 @@ def register(app, services: Services):
         channel_name = _get_channel_name(channel_id, bot_id)
         return jsonify({ 'success': True, 'channelName': channel_name })
 
-    @app.route('/api/messages/message/<message_id>', methods=['POST'])
+    @app.route('/api/messages/message/<message_id>', methods=['GET'])
     @jwt_required()
     def get_message(message_id: int):
         message = services.database.get_message(message_id)
         bot_name = _get_bot_name(message.bot_id)
         channel_name = _get_channel_name(message.channel_id, message.bot_id)
-        station_name = message.station.station_name if message.station else ''
+        stations = [station.id for station in message.stations]
         return jsonify({
             'id': message.id,
             'name': message.name,
@@ -69,8 +69,7 @@ def register(app, services: Services):
             'messageTemplate': message.message_template,
             'shouldSendTemplate': message.should_send_template,
             'timeoutTemplate': message.timeout_template,
-            'stationId': message.station_id,
-            'stationName': station_name,
+            'stations': stations,
             'botId': message.bot_id,
             'botName': bot_name,
             'lastSentTime': message.last_sent_time,
@@ -80,17 +79,27 @@ def register(app, services: Services):
     @app.route('/api/messages/getPreview', methods=['POST'])
     @jwt_required()
     def get_message_preview():
-        station_id = request.json.get("stationId", None)
+        server_stations = services.database.get_stations(True)
+        json = request.json
+        station_ids = json.get("stations", None)
+        id_set = set(station_ids)
+        stations = [s for s in server_stations if s.id in id_set]
         message = Message(
-            channel_id = request.json.get("channelId"),
-            message_template = request.json.get("messageTemplate"),
-            timeout_template = request.json.get("timeoutTemplate"),
-            should_send_template = request.json.get("shouldSendTemplate", None),
-            station_id = station_id if station_id is not None and station_id != 0 else None,
-            bot_id = request.json.get("botId")
+            name = json.get("name"),
+            channel_id = json.get("channelId"),
+            message_template = json.get("messageTemplate"),
+            timeout_template = json.get("timeoutTemplate"),
+            should_send_template = json.get("shouldSendTemplate", None),
+            stations = stations,
+            bot_id = json.get("botId")
         )
         try:
             info = services.bot.get_message(message)
+            if info is None:
+                return jsonify({
+                    'success': False,
+                    'error': str(e)
+                })
             return jsonify({
                 'success': True,
                 'message': info.message,
@@ -118,7 +127,11 @@ def register(app, services: Services):
     @app.route('/api/messages/save', methods=['PATCH'])
     @jwt_required()
     def save_message():
-        station_id = request.json.get("stationId", None)
+        server_stations = services.database.get_stations(True)
+        station_ids = request.json.get("stations", None)
+        id_set = set(station_ids)
+        stations = [s for s in server_stations if s.id in id_set]
+
         message = Message(
             id = request.json.get("id", None),
             name = request.json.get("name"),
@@ -126,7 +139,7 @@ def register(app, services: Services):
             message_template = request.json.get("messageTemplate"),
             timeout_template = request.json.get("timeoutTemplate"),
             should_send_template = request.json.get("shouldSendTemplate", None),
-            station_id = station_id if station_id is not None and station_id != 0 else None,
+            stations = stations,
             bot_id = request.json.get("botId"),
             enabled = request.json.get("enabled")
         )

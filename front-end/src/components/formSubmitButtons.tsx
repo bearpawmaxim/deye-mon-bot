@@ -15,7 +15,7 @@ export const FormSubmitButtons: FC<FormSubmitButtonsProps> = ({
   isValid,
   handleReset,
 }) => {
-  return <Group justify="flex-start">
+  return <Group justify="flex-end">
     <Button
       type="submit"
       color="green.9"

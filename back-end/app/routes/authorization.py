@@ -79,8 +79,6 @@ def register(app, services: Services):
             if new_password is None:
                 raise ValueError("No password specified")
 
-            print(f'token: {token}')
-            print(f"new passwd: {new_password}")
             services.authorization.change_password(token, new_password)
             return { "success": True }
         except ValueError as e:

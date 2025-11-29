@@ -1,9 +1,10 @@
-import { MessageType } from "../../schemas";
+import { MessageEdit } from "../../schemas";
 import { BaseEditableState, BaseResponse } from "./base";
 
 export type BaseServerMessageListItem = {
   id?: number;
   name: string;
+  stations: number[];
   lastSentTime: Date;
   enabled: boolean;
 };
@@ -13,13 +14,11 @@ export type BaseServerMessageItem = BaseServerMessageListItem & {
   messageTemplate: string;
   shouldSendTemplate: string;
   timeoutTemplate: string;
-  stationId?: number;
   botId: number;
 };
 
 type MessageDetailsItem = {
   channelName: string;
-  stationName: string;
   botName: string;
 };
 
@@ -42,7 +41,7 @@ export type TemplatePreviewRequest = Omit<BaseServerMessageItem, 'id'|'name'|'la
 
 export type MessagesState = BaseEditableState & {
   messages: Array<ServerMessageListItem>;
-  editingMessage?: MessageType;
+  editingMessage?: MessageEdit;
   templatePreview?: TemplatePreview;
   loadingPreview: boolean;
   previewError?: string;
