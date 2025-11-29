@@ -312,7 +312,7 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
               </Group>
             </Stack>
 
-            <Table striped highlightOnHover withTableBorder>
+            <Table stickyHeader stickyHeaderOffset={60} striped highlightOnHover withTableBorder>
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th>Start Time</Table.Th>
