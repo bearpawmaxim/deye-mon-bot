@@ -46,7 +46,7 @@ export const AuthHeaderInjector: FC = () => {
               const refreshResult = await refreshToken(authData)
               if (refreshResult && refreshResult.accessToken) { 
                 error.config.headers.Authorization = `Bearer ${refreshResult.accessToken}`;
-                dispatch(updateAuthData(refreshResult));
+                dispatch(updateAuthData({ authData: refreshResult, isRefresh: true, }));
                 return apiClient.request(error.config);
               }
             } catch(refreshError) {

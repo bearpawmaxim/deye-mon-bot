@@ -1,9 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { AuthState, ProfileData } from "../types";
+import { AuthState, ProfileData, UpdateAuthDataPayload } from "../types";
 import { fetchProfile, login, LoginResponse, logout } from "../thunks";
 import { getAccessToken, getRefreshToken } from "../../utils/tokenStorage";
 import { ProfileEdit } from "../../schemas";
-import { AuthData } from "../../types";
 
 const initialState: AuthState = {
   accessToken: getAccessToken(),
@@ -15,9 +14,9 @@ export const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    updateAuthData: (state, { payload }: PayloadAction<AuthData>) => {
-      state.accessToken = payload.accessToken;
-      state.refreshToken = payload.refreshToken;
+    updateAuthData: (state, { payload }: PayloadAction<UpdateAuthDataPayload>) => {
+      state.accessToken = payload.authData.accessToken;
+      state.refreshToken = payload.authData.refreshToken;
     },
     resetAuthData: (state) => {
       state.accessToken = null;
