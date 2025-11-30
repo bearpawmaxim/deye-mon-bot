@@ -26,19 +26,7 @@ export const getCurlExampleOneLine = (apiToken: string): string => {
 
 export const getHomeAssistantExample = (apiToken: string): string => {
   const baseUrl = getApiBaseUrl();
-  return `# Automation to push grid power state to external API
-automation:
-  - alias: "Push Grid Power State to API"
-    description: "Send grid power availability to external monitoring system"
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.grid_power  # Replace with your grid sensor
-    action:
-      - service: rest_command.update_grid_power
-        data:
-          state: "{{ states('binary_sensor.grid_power') }}"
-
-# REST command configuration (add to configuration.yaml)
+  return `# REST command configuration (add to configuration.yaml)
 rest_command:
   update_grid_power:
     url: "${baseUrl}/api/ext-data/grid-power"
@@ -47,11 +35,29 @@ rest_command:
       Authorization: "Bearer ${apiToken}"
       Content-Type: "application/json"
     payload: >
-      {
-        "grid_power": {
-          "state": {{ state | bool }}
-        }
-      }`;
+      {"grid_power": {"state": {{ power_state | bool | lower }}}}
+
+# Automation to push grid power state to external API
+# Replace sensor.inverter_work_state with your actual inverter/grid sensor entity ID.
+# Adjust the state logic based on your sensor values (offgrid/bypass/etc).
+automation:
+  - alias: "Push Grid Power State to API"
+    description: "Send grid power availability to external monitoring system"
+    triggers:
+      - entity_id: sensor.inverter_work_state  # Replace with your sensor
+        trigger: state
+    actions:
+      - data:
+          power_state: >
+            {% if states('sensor.inverter_work_state') == 'offgrid' %}
+              false
+            {% elif states('sensor.inverter_work_state') == 'bypass' %}
+              true
+            {% else %}
+              false
+            {% endif %}
+        action: rest_command.update_grid_power
+    mode: single`;
 };
 
 
@@ -62,7 +68,7 @@ export const integrationNotes = {
   },
   homeAssistant: {
     description: 'Add this automation to your Home Assistant configuration.yaml or automations.yaml:',
-    note: 'Replace binary_sensor.grid_power with your actual grid power sensor entity ID.',
+    note: 'Replace sensor.inverter_work_state with your actual inverter/grid sensor entity ID. Adjust the state logic based on your sensor values (offgrid/bypass/etc).',
   },
 };
 
