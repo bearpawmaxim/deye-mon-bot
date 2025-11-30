@@ -19,7 +19,7 @@ services:
 
   deye-mon-bot-rds:
     image: redis:7
-    container_name: redis
+    container_name: deye-mon-bot-rds
     ports:
       - "6379:6379"
     volumes:
@@ -29,6 +29,20 @@ services:
       - web_network
     labels:
       io.hass.type: "addon"
+
+  deye-mon-bot-mongo:
+    image: mongo:7
+    container_name: deye-mon-bot-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - web_network
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
 
   back-end:
     build:
@@ -49,6 +63,9 @@ services:
     labels:
       io.hass.type: "addon"
     depends_on:
+      deye-mon-bot-mongo:
+        condition: service_started
+        restart: true
       deye-mon-bot-rds:
         condition: service_started
         restart: true
@@ -77,6 +94,7 @@ services:
 
 volumes:
   rds_data:
+  mongo_data:
 
 networks:
   web_network:
