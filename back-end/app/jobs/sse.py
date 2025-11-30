@@ -9,7 +9,7 @@ def register(config: Config, services: Services):
             'send_ping',
             send_ping,
             trigger = 'interval',
-            seconds = config.SSE_PING_TIMEOUT,
+            seconds = config.SSE_PING_INTERVAL,
             args    = [services]
         )
 
