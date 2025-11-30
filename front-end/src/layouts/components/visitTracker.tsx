@@ -42,7 +42,7 @@ export const VisitTracker: FC = () => {
 
   return (
     <Box fz='xs'>
-      unique visitors:
+      Unique visitors:
       { isMobile
           ? `${visitData.dailyVisitors} daily, `
           : <Badge variant="outline" m="xs">

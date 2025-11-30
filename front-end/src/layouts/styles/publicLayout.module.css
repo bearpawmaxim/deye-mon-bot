@@ -17,3 +17,24 @@
   flex-direction: column;
   justify-content: center;
 }
+
+.downloadButton {
+  animation: pulse 2s ease-in-out infinite;
+  transition: transform 0.2s ease;
+}
+
+.downloadButton:hover {
+  animation: none;
+  transform: scale(1.05);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 var(--mantine-primary-color-light-hover);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 4px var(--mantine-primary-color-light);
+  }
+}

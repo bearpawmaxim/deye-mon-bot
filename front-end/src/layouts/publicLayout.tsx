@@ -1,5 +1,5 @@
 import { FC, ReactNode, useEffect, useState } from "react";
-import { Anchor, AppShell, Box, Container, Group, Image, SimpleGrid, Transition, useMantineColorScheme } from "@mantine/core";
+import { Anchor, AppShell, Box, Container, Group, Image, SimpleGrid, Transition, useMantineColorScheme, Button } from "@mantine/core";
 import { ThemePicker } from "../components";
 import classes from './styles/publicLayout.module.css';
 import { VisitTracker } from "./components/visitTracker";
@@ -63,7 +63,19 @@ export const PublicLayout: FC<PublicLayoutProps> = ({ children }) => {
                 )}
               </Transition>
             </Group>
-            <ThemePicker isNavbarCollapsed={false} size="md" />
+            <Group gap="md">
+              <Anchor href="/app" underline="never">
+                <Button 
+                  variant="light" 
+                  // leftSection={<FontAwesomeIcon icon="mobile" />}
+                  size="xs"
+                  className={classes.downloadButton}
+                >
+                  Get the App
+                </Button>
+              </Anchor>
+              <ThemePicker isNavbarCollapsed={false} size="md" />
+            </Group>
           </Container>
         </header>
       </AppShell.Header>
