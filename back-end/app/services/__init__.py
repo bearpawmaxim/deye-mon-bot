@@ -11,7 +11,7 @@ from .telegram import TelegramConfig, TelegramService
 from .authorization import AuthorizationService
 from .visit_counter import VisitCounterService
 from .outages_schedule import OutagesScheduleService
-from shared import EventsService, EventItem
+from shared.services import EventsService, EventItem
 
 class Services:
     db: SQLAlchemy
