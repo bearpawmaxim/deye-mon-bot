@@ -1,26 +1,23 @@
-from odmantic import Model, Reference, Field
 from datetime import datetime
 from typing import Optional, List
-
+from beanie import Document, Link
+from pydantic import Field
 from .bot import Bot
 from .station import Station
 
 
-class Message(Model):
+class Message(Document):
     channel_id: Optional[str] = None
     name: Optional[str] = None
     message_template: Optional[str] = None
     should_send_template: Optional[str] = None
     timeout_template: Optional[str] = None
 
-    bot: Optional[Bot] = Reference()
+    bot: Link[Bot]
     last_sent_time: Optional[datetime] = None
     enabled: Optional[bool] = True
 
-    stations: List[Station] = Field(default_factory=list)
-
-    class Config:
-        collection = "message"
+    stations: List[Link[Station]] = Field(default_factory=list)
 
     def __str__(self):
         station_ids = [str(s.id) for s in self.stations] if self.stations else []
@@ -29,3 +26,8 @@ class Message(Model):
             f"name='{self.name}', stations={station_ids}, "
             f"last_sent_time={self.last_sent_time}, enabled={self.enabled})"
         )
+
+    @classmethod
+    def get_lookup_values(cls):
+        messages = cls.find_all().to_list()
+        return [{'value': m.id, 'text': m.name} for m in messages]

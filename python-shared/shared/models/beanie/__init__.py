@@ -1,8 +1,8 @@
 from .allowed_chat import AllowedChat
+from .chat_request import ChatRequest
 from .bot import Bot
 from .building import Building
-from .chat_request import ChatRequest
-from .dashboard_confid import DashboardConfig
+from .dashboard_config import DashboardConfig
 from .ext_data import ExtData
 from .message import Message
 from .station import Station
@@ -11,8 +11,8 @@ from .user import User
 from .visit_counter import VisitCounter, DailyVisitCounter
 
 __all__ = [
-    AllowedChat, ChatRequest, Bot,
-    Building, User, Message, Station,
+    Bot, AllowedChat, ChatRequest,
+    User, Message, Station, Building,
     StationData, ExtData, DashboardConfig,
     VisitCounter, DailyVisitCounter
 ]

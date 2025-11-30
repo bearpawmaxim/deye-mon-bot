@@ -1,10 +1,13 @@
 from datetime import datetime, timezone
-from odmantic import Model, Reference
 from typing import Optional
+
+from beanie import Document, Link
+
 from .station import Station
 
-class StationData(Model):
-    station: Station = Reference()
+
+class StationData(Document):
+    station: Link[Station]
 
     battery_power: Optional[float] = None
     battery_soc: Optional[float] = None
@@ -51,23 +54,20 @@ class StationData(Model):
             lut = lut.replace(tzinfo=timezone.utc).astimezone(tz)
 
         return {
-            'id': str(self.id),
-            'station_id': str(self.station.id) if self.station else None,
-            'battery_power': self.battery_power,
-            'battery_soc': self.battery_soc,
-            'charge_power': self.charge_power,
-            'code': self.code,
-            'consumption_power': self.consumption_power,
-            'discharge_power': self.discharge_power,
-            'generation_power': self.generation_power,
-            'grid_power': self.grid_power,
-            'irradiate_intensity': self.irradiate_intensity,
-            'last_update_time': lut,
-            'msg': self.msg,
-            'purchase_power': self.purchase_power,
-            'request_id': self.request_id,
-            'wire_power': self.wire_power,
+            "id": str(self.id),
+            "station_id": str(self.station.id) if self.station else None,
+            "battery_power": self.battery_power,
+            "battery_soc": self.battery_soc,
+            "charge_power": self.charge_power,
+            "code": self.code,
+            "consumption_power": self.consumption_power,
+            "discharge_power": self.discharge_power,
+            "generation_power": self.generation_power,
+            "grid_power": self.grid_power,
+            "irradiate_intensity": self.irradiate_intensity,
+            "last_update_time": lut,
+            "msg": self.msg,
+            "purchase_power": self.purchase_power,
+            "request_id": self.request_id,
+            "wire_power": self.wire_power,
         }
-
-    class Config:
-        collection = "station_data"

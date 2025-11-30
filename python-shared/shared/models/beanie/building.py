@@ -1,19 +1,16 @@
-from odmantic import Model, Reference
+from beanie import Document, Link
 from typing import Optional
 
 from .station import Station
 from .user import User
 
 
-class Building(Model):
-    name: Optional[str] = None
-    color: Optional[str] = None
+class Building(Document):
+    name: str
+    color: str
 
-    station: Optional[Station] = Reference()
-    report_user: User = Reference()
-
-    class Config:
-        collection = "building"
+    station: Optional[Link[Station]] = None
+    report_user: Link[User]
 
     def to_dict(self):
         return {
@@ -25,6 +22,6 @@ class Building(Model):
         }
 
     @classmethod
-    async def get_lookup_values(cls, engine):
-        buildings = await engine.find(cls)
+    async def get_lookup_values(cls):
+        buildings = await cls.find_all().to_list()
         return [{"value": str(b.id), "text": b.name} for b in buildings]

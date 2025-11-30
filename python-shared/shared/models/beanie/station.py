@@ -1,9 +1,11 @@
-from odmantic import Model, Field
 from datetime import datetime
 from typing import Optional
 
+from beanie import Document
+from pydantic import Field
 
-class Station(Model):
+
+class Station(Document):
     station_id: Optional[str] = Field(None, max_length=64)
     station_name: Optional[str] = Field(None, max_length=128)
 
@@ -26,13 +28,14 @@ class Station(Model):
     owner_name: Optional[str] = Field(None, max_length=256)
 
     generation_power: Optional[float] = None
-    battery_capacity: Optional[int] = None
+    battery_capacity: Optional[float] = None
 
     order: int = 1
     enabled: bool = True
 
     def __str__(self):
-        return (f"ClassName(id={self.id}, station_id='{self.station_id}', name='{self.name}', "
+        return (
+            f"ClassName(id={self.id}, station_id='{self.station_id}', name='{self.station_name}', "
             f"connection_status='{self.connection_status}', contact_phone='{self.contact_phone}', "
             f"created_date={self.created_date}, grid_interconnection_type='{self.grid_interconnection_type}', "
             f"installed_capacity={self.installed_capacity}, location_address='{self.location_address}', "
@@ -40,36 +43,34 @@ class Station(Model):
             f"owner_name='{self.owner_name}', region_nation_id={self.region_nation_id}, "
             f"region_timezone='{self.region_timezone}', generationPower={self.generation_power}, "
             f"lastUpdateTime={self.last_update_time}, start_operating_time={self.start_operating_time}, "
-            f"battery_capacity={self.battery_capacity}, order={self.order}, enabled={self.enabled})")
+            f"battery_capacity={self.battery_capacity}, order={self.order}, enabled={self.enabled})"
+        )
 
     def to_dict(self):
         return {
-            'id': self.id,
-            'station_id': self.station_id,
-            'station_name': self.station_name,
-            'location_lat': self.location_lat,
-            'location_lng': self.location_lng,
-            'location_address': self.location_address,
-            'region_nation_id': self.region_nation_id,
-            'region_timezone': self.region_timezone,
-            'grid_interconnection_type': self.grid_interconnection_type,
-            'installed_capacity': self.installed_capacity,
-            'start_operating_time': self.start_operating_time,
-            'created_date': self.created_date,
-            'last_update_time': self.last_update_time,
-            'connection_status': self.connection_status,
-            'contact_phone': self.contact_phone,
-            'owner_name': self.owner_name,
-            'generation_power': self.generation_power,
-            'battery_capacity': self.battery_capacity,
-            'order': self.order,
-            'enabled': self.enabled
+            "id": str(self.id),
+            "station_id": self.station_id,
+            "station_name": self.station_name,
+            "location_lat": self.location_lat,
+            "location_lng": self.location_lng,
+            "location_address": self.location_address,
+            "region_nation_id": self.region_nation_id,
+            "region_timezone": self.region_timezone,
+            "grid_interconnection_type": self.grid_interconnection_type,
+            "installed_capacity": self.installed_capacity,
+            "start_operating_time": self.start_operating_time,
+            "created_date": self.created_date,
+            "last_update_time": self.last_update_time,
+            "connection_status": self.connection_status,
+            "contact_phone": self.contact_phone,
+            "owner_name": self.owner_name,
+            "generation_power": self.generation_power,
+            "battery_capacity": self.battery_capacity,
+            "order": self.order,
+            "enabled": self.enabled,
         }
 
     @classmethod
-    async def get_lookup_values(cls, engine):
-        stations = await engine.find(cls)
-        return [{'value': s.id, 'text': s.station_name} for s in stations]
-
-    class Config:
-        collection = "station"
+    async def get_lookup_values(cls):
+        stations = await cls.find_all().to_list()
+        return [{"value": str(s.id), "text": s.station_name} for s in stations]

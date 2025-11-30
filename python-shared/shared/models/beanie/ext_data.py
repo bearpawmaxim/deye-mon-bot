@@ -1,17 +1,13 @@
-from odmantic import Model, Reference
+from beanie import Document, Link
 from datetime import datetime, timezone
-from typing import Optional
 
 from .user import User
 
 
-class ExtData(Model):
-    user: User = Reference()
+class ExtData(Document):
+    user: Link[User]
     grid_state: bool = False
     received_at: datetime = datetime.now(timezone.utc)
-
-    class Config:
-        collection = "ext_data"
 
     def __str__(self):
         return (
