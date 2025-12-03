@@ -13,8 +13,8 @@ android {
         applicationId = "ua.pp.svitlo.power"
         minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.0.4"
+        versionCode = 6
+        versionName = "1.0.6"
 
         vectorDrawables {
             useSupportLibrary = true
@@ -76,6 +76,13 @@ dependencies {
     
     // DataStore for preferences
     implementation("androidx.datastore:datastore-preferences:1.1.1")
+    
+    // Glance for widgets
+    implementation("androidx.glance:glance-appwidget:1.1.1")
+    implementation("androidx.glance:glance-material3:1.1.1")
+    
+    // WorkManager for widget updates
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
     
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.6.0"))

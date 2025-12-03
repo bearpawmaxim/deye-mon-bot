@@ -50,15 +50,18 @@ class PowerRepository {
     }
     
     fun getTodayDateRange(): Pair<String, String> {
-        // Get current time in local timezone
-        val now = ZonedDateTime.now()
+        return getDateRangeForDate(java.time.LocalDate.now())
+    }
+    
+    fun getDateRangeForDate(date: java.time.LocalDate): Pair<String, String> {
+        val zone = java.time.ZoneId.systemDefault()
         
-        // Get start of today in local timezone, then convert to UTC
-        val startOfDayLocal = now.withHour(0).withMinute(0).withSecond(0).withNano(0)
+        // Get start of the day in local timezone, then convert to UTC
+        val startOfDayLocal = date.atStartOfDay(zone)
         val startOfDayUtc = startOfDayLocal.withZoneSameInstant(java.time.ZoneOffset.UTC)
         
-        // Get end of today in local timezone, then convert to UTC
-        val endOfDayLocal = now.withHour(23).withMinute(59).withSecond(59).withNano(999000000)
+        // Get end of the day in local timezone, then convert to UTC
+        val endOfDayLocal = date.atTime(23, 59, 59, 999000000).atZone(zone)
         val endOfDayUtc = endOfDayLocal.withZoneSameInstant(java.time.ZoneOffset.UTC)
         
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")

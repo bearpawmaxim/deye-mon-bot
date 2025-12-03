@@ -59,6 +59,19 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+        
+        <!-- Widget: Outages Schedule -->
+        <receiver
+            android:name=".widget.OutagesWidgetReceiver"
+            android:exported="true"
+            android:label="Svitlo Outages">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/outages_widget_info" />
+        </receiver>
             
     </application>
 
