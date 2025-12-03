@@ -118,8 +118,7 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
                 <Group justify="space-between" mt="xl">
                   <CopyButton value={link}>
                     {({ copied, copy }) => (
-                      <Button
-                        size="md"
+                      <Button                    
                         leftSection={<FontAwesomeIcon icon={copied ? 'check' : 'copy'} />}
                         color={copied ? 'teal' : 'blue'}
                         onClick={copy}
