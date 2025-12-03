@@ -20,12 +20,12 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -37,6 +37,8 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.analytics.logEvent
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import ua.pp.svitlo.power.data.api.RetrofitClient
 import ua.pp.svitlo.power.data.preferences.PreferencesManager
@@ -286,39 +288,22 @@ fun MainScreen(
     )
     val coroutineScope = rememberCoroutineScope()
     
-    // Synchronize pager with navigation clicks
-    LaunchedEffect(currentRoute) {
-        when (currentRoute) {
-            Screen.Outages.route -> {
-                if (pagerState.currentPage != 0) {
-                    pagerState.animateScrollToPage(0)
+    // Synchronize navigation with pager swipes (using settledPage to avoid race conditions)
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.settledPage }
+            .distinctUntilChanged()
+            .collectLatest { page ->
+                val targetRoute = items[page].route
+                if (currentRoute != targetRoute) {
+                    navController.navigate(targetRoute) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
             }
-            Screen.Power.route -> {
-                if (pagerState.currentPage != 1) {
-                    pagerState.animateScrollToPage(1)
-                }
-            }
-            Screen.Settings.route -> {
-                if (pagerState.currentPage != 2) {
-                    pagerState.animateScrollToPage(2)
-                }
-            }
-        }
-    }
-    
-    // Synchronize navigation with pager swipes
-    LaunchedEffect(pagerState.currentPage) {
-        val targetRoute = items[pagerState.currentPage].route
-        if (currentRoute != targetRoute) {
-            navController.navigate(targetRoute) {
-                popUpTo(navController.graph.findStartDestination().id) {
-                    saveState = true
-                }
-                launchSingleTop = true
-                restoreState = true
-            }
-        }
     }
     
     Scaffold(
