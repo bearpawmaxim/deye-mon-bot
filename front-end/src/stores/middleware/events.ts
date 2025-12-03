@@ -8,7 +8,8 @@ import {
   fetchMessages,
   fetchAllowedChats,
   fetchChatRequests,
-  fetchDashboardConfig
+  fetchDashboardConfig,
+  fetchExtData
 } from "../thunks";
 
 export const eventsMiddleware: Middleware<
@@ -37,9 +38,15 @@ export const eventsMiddleware: Middleware<
 
       case "station_data_updated":
       case "buildings_updated":
-      case "ext_data_updated":
         if (event.type === "station_data_updated" && isAuthenticated) {
           store.dispatch<unknown>(fetchStations());
+        }
+        store.dispatch<unknown>(fetchBuildings());
+        break;
+
+      case "ext_data_updated":
+        if (isAuthenticated) {
+          store.dispatch<unknown>(fetchExtData());
         }
         store.dispatch<unknown>(fetchBuildings());
         break;
