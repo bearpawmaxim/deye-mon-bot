@@ -3,6 +3,7 @@ export enum LookupSchema {
   Message = 'message',
   Station = 'station',
   User = 'user',
+  ReporterUser = 'reporter_user',
 };
 
 export type LookupValue = {

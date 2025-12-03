@@ -609,6 +609,44 @@ class DatabaseService:
         timeout = datetime.now(timezone.utc) - timedelta(days=self._statistic_keep_days)
         self._session.query(ExtData).filter(ExtData.received_at < timeout).delete(synchronize_session=False)
 
+    def create_ext_data_manual(self, user_id: int, grid_state: bool, received_at: datetime = None):
+        try:
+            if received_at is None:
+                received_at = datetime.now(timezone.utc)
+            
+            new_data = ExtData(
+                user_id=user_id,
+                grid_state=grid_state,
+                received_at=received_at
+            )
+            self._session.add(new_data)
+            self._session.flush()
+            return new_data.id
+        except Exception as e:
+            self._session.rollback()
+            print(f"Error creating ext data manually: {e}")
+            return None
+
+    def delete_ext_data_by_id(self, data_id: int):
+        try:
+            record = self._session.query(ExtData).filter(ExtData.id == data_id).first()
+            if record:
+                self._session.delete(record)
+                self._session.flush()
+                return True
+            return False
+        except Exception as e:
+            self._session.rollback()
+            print(f"Error deleting ext data: {e}")
+            return False
+
+    def get_ext_data_by_id(self, data_id: int):
+        try:
+            return self._session.query(ExtData).filter(ExtData.id == data_id).first()
+        except Exception as e:
+            print(f'Error getting ext data by id: {e}')
+            return None
+
     def get_lookup_values(self, lookup_name: str):        
         lookup_map = {
             'building': Building,
@@ -616,6 +654,10 @@ class DatabaseService:
             'station': Station,
             'user': User
         }
+
+        if lookup_name == 'reporter_user':
+            users = self._session.query(User).filter(User.is_reporter == True).all()
+            return [{'value': u.id, 'text': u.name} for u in users]
 
         model_class = lookup_map.get(lookup_name)
         if model_class is None:
