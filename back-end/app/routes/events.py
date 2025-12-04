@@ -1,38 +1,42 @@
 import json
-from flask import Response
-from shared import BoundedQueue
-from app.services import Services, EventItem
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from fastapi import FastAPI, Depends
+from starlette.responses import StreamingResponse
 
-def register(app, services: Services):
-    @app.route("/api/events")
-    def events():
+from app.utils.jwt_dependencies import get_jwt_from_query
+from app.services import Services
+from shared import BoundedQueue
+
+
+def register(app: FastAPI, services: Services):
+    @app.get("/api/events")
+    async def events(
+        claims: dict | None = Depends(get_jwt_from_query),
+    ):
         q = BoundedQueue(maxsize=100)
 
-        is_authenticated = False
-        user = None
-        if verify_jwt_in_request(optional=True) is not None:
-            user = get_jwt_identity()
-            is_authenticated = user is not None
+        user = claims["sub"] if claims else None
+        is_auth = user is not None
 
         services.events.add_public_client(q)
-        if is_authenticated:
+        if is_auth:
             services.events.add_private_client(q)
 
-        def stream():
+        async def event_generator():
             try:
                 while True:
-                    event = q.get()
+                    event = await q.async_get()
                     if event is None:
                         break
-                    if event.private and not is_authenticated:
+
+                    if event.private and not is_auth:
                         break
 
-                    if user is not None:
+                    if user:
                         event.user = user
 
                     yield f"data: {json.dumps(event.to_dict())}\n\n"
+
             finally:
                 services.events.remove_client(q)
 
-        return Response(stream(), mimetype="text/event-stream")
+        return StreamingResponse(event_generator(), media_type="text/event-stream")

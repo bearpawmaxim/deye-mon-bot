@@ -1,4 +1,4 @@
-from .models import DatabaseConfig
 from .service import DatabaseService
+from .models import DBSession
 
-__all__ = [DatabaseConfig, DatabaseService]
+__all__ = [DatabaseService, DBSession]

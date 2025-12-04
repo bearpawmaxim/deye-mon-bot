@@ -1,11 +1,12 @@
 import hashlib
-from typing import List
+from injector import inject
 import requests
 
 from app.models.deye import DeyeStation, DeyeStationData, DeyeStationList
 from .models import DeyeApiTokenResponse, DeyeConfig
 
 
+@inject
 class DeyeApiService:
     def __init__(self, config: DeyeConfig):
         self._app_id = config.app_id

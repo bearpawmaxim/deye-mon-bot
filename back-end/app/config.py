@@ -43,10 +43,10 @@ class Config:
     JWT_QUERY_STRING_NAME = "token"
 
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(
-        seconds=int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600))
+        minutes=int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 60))
     )
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(
-        seconds=int(os.getenv('JWT_REFRESH_TOKEN_EXPIRES', 3600 * 24))
+        minutes=int(os.getenv('JWT_REFRESH_TOKEN_EXPIRES', 60 * 24 * 7))
     )
 
     ADMIN_USER = os.getenv('ADMIN_USER')
@@ -62,11 +62,9 @@ class Config:
 
     SSE_PING_INTERVAL = int(os.getenv('SSE_PING_INTERVAL', 45))
 
-    DEBUG = False
+    DEBUG: bool = False
 
 class ProductionConfig(Config):
-    DEBUG = False
-
     # Security
     SESSION_COOKIE_HTTPONLY = True
     REMEMBER_COOKIE_HTTPONLY = True

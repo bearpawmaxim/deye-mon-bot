@@ -1,8 +1,13 @@
+from injector import inject
+from app.config import Config
+
+
+@inject
 class TelegramConfig:
     hook_base_url: str
 
-    def __init__(self, hook_base_url):
-        self.hook_base_url = hook_base_url
+    def __init__(self, config: Config):
+        self.hook_base_url = config.TG_HOOK_BASE_URL
 
     def __str__(self):
         return f"TelegramConfig(hook_base_url='{self.hook_base_url}')"

@@ -1,8 +1,10 @@
+from injector import inject
 import requests
 
 from .models import TelegramChatInfo, TelegramConfig, TelegramUserInfo
 
 
+@inject
 class TelegramService:
     def _get_method_url(self, bot_token: str, method: str):
         return 'https://api.telegram.org/bot' + bot_token + '/' + method

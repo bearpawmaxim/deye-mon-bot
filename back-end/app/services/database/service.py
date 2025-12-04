@@ -1,17 +1,25 @@
 from datetime import datetime, timedelta, timezone
+from injector import inject
 from sqlalchemy import Float, Integer, Numeric, func
-from app.models import Bot, Building, AllowedChat, ChatRequest, DashboardConfig, Message, Station, StationData, StationStatisticData, DeyeStationData, DeyeStation, User, ExtData
-from .models import DatabaseConfig
 
+from .models import DBSession
+from app.models import Bot, Building, AllowedChat, ChatRequest, DashboardConfig, Message, Station, StationData, StationStatisticData, DeyeStationData, DeyeStation, User, ExtData
+from app.config import Config
+
+
+@inject
 class DatabaseService:
-    def __init__(self, config: DatabaseConfig):
-        self._db = config.db
-        self._statistic_keep_days = config.statistic_keep_days
-        self._session = self._db.session
+    def __init__(self, session_factory: DBSession, config: Config):
+        self._session_factory = session_factory
+        self._statistic_keep_days = config.STATISTIC_KEEP_DAYS
+
+    @property
+    def session(self):
+        return self._session_factory()
 
     def get_messages(self, all: bool = False):
         try:
-            query = self._session.query(Message).with_for_update()
+            query = self.session.query(Message).with_for_update()
             return query.all() if all else query.filter_by(enabled=True).all()
         except Exception as e:
             print(f"Error fetching messages: {e}")
@@ -19,28 +27,28 @@ class DatabaseService:
 
     def get_message(self, message_id):
         try:
-            return self._session.query(Message).filter_by(id=message_id).first()
+            return self.session.query(Message).filter_by(id=message_id).first()
         except Exception as e:
             print(f"Error fetching message id={message_id}: {e}")
             return []
 
     def save_message_state(self, id: int, enabled: bool):
         try:
-            message = self._session.query(Message).filter_by(id=id).with_for_update().first()   
+            message = self.session.query(Message).filter_by(id=id).with_for_update().first()   
             if not message:
                 return None
             else:
                 message.enabled = enabled
                 return message.id
         except Exception as e:
-            self._session.rollback()
+            self.session.rollback()
             print(f"Error updating station: {e}")
             return None
         pass
 
     def save_message(self, message: Message):
         try:
-            existing_message = self._session.query(Message).filter_by(id=message.id).with_for_update().first()   
+            existing_message = self.session.query(Message).filter_by(id=message.id).with_for_update().first()   
             if not existing_message:
                 new_record = Message(
                     name = message.name,
@@ -52,8 +60,8 @@ class DatabaseService:
                     should_send_template = message.should_send_template,
                     enabled = message.enabled
                 )
-                self._session.add(new_record)
-                self._session.flush()
+                self.session.add(new_record)
+                self.session.flush()
                 return new_record.id
             else:
                 existing_message.channel_id = message.channel_id
@@ -66,13 +74,13 @@ class DatabaseService:
                 existing_message.enabled = message.enabled
                 return existing_message.id
         except Exception as e:
-            self._session.rollback()
+            self.session.rollback()
             print(f"Error updating message: {e}")
             return None
 
     def get_is_hook_enabled(self, bot_id: int) -> bool:
         try:
-            bot = self._session.query(Bot).filter_by(id=bot_id).first()
+            bot = self.session.query(Bot).filter_by(id=bot_id).first()
             return bot is not None and bot.hook_enabled
         except Exception as e:
             print(f'Error getting bot hook_enabled for bot {bot_id}: {e}')
@@ -80,7 +88,7 @@ class DatabaseService:
 
     def get_is_chat_allowed(self, chat_id: str, bot_id: int) -> bool:
         try:
-            chat = self._session.query(AllowedChat).filter_by(
+            chat = self.session.query(AllowedChat).filter_by(
                 chat_id=chat_id,
                 bot_id=bot_id
             ).first()
@@ -91,67 +99,67 @@ class DatabaseService:
 
     def get_allowed_chats(self):
         try:
-            return self._session.query(AllowedChat).all()
+            return self.session.query(AllowedChat).all()
         except Exception as e:
             print(f'Error getting allowed chats {str(e)}')
             return []
 
     def get_chat_requests(self):
         try:
-            return self._session.query(ChatRequest).all()
+            return self.session.query(ChatRequest).all()
         except Exception as e:
             print(f'Error getting chat requests: {str(e)}')
             return []
 
     def add_chat_request(self, chat_id, bot_id):
         try:
-            existing_request = self._session.query(ChatRequest).filter_by(chat_id=chat_id, bot_id=bot_id).first()
+            existing_request = self.session.query(ChatRequest).filter_by(chat_id=chat_id, bot_id=bot_id).first()
             if not existing_request:
                 new_record = ChatRequest(
                     chat_id = chat_id,
                     bot_id = bot_id
                 )
-                self._session.add(new_record)
+                self.session.add(new_record)
         except Exception as e:
             print(f'Error getting chat requests: {e}')
 
     def approve_chat_request(self, request_id):
         try:
-            chat_request = self._session.query(ChatRequest).filter_by(id=request_id).first()
+            chat_request = self.session.query(ChatRequest).filter_by(id=request_id).first()
             chat = AllowedChat(
                 chat_id = chat_request.chat_id,
                 bot_id = chat_request.bot_id
             )
-            self._session.add(chat)
-            self._session.delete(chat_request)
+            self.session.add(chat)
+            self.session.delete(chat_request)
         except Exception as e:
             print(f'Error approving chat request {request_id}: {e}')
 
     def reject_chat_request(self, request_id):
         try:
-            chat_request = self._session.query(ChatRequest).filter_by(id=request_id).first()
-            self._session.delete(chat_request)
+            chat_request = self.session.query(ChatRequest).filter_by(id=request_id).first()
+            self.session.delete(chat_request)
         except Exception as e:
             print(f'Error rejecting chat request {request_id}: {e}')
 
     def disallow_chat(self, chat_id: int):
         try:
-            allowed_chat = self._session.query(AllowedChat).filter_by(id=chat_id).first()
+            allowed_chat = self.session.query(AllowedChat).filter_by(id=chat_id).first()
             new_record = ChatRequest(
                 chat_id = allowed_chat.chat_id,
                 bot_id = allowed_chat.bot_id
             )
-            self._session.add(new_record)
-            self._session.delete(allowed_chat)
+            self.session.add(new_record)
+            self.session.delete(allowed_chat)
         except Exception as e:
             print(f'Error removing allowed chat {chat_id}: {e}')
 
     def get_station(self, station_id: str):
-        return self._session.query(Station).filter_by(station_id=station_id).first()
+        return self.session.query(Station).filter_by(station_id=station_id).first()
     
     def add_station(self, station: DeyeStation):
         try:
-            max_order = self._session.query(Station).order_by(Station.order.desc()).first().order
+            max_order = self.session.query(Station).order_by(Station.order.desc()).first().order
             existing_station = self.get_station(station.id)
             if existing_station == None:
                 new_record = Station(
@@ -173,8 +181,8 @@ class DatabaseService:
                     start_operating_time = datetime.fromtimestamp(station.start_operating_time, timezone.utc),
                     order = max_order + 1,
                 )
-                self._session.add(new_record)
-                self._session.flush()
+                self.session.add(new_record)
+                self.session.flush()
             else:
                 existing_station.connection_status = station.connection_status
                 existing_station.grid_interconnection_type = station.grid_interconnection_type
@@ -189,7 +197,7 @@ class DatabaseService:
                 raise ValueError(f'station not found')
 
             last_update_time = datetime.fromtimestamp(station_data.last_update_time, timezone.utc)
-            existing_record = self._session.query(StationData).filter_by(
+            existing_record = self.session.query(StationData).filter_by(
                 station_id=station.id,
                 last_update_time=last_update_time
             ).first()
@@ -212,14 +220,14 @@ class DatabaseService:
                     request_id = station_data.request_id,
                     wire_power = station_data.wire_power
                 )
-                self._session.add(new_record)
+                self.session.add(new_record)
         except Exception as e:
-            self._session.rollback()
+            self.session.rollback()
             print(f"Error updating station data: {e}")
 
     def get_stations(self, all: bool = False):
         try:
-            query = self._session.query(Station).order_by(Station.order.asc())
+            query = self.session.query(Station).order_by(Station.order.asc())
             return query.all() if all else query.filter_by(enabled=True).all()
         except Exception as e:
             print(f"Error fetching stations: {e}")
@@ -227,7 +235,7 @@ class DatabaseService:
 
     def save_station_data(self, id: int, enabled: bool, order: int, battery_capacity: float):
         try:
-            station = self._session.query(Station).filter_by(id=id).with_for_update().first()   
+            station = self.session.query(Station).filter_by(id=id).with_for_update().first()   
             if not station:
                 return None
             else:
@@ -236,14 +244,14 @@ class DatabaseService:
                 station.battery_capacity = battery_capacity
                 return station.id
         except Exception as e:
-            self._session.rollback()
+            self.session.rollback()
             print(f"Error updating station: {e}")
             return None
 
     def get_station_data_tuple(self, station_id: str):
         try:
             stations = (
-                self._session.query(StationData)
+                self.session.query(StationData)
                 .join(Station, Station.id == StationData.station_id)
                 .filter(Station.station_id == station_id)
                 .order_by(StationData.last_update_time.desc())
@@ -262,7 +270,7 @@ class DatabaseService:
     def get_last_station_data(self, station_id: int):
         try:
             station_data = (
-                self._session
+                self.session
                 .query(StationData)
                 .filter(StationData.station_id == station_id)
                 .order_by(StationData.last_update_time.desc())
@@ -279,7 +287,7 @@ class DatabaseService:
         try:
             min_date = datetime.now(timezone.utc) - timedelta(seconds=last_seconds)
             stations = (
-                self._session.query(StationData)
+                self.session.query(StationData)
                     .join(Station, Station.id == StationData.station_id)
                     .filter(Station.id == id, StationData.last_update_time >= min_date)
                     .order_by(StationData.last_update_time.asc())
@@ -304,7 +312,7 @@ class DatabaseService:
             raise TypeError(f"Column '{column_name}' is not a numeric type (Integer, Float, or Numeric).")
 
         query = (
-            self._session.query(func.avg(column))
+            self.session.query(func.avg(column))
             .filter(StationData.station_id == station_id)
             .filter(column.isnot(None))
             .filter(column != 0)
@@ -320,17 +328,17 @@ class DatabaseService:
 
     def delete_old_station_data(self):
         timeout = datetime.now(timezone.utc) - timedelta(days=self._statistic_keep_days)
-        self._session.query(StationData).filter(StationData.last_update_time < timeout).delete(synchronize_session=False)
+        self.session.query(StationData).filter(StationData.last_update_time < timeout).delete(synchronize_session=False)
 
     def get_user(self, user_name: str):
-        return self._session.query(User).filter_by(is_active=True, name=user_name).first()
+        return self.session.query(User).filter_by(is_active=True, name=user_name).first()
 
     def get_user_by_id(self, user_id: int):
-        return self._session.query(User).filter_by(id=user_id, is_active=True).first()
+        return self.session.query(User).filter_by(id=user_id, is_active=True).first()
 
     def get_user_by_reset_token(self, token: str):
         return (
-            self._session.query(User)
+            self.session.query(User)
             .filter_by(password_reset_token=token, is_active=True)
             .with_for_update()
             .first()
@@ -343,13 +351,13 @@ class DatabaseService:
                 name = user_name,
                 password = password
             )
-            self._session.add(user)
+            self.session.add(user)
 
     def update_user(self, user_id: int, username: str):
         existing_user = self.get_user_by_id(user_id)
         if existing_user:
             existing_user.name = username
-            self._session.commit()
+            self.session.commit()
 
     def change_password(self, user_id: int, new_password: str):
         existing_user = self.get_user_by_id(user_id)
@@ -357,22 +365,22 @@ class DatabaseService:
             existing_user.password = new_password
             existing_user.password_reset_token = None
             existing_user.reset_token_expiration = None
-            self._session.commit()
+            self.session.commit()
 
     def get_bots(self, all: bool = False):
-        query = self._session.query(Bot)
+        query = self.session.query(Bot)
         return query.all() if all else query.filter_by(enabled=True).all()
 
     def save_bot(self, id: int, token: str, enabled: bool, hook_enabled: bool):
         try:
-            bot = self._session.query(Bot).filter_by(id=id).with_for_update().first()   
+            bot = self.session.query(Bot).filter_by(id=id).with_for_update().first()   
             if not bot:
                 new_record = Bot(
                     bot_token = token,
                     enabled = enabled,
                     hook_enabled = hook_enabled
                 )
-                self._session.add(new_record)
+                self.session.add(new_record)
                 return new_record.id
             else:
                 bot.bot_token = token
@@ -380,21 +388,21 @@ class DatabaseService:
                 bot.hook_enabled = hook_enabled
                 return bot.id
         except Exception as e:
-            self._session.rollback()
+            self.session.rollback()
             print(f"Error updating bot: {e}")
             return None
 
     def get_buildings(self):
-        query = self._session.query(Building)
+        query = self.session.query(Building)
         return query.all()
 
     def get_building(self, building_id: int):
-        return self._session.query(Building).filter_by(id=building_id).first()
+        return self.session.query(Building).filter_by(id=building_id).first()
 
     def save_building(self, building: Building):
         try:
             existing_building = (
-                self._session
+                self.session
                 .query(Building)
                 .filter_by(id=building.id)
                 .with_for_update()
@@ -408,8 +416,8 @@ class DatabaseService:
                     station_id = building.station_id,
                     report_user_id = building.report_user_id,
                 )
-                self._session.add(new_record)
-                self._session.flush()
+                self.session.add(new_record)
+                self.session.flush()
                 return new_record.id
             else:
                 existing_building.name = building.name
@@ -418,24 +426,24 @@ class DatabaseService:
                 existing_building.report_user_id = building.report_user_id
                 return existing_building.id
         except Exception as e:
-            self._session.rollback()
+            self.session.rollback()
             print(f"Error updating building: {e}")
             return None
 
     def delete_building(self, building_id: int):
         try:
-            building = self._session.query(Building).filter_by(id=building_id).first()
+            building = self.session.query(Building).filter_by(id=building_id).first()
             if building:
-                self._session.delete(building)
+                self.session.delete(building)
                 return True
             return False
         except Exception as e:
-            self._session.rollback()
+            self.session.rollback()
             print(f"Error deleting building: {e}")
             return False
 
     def get_dashboard_config(self):
-        query = self._session.query(DashboardConfig)
+        query = self.session.query(DashboardConfig)
         return query.all()
 
     def create_dashboard_config(self, key: str, value: str):
@@ -444,30 +452,30 @@ class DatabaseService:
         Returns the id of the created/updated record or None on error.
         """
         try:
-            existing = self._session.query(DashboardConfig).filter_by(key=key).with_for_update().first()
+            existing = self.session.query(DashboardConfig).filter_by(key=key).with_for_update().first()
             if not existing:
                 new_record = DashboardConfig(
                     key = key,
                     value = value
                 )
-                self._session.add(new_record)
-                self._session.flush()
+                self.session.add(new_record)
+                self.session.flush()
                 return new_record.id
             else:
                 existing.value = value
                 return existing.id
         except Exception as e:
-            self._session.rollback()
+            self.session.rollback()
             print(f"Error creating/updating dashboard config {key}: {e}")
             return None
 
     def get_users(self, all: bool = False):
-        query = self._session.query(User)
+        query = self.session.query(User)
         return query.all() if all else query.filter_by(is_active=True).all()
 
     def save_user(self, id: int, name: str, password: str | None, is_active: bool, is_reporter: bool):
         try:
-            user = self._session.query(User).filter_by(id=id).with_for_update().first()   
+            user = self.session.query(User).filter_by(id=id).with_for_update().first()   
             if not user:
                 new_record = User(
                     name = name,
@@ -475,8 +483,8 @@ class DatabaseService:
                     is_active = is_active,
                     is_reporter = is_reporter
                 )
-                self._session.add(new_record)
-                self._session.flush()
+                self.session.add(new_record)
+                self.session.flush()
                 return new_record.id
             else:
                 user.name = name
@@ -488,49 +496,49 @@ class DatabaseService:
                     user.password = password
                 return user.id
         except Exception as e:
-            self._session.rollback()
+            self.session.rollback()
             print(f"Error updating user: {e}")
             return None
 
     def delete_user(self, id: int):
         try:
-            user = self._session.query(User).filter_by(id=id).first()
+            user = self.session.query(User).filter_by(id=id).first()
             if user:
-                self._session.delete(user)
+                self.session.delete(user)
                 return True
             return False
         except Exception as e:
-            self._session.rollback()
+            self.session.rollback()
             print(f"Error deleting user: {e}")
             return False
 
-    def generate_user_api_token(self, id: int, token: str):
+    def save_user_api_token(self, id: int, token: str):
         try:
-            user = self._session.query(User).filter_by(id=id).with_for_update().first()
+            user = self.session.query(User).filter_by(id=id).with_for_update().first()
             if user:
                 user.api_key = token
                 return token
             return None
         except Exception as e:
-            self._session.rollback()
+            self.session.rollback()
             print(f"Error generating API token for user: {e}")
             return None
 
     def delete_user_api_token(self, id: int):
         try:
-            user = self._session.query(User).filter_by(id=id).with_for_update().first()
+            user = self.session.query(User).filter_by(id=id).with_for_update().first()
             if user:
                 user.api_key = None
                 return True
             return False
         except Exception as e:
-            self._session.rollback()
+            self.session.rollback()
             print(f"Error deleting API token for user: {e}")
             return False
 
     def get_ext_data(self):
         try:
-            return self._session.query(ExtData).all()
+            return self.session.query(ExtData).all()
         except Exception as e:
             print(f'Error getting ext data: {e}')
             return []
@@ -538,7 +546,7 @@ class DatabaseService:
     def get_latest_ext_data_by_user_id(self, user_id: int):
         try:
             return (
-                self._session
+                self.session
                 .query(ExtData)
                 .filter_by(user_id=user_id)
                 .order_by(ExtData.received_at.desc())
@@ -560,11 +568,11 @@ class DatabaseService:
                 grid_state = grid_state,
                 received_at = datetime.now(timezone.utc)
             )
-            self._session.add(new_data)
-            self._session.flush()
+            self.session.add(new_data)
+            self.session.flush()
             return new_data.id
         except Exception as e:
-            self._session.rollback()
+            self.session.rollback()
             print(f"Error saving ext data: {e}")
             return None
 
@@ -572,7 +580,7 @@ class DatabaseService:
         """Get the last ext_data record before a specific date"""
         try:
             record = (
-                self._session
+                self.session
                 .query(ExtData)
                 .filter(
                     ExtData.user_id == user_id,
@@ -590,7 +598,7 @@ class DatabaseService:
         """Get power statistics for a user between two dates"""
         try:
             records = (
-                self._session
+                self.session
                 .query(ExtData)
                 .filter(
                     ExtData.user_id == user_id,
@@ -607,7 +615,7 @@ class DatabaseService:
 
     def delete_old_ext_data(self):
         timeout = datetime.now(timezone.utc) - timedelta(days=self._statistic_keep_days)
-        self._session.query(ExtData).filter(ExtData.received_at < timeout).delete(synchronize_session=False)
+        self.session.query(ExtData).filter(ExtData.received_at < timeout).delete(synchronize_session=False)
 
     def get_lookup_values(self, lookup_name: str):        
         lookup_map = {
@@ -621,7 +629,7 @@ class DatabaseService:
         if model_class is None:
             return []
 
-        return model_class.get_lookup_values(self._session)
+        return model_class.get_lookup_values(self.session)
 
     def save_changes(self):
-        self._session.commit()
+        self.session.commit()

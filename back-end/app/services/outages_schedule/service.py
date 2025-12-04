@@ -1,20 +1,22 @@
-import string
+from injector import inject
 from pydantic import ValidationError
 import requests
+from datetime import datetime, timezone
+
 from app.services.base import BaseService
-from datetime import datetime, timezone, timedelta
+from shared.services.events.service import EventsService
 from .models import SchedulesResponse, DayStatus
 
-class OutagesScheduleService(BaseService):
 
-    def __init__(self, events):
+@inject
+class OutagesScheduleService(BaseService):
+    def __init__(self, events: EventsService):
         super().__init__(events)
         self._cache = SchedulesResponse({})
 
-    def get_schedule(self, queue: string):
+    def get_schedule(self, queue: str):
         schedule = self._cache.root.get(queue)
         return schedule
-
 
     def update(self, region: int, dso: int):
         yasno_url = f"https://app.yasno.ua/api/blackout-service/public/shutdowns/regions/{region}/dsos/{dso}/planned-outages"

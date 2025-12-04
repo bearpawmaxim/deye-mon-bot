@@ -3,7 +3,7 @@
 import os
 from sys import exit
 
-from app.config import config_dict
+from app.config import Config_dict
 from app import create_app
 
 DEBUG = (os.getenv('DEBUG', 'False') == 'True')

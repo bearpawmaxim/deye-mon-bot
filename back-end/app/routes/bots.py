@@ -1,46 +1,59 @@
-from flask import jsonify, request
-from flask_jwt_extended import jwt_required
+from fastapi import FastAPI, Depends, HTTPException, status
+from pydantic import BaseModel
+from typing import Optional, List
 from app.services import Services
-from app.utils.jwt_decorators import jwt_required
+from app.utils.jwt_dependencies import jwt_required
+
+# Pydantic models for request/response
+class SaveBotRequest(BaseModel):
+    id: Optional[int] = None
+    token: str
+    enabled: bool = False
+    hookEnabled: bool = False
+
+class BotResponse(BaseModel):
+    id: int
+    name: str
+    token: str
+    enabled: bool
+    hookEnabled: bool
 
 
-def register(app, services: Services):
+def register(app: FastAPI, services: Services):
 
-    @app.route('/api/bots/bots', methods=['POST'])
-    @jwt_required()
-    def get_bots():
+    @app.post("/api/bots/bots", response_model=List[BotResponse])
+    def get_bots(claims=Depends(jwt_required)):
         bots = services.database.get_bots(all=True)
 
         def process_bot(bot):
-            bot_name = 'Invalid bot token'
+            bot_name = "Invalid bot token"
             try:
                 bot_name = services.telegram.get_bot_info(bot.id).username
-            except:
-                print(f'Cannot get bot info for bot {bot.id}')
-            return {
-                'id': bot.id,
-                'name': bot_name,
-                'token': bot.bot_token,
-                'enabled': bot.enabled,
-                'hookEnabled': bot.hook_enabled,
-            }
+            except Exception:
+                print(f"Cannot get bot info for bot {bot.id}")
+            return BotResponse(
+                id=bot.id,
+                name=bot_name,
+                token=bot.bot_token,
+                enabled=bot.enabled,
+                hookEnabled=bot.hook_enabled,
+            )
 
         futures = [services.executor.submit(process_bot, bot) for bot in bots]
-        bots_dict = [future.result() for future in futures]
+        bots_list = [future.result() for future in futures]
 
-        return jsonify(bots_dict)
-    
-    @app.route('/api/bots/save', methods=['PUT'])
-    @jwt_required()
-    def save_bot():
-        id = request.json.get("id", None)
-        token = request.json.get("token", None)
-        enabled = request.json.get("enabled", False)
-        hook_enabled = request.json.get("hookEnabled", False)
-        bot_id = services.database.save_bot(id, token, enabled, hook_enabled)
-        services.db.session.commit()
-        if enabled:
-            services.telegram.add_bot(bot_id, token)
+        return bots_list
+
+    @app.put("/api/bots/save")
+    def save_bot(body: SaveBotRequest, claims=Depends(jwt_required)):
+        bot_id = services.database.save_bot(
+            body.id, body.token, body.enabled, body.hookEnabled
+        )
+        services.database.save_changes()
+
+        if body.enabled:
+            services.telegram.add_bot(bot_id, body.token)
         else:
             services.telegram.remove_bot(bot_id)
-        return jsonify({ 'success': True, 'id': bot_id }), 200
+
+        return {"success": True, "id": bot_id}

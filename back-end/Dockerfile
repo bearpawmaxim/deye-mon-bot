@@ -5,7 +5,6 @@ WORKDIR /deye-mon-bot-api
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV FLASK_APP run.py
 ENV DEBUG True
 
 COPY back-end/requirements.txt /deye-mon-bot-api/
@@ -18,4 +17,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY back-end/ /deye-mon-bot-api/
 
 # gunicorn
-CMD ["gunicorn", "-k", "gevent", "--config", "gunicorn-cfg.py", "run:app"]
+CMD ["uvicorn", "run:app", "--host", "0.0.0.0", "--port", "5005"]

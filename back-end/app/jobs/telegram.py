@@ -1,18 +1,25 @@
-from app import Config
-from app.services import Services
+from injector import Injector
+from apscheduler.schedulers.background import BackgroundScheduler
+
+from app.config import Config
+from app.services import BotService, DatabaseService
+from . import db_job
+
+def register(config: Config, injector: Injector):
+
+    @db_job(injector)
+    def periodic_send_message():
+        bot: BotService = injector.get(BotService)
+        database: DatabaseService = injector.get(DatabaseService)
+
+        bot.periodic_send()
+        database.save_changes()
 
 
-def register(config: Config, services: Services):
-    scheduler = services.scheduler
+    scheduler = injector.get(BackgroundScheduler)
     scheduler.add_job(
-        'periodic_send_message',
-        periodic_send_message,
+        id      = 'periodic_send_message',
+        func    = periodic_send_message,
         trigger = 'interval',
         seconds = 60,
-        args    = [services]
     )
-
-def periodic_send_message(services: Services):
-    with services.scheduler.app.app_context():
-        services.bot.periodic_send()
-        services.db.session.commit()

@@ -2,7 +2,7 @@ import threading
 from queue import Queue
 from typing import Set
 
-from .models import EventItem
+from .models import EventItem, EventsServiceConfig
 from .events_transport import EventsTransport, RedisTransport, LocalTransport
 
 
@@ -10,12 +10,14 @@ class EventsService:
     REDIS_PUBLIC_CHANNEL = "sse_public"
     REDIS_PRIVATE_CHANNEL = "sse_private"
 
-    def __init__(self, redis_url: str, is_debug: bool = False):
-        if is_debug:
+    def __init__(self, config: EventsServiceConfig):
+        print(config)
+
+        if config.is_debug:
             self.transport: EventsTransport = LocalTransport()
         else:
             self.transport: EventsTransport = RedisTransport(
-                redis_url,
+                config.redis_url,
                 self.REDIS_PUBLIC_CHANNEL,
                 self.REDIS_PRIVATE_CHANNEL
             )

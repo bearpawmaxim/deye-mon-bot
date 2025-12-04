@@ -1,11 +1,10 @@
-from flask_jwt_extended import jwt_required
+from fastapi import Depends
 from app.services import Services
-from app.utils.jwt_decorators import jwt_required
+from app.utils.jwt_dependencies import jwt_required
 
 
 def register(app, services: Services):
 
-    @app.route('/')
-    @jwt_required()
-    def index():
+    @app.get('/')
+    def index(claims=Depends(jwt_required)):
         return 'Something weird happened if you see this...'

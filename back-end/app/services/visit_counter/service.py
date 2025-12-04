@@ -1,21 +1,30 @@
 from datetime import date
 from typing import Dict, Any
+from injector import inject
 from sqlalchemy import func
+
+from app.services.database import DBSession
 from app.models import VisitCounter, DailyVisitCounter
 from app.services.base import BaseService
+from shared.services.events.service import EventsService
 
+
+@inject
 class VisitCounterService(BaseService):
-    def __init__(self, db, events):
+    def __init__(self, session_factory: DBSession, events: EventsService):
         super().__init__(events)
-        self._db = db
-        self._session = self._db.session
+        self._session_factory = session_factory
+
+    @property
+    def session(self):
+        return self._session_factory()
 
     def add_visit(self, visit_type: str, visit_date_str: str | None) -> None:
         if visit_type == "total":
-            counter = self._session.query(VisitCounter).first()
+            counter = self.session.query(VisitCounter).first()
             if not counter:
                 counter = VisitCounter(count=0)
-                self._session.add(counter)
+                self.session.add(counter)
             counter.count += 1
 
         elif visit_type == "daily":
@@ -32,19 +41,19 @@ class VisitCounterService(BaseService):
             )
             if not counter:
                 counter = DailyVisitCounter(date=visit_date, count=0)
-                self._session.add(counter)
+                self.session.add(counter)
             counter.count += 1
 
         self.broadcast_public("visits_updated")
 
 
     def get_today_stats(self) -> Dict[str, Any]:
-        total = self._session.query(VisitCounter).first()
+        total = self.session.query(VisitCounter).first()
         total_count = total.count if total else 0
 
         today = date.today()
         daily = (
-            self._session
+            self.session
             .query(DailyVisitCounter)
             .filter(func.date(DailyVisitCounter.date) == today)
             .order_by(DailyVisitCounter.date)
