@@ -105,7 +105,7 @@ export const Navbar: FC<NavbarProps> = ({ user, isNavbarCollapsed, toggleNavbar,
           <Group justify="space-between" align="center" w="100%" gap={isNavbarCollapsed? 0 : 'xs'}>
             <Grid align="center" justify="space-evenly">
                <Grid.Col span='content'>
-                <Image h={40} w={40} src={iconSrc} alt="Logo" />
+                <Image h={40} w={40} src={iconSrc} alt="Logo" style={isNavbarCollapsed ? { marginLeft: -7 } : undefined} />
               </Grid.Col> 
               {!isNavbarCollapsed && (
                 <Grid.Col span='auto'>

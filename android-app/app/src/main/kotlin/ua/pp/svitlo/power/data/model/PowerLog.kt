@@ -45,12 +45,11 @@ data class PowerLogResponse(
         }
     }
 
-    fun getPaddedPeriods(): List<PowerPeriod> {
+    fun getPaddedPeriods(selectedDate: java.time.LocalDate = java.time.LocalDate.now()): List<PowerPeriod> {
         if (periods.isEmpty()) return periods
         
         val systemZone = java.time.ZoneId.systemDefault()
-        val now = java.time.ZonedDateTime.now(systemZone)
-        val todayStart = now.toLocalDate().atStartOfDay(systemZone)
+        val dayStart = selectedDate.atStartOfDay(systemZone)
         
         val adjustedPeriods = mutableListOf<PowerPeriod>()
         
@@ -58,16 +57,16 @@ data class PowerLogResponse(
             val periodStart = java.time.ZonedDateTime.parse(period.startTime).withZoneSameInstant(systemZone)
             val periodEnd = java.time.ZonedDateTime.parse(period.endTime).withZoneSameInstant(systemZone)
             
-            if (periodStart.isBefore(todayStart)) {
-                // Если период заканчивается до начала сегодняшнего дня - пропускаем
-                if (periodEnd.isBefore(todayStart) || periodEnd.isEqual(todayStart)) {
+            if (periodStart.isBefore(dayStart)) {
+                // Если период заканчивается до начала выбранного дня - пропускаем
+                if (periodEnd.isBefore(dayStart) || periodEnd.isEqual(dayStart)) {
                     return@forEach
                 }
                 
-                val adjustedDuration = java.time.Duration.between(todayStart, periodEnd).seconds.toInt()
+                val adjustedDuration = java.time.Duration.between(dayStart, periodEnd).seconds.toInt()
                 adjustedPeriods.add(
                     PowerPeriod(
-                        startTime = todayStart.toString(),
+                        startTime = dayStart.toString(),
                         endTime = periodEnd.toString(),
                         durationSeconds = adjustedDuration,
                         isAvailable = period.isAvailable

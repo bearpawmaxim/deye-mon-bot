@@ -8,18 +8,21 @@ const initialState: LookupValuesState = {
     message: [],
     station: [],
     user: [],
+    reporter_user: [],
   },
   loading: {
     building: false,
     message: false,
     station: false,
     user: false,
+    reporter_user: false,
   },
   error: {
     building: null,
     message: null,
     station: null,
     user: null,
+    reporter_user: null,
   },
 };
 

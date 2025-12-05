@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import ua.pp.svitlo.power.data.model.PowerLogResponse
 import ua.pp.svitlo.power.data.repository.PowerRepository
+import java.time.LocalDate
 
 class BuildingDetailViewModel : ViewModel() {
     private val repository = PowerRepository()
@@ -15,13 +16,17 @@ class BuildingDetailViewModel : ViewModel() {
     private val _powerLogsState = MutableStateFlow<UiState<PowerLogResponse>>(UiState.Loading)
     val powerLogsState: StateFlow<UiState<PowerLogResponse>> = _powerLogsState.asStateFlow()
     
-    fun loadPowerLogs(buildingId: Int, silent: Boolean = false) {
+    private val _selectedDate = MutableStateFlow(LocalDate.now())
+    val selectedDate: StateFlow<LocalDate> = _selectedDate.asStateFlow()
+    
+    fun loadPowerLogs(buildingId: Int, silent: Boolean = false, date: LocalDate = _selectedDate.value) {
+        _selectedDate.value = date
         viewModelScope.launch {
             // Only show loading state if we don't have data yet (initial load)
             if (!silent || _powerLogsState.value is UiState.Loading || _powerLogsState.value is UiState.Error) {
                 _powerLogsState.value = UiState.Loading
             }
-            val (startDate, endDate) = repository.getTodayDateRange()
+            val (startDate, endDate) = repository.getDateRangeForDate(date)
             repository.getPowerLogs(buildingId, startDate, endDate)
                 .onSuccess { _powerLogsState.value = UiState.Success(it) }
                 .onFailure { 

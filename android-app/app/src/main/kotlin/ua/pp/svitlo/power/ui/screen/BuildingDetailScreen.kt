@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,6 +27,12 @@ import ua.pp.svitlo.power.ui.theme.PowerRed
 import ua.pp.svitlo.power.ui.theme.PowerOrange
 import ua.pp.svitlo.power.ui.viewmodel.BuildingDetailViewModel
 import ua.pp.svitlo.power.ui.viewmodel.UiState
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
+enum class DateSelection {
+    TODAY, YESTERDAY, CUSTOM
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,19 +43,32 @@ fun BuildingDetailScreen(
     viewModel: BuildingDetailViewModel = viewModel()
 ) {
     val powerLogsState by viewModel.powerLogsState.collectAsState()
+    val selectedDate by viewModel.selectedDate.collectAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
     
     // Real-time updates for ongoing period
     var currentTime by remember { mutableStateOf(System.currentTimeMillis()) }
     
+    // Date selection state
+    val today = remember { LocalDate.now() }
+    val yesterday = remember { today.minusDays(1) }
+    var dateSelection by remember { mutableStateOf(DateSelection.TODAY) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var customDate by remember { mutableStateOf<LocalDate?>(null) }
+    
+    // DatePicker state
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = System.currentTimeMillis()
+    )
+    
     LaunchedEffect(buildingId) {
-        viewModel.loadPowerLogs(buildingId)
+        viewModel.loadPowerLogs(buildingId, date = today)
     }
     
     // Refresh data when screen becomes visible (app returns from background)
-    LaunchedEffect(lifecycleOwner, buildingId) {
+    LaunchedEffect(lifecycleOwner, buildingId, selectedDate) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            viewModel.loadPowerLogs(buildingId, silent = true) // Silent refresh in background
+            viewModel.loadPowerLogs(buildingId, silent = true, date = selectedDate)
         }
     }
     
@@ -57,6 +77,37 @@ fun BuildingDetailScreen(
         while (true) {
             kotlinx.coroutines.delay(1000)
             currentTime = System.currentTimeMillis()
+        }
+    }
+    
+    // Date picker dialog
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val selected = java.time.Instant.ofEpochMilli(millis)
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toLocalDate()
+                            customDate = selected
+                            dateSelection = DateSelection.CUSTOM
+                            viewModel.loadPowerLogs(buildingId, date = selected)
+                        }
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
         }
     }
     
@@ -82,11 +133,35 @@ fun BuildingDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.loadPowerLogs(buildingId) }) {
+                    IconButton(onClick = { viewModel.loadPowerLogs(buildingId, date = selectedDate) }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                     }
                 }
             )
+        },
+        bottomBar = {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                tonalElevation = 3.dp,
+                shadowElevation = 8.dp
+            ) {
+                DateSelectionChips(
+                    dateSelection = dateSelection,
+                    customDate = customDate,
+                    onSelectToday = {
+                        dateSelection = DateSelection.TODAY
+                        viewModel.loadPowerLogs(buildingId, date = today)
+                    },
+                    onSelectYesterday = {
+                        dateSelection = DateSelection.YESTERDAY
+                        viewModel.loadPowerLogs(buildingId, date = yesterday)
+                    },
+                    onSelectCustom = {
+                        showDatePicker = true
+                    },
+                    modifier = Modifier.padding(12.dp)
+                )
+            }
         }
     ) { padding ->
         when (val state = powerLogsState) {
@@ -101,8 +176,8 @@ fun BuildingDetailScreen(
                 }
             }
             is UiState.Success -> {
-                val paddedPeriods = state.data.getPaddedPeriods()
-                val isOngoing = state.data.isLastPeriodOngoing()
+                val paddedPeriods = state.data.getPaddedPeriods(selectedDate)
+                val isOngoing = state.data.isLastPeriodOngoing() && selectedDate == today
                 
                 LazyColumn(
                     modifier = Modifier
@@ -113,8 +188,13 @@ fun BuildingDetailScreen(
                 ) {
                     // Summary Card
                     item {
+                        val dateLabel = when (dateSelection) {
+                            DateSelection.TODAY -> "Today's Statistics"
+                            DateSelection.YESTERDAY -> "Yesterday's Statistics"
+                            DateSelection.CUSTOM -> customDate?.format(DateTimeFormatter.ofPattern("dd MMM yyyy")) ?: "Statistics"
+                        }
                         Text(
-                            text = "Today's Statistics",
+                            text = dateLabel,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -329,6 +409,58 @@ fun CompactStatItem(
                 )
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DateSelectionChips(
+    dateSelection: DateSelection,
+    customDate: LocalDate?,
+    onSelectToday: () -> Unit,
+    onSelectYesterday: () -> Unit,
+    onSelectCustom: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        FilterChip(
+            selected = dateSelection == DateSelection.TODAY,
+            onClick = onSelectToday,
+            label = { Text("Today") },
+            modifier = Modifier.weight(1f)
+        )
+        
+        FilterChip(
+            selected = dateSelection == DateSelection.YESTERDAY,
+            onClick = onSelectYesterday,
+            label = { Text("Yesterday") },
+            modifier = Modifier.weight(1f)
+        )
+        
+        FilterChip(
+            selected = dateSelection == DateSelection.CUSTOM,
+            onClick = onSelectCustom,
+            label = { 
+                Text(
+                    if (dateSelection == DateSelection.CUSTOM && customDate != null) {
+                        customDate.format(DateTimeFormatter.ofPattern("dd.MM"))
+                    } else {
+                        "Custom"
+                    }
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.CalendarMonth,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+            },
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 

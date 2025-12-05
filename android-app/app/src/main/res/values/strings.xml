@@ -26,5 +26,9 @@
     <string name="discharging">Discharging</string>
     <string name="idle">Idle</string>
     <string name="battery_level">%d%%</string>
+    
+    <!-- Widget -->
+    <string name="widget_description">Shows power outages schedule</string>
+    <string name="widget_loading">Loading widget…</string>
 </resources>
 

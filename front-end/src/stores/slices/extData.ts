@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ExtDataItem, ExtDataState } from "../types";
-import { fetchExtData } from "../thunks";
+import { createExtData, deleteExtData, fetchExtData } from "../thunks";
 
 const initialState: ExtDataState = {
   extData: [],
@@ -25,6 +25,29 @@ export const extDataSlice = createSlice({
         state.loading = false;
       })
       .addCase(fetchExtData.rejected, (state, action: PayloadAction<unknown>) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(createExtData.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createExtData.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(createExtData.rejected, (state, action: PayloadAction<unknown>) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(deleteExtData.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteExtData.fulfilled, (state, action: PayloadAction<number>) => {
+        state.extData = state.extData.filter(item => item.id !== action.payload);
+        state.loading = false;
+      })
+      .addCase(deleteExtData.rejected, (state, action: PayloadAction<unknown>) => {
         state.loading = false;
         state.error = action.payload as string;
       });

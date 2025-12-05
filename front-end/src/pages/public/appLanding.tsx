@@ -1,8 +1,10 @@
-import { Container, Title, Text, Button, Group, Stack, Card, Grid, Box, SimpleGrid, Image, useMantineColorScheme } from '@mantine/core';
+import { Container, Title, Text, Button, Group, Stack, Card, Grid, Box, SimpleGrid, Image, useMantineColorScheme, Divider, Anchor } from '@mantine/core';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IconName } from '@fortawesome/fontawesome-svg-core';
 import { useState, useEffect } from 'react';
 import { ThemePicker } from '../../components';
+import { Authors } from '../../layouts/components/authors';
+import { VisitTracker } from '../../layouts/components/visitTracker';
 import classes from './appLanding.module.css';
 import iconDark from '../../assets/icon_dark_with_text.png';
 import iconLight from '../../assets/icon_light_with_text.png';
@@ -103,7 +105,11 @@ export const AppLandingPage = () => {
       <Stack gap="xl" py="xl">
         {/* Header with Theme Switcher */}
         <Group justify="space-between" align="center">
-          <Box style={{ flex: 1 }} />
+          <Anchor href="/" underline="never">
+            <Button variant="subtle" leftSection={<FontAwesomeIcon icon="home" />}>
+              Go to Main Page
+            </Button>
+          </Anchor>
           <ThemePicker isNavbarCollapsed={false} size="md" />
         </Group>
 
@@ -221,6 +227,17 @@ export const AppLandingPage = () => {
             </Button>
           </Stack>
         </Card>
+
+        {/* Footer */}
+        <Divider my="lg" />
+        <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md" mb="md">
+          <Box ta={{ base: 'center', md: 'left' }}>
+            <Authors />
+          </Box>
+          <Box ta={{ base: 'center', md: 'right' }}>
+            <VisitTracker />
+          </Box>
+        </SimpleGrid>
       </Stack>
     </Container>
   );
