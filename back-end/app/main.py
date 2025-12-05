@@ -2,14 +2,14 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from sqlalchemy.orm import scoped_session
 
-from app.config import Config
+from app.settings import Settings
 from app.jobs import register_jobs
 from app.routes import register_routes
 from app.services import Services
 from .container import init_container
 
 
-def register_extensions(services: Services, config: Config):
+def register_extensions(services: Services, settings: Settings):
     services.scheduler.start()
 
 def create_user(config, services: Services):
@@ -30,7 +30,7 @@ def fetch_stations(services: Services):
         services.database.add_station(station)
     services.database.save_changes()
 
-def create_app(config: Config) -> FastAPI:
+def create_app(settings: Settings) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         yield
@@ -39,17 +39,17 @@ def create_app(config: Config) -> FastAPI:
     app = FastAPI(
         title = "Deye Monitor Bot",
         version = "1.0.0",
-        debug = config.DEBUG,
+        debug = settings.DEBUG,
         lifespan = lifespan
     )
-    injector = init_container(app, config)
+    injector = init_container(app, settings)
 
     services = injector.get(Services)
 
-    register_extensions(services, config)
+    register_extensions(services, settings)
     register_routes(app, services)
-    register_jobs(config, injector)
-    create_user(config, services)
+    register_jobs(settings, injector)
+    create_user(settings, services)
     setup_bots(services)
     fetch_stations(services)
 

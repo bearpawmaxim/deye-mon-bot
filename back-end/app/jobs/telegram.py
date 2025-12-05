@@ -1,11 +1,11 @@
 from injector import Injector
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from app.config import Config
+from app.settings import Settings
 from app.services import BotService, DatabaseService
 from . import db_job
 
-def register(config: Config, injector: Injector):
+def register(settings: Settings, injector: Injector):
 
     @db_job(injector)
     def periodic_send_message():

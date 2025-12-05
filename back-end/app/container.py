@@ -6,7 +6,7 @@ from injector import Binder, Injector, Module, singleton, noscope
 from apscheduler.schedulers.background import BlockingScheduler, BackgroundScheduler
 from concurrent.futures import Executor, ThreadPoolExecutor
 
-from app.config import Config
+from app.settings import Settings
 from shared.services.events.models import EventsServiceConfig
 from .services.authorization import AuthorizationService
 from .services.database import DatabaseService, DBSession
@@ -20,13 +20,13 @@ from .services import Services
 
 
 class Container(Module):
-    def __init__(self, config):
-        self._config = config
+    def __init__(self, settings: Settings):
+        self._settings = settings
 
     def create_sqlalchemy_engine(self):
         return create_engine(
-            self._config.SQLALCHEMY_DATABASE_URI,
-            echo=self._config.DEBUG,
+            self._settings.SQLALCHEMY_DATABASE_URI,
+            echo=self._settings.DEBUG,
             future=True
         )
 
@@ -41,7 +41,7 @@ class Container(Module):
         return scoped_session(factory)
 
     def configure(self, binder: Binder):
-        binder.bind(Config, to=self._config, scope=singleton)
+        binder.bind(Settings, to=self._settings, scope=singleton)
 
         engine = self.create_sqlalchemy_engine()
         binder.bind(Engine, to=engine, scope=singleton)
@@ -56,7 +56,7 @@ class Container(Module):
         binder.bind(DeyeConfig, scope=singleton)
         binder.bind(DeyeApiService, scope=singleton)
 
-        events_service_config = EventsServiceConfig(self._config.REDIS_URL, self._config.DEBUG)
+        events_service_config = EventsServiceConfig(self._settings.REDIS_URL, self._settings.DEBUG)
         binder.bind(EventsServiceConfig, to=events_service_config, scope=singleton)
         binder.bind(EventsService, to=EventsService(events_service_config), scope=singleton)
         binder.bind(OutagesScheduleService, scope=singleton)
@@ -76,7 +76,7 @@ class Container(Module):
         binder.bind(Services, scope=noscope)
 
 
-def init_container(app: FastAPI, config: Config) -> Injector:
+def init_container(app: FastAPI, config: Settings) -> Injector:
     container = Container(config)
     injector = Injector([container])
     attach_injector(app, injector)

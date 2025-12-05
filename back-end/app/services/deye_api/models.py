@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from injector import inject
 
-from app.config import Config
+from app.settings import Settings
 
 
 @inject
@@ -13,13 +13,13 @@ class DeyeConfig:
     password: str
     sync_stations_on_poll: bool
 
-    def __init__(self, config: Config):
-        self.base_url = config.DEYE_BASE_URL
-        self.app_id = config.DEYE_APP_ID
-        self.app_secret = config.DEYE_APP_SECRET
-        self.email = config.DEYE_EMAIL
-        self.password = config.DEYE_PASSWORD
-        self.sync_stations_on_poll = config.DEYE_SYNC_STATIONS_ON_POLL
+    def __init__(self, settings: Settings):
+        self.base_url = settings.DEYE_BASE_URL
+        self.app_id = settings.DEYE_APP_ID
+        self.app_secret = settings.DEYE_APP_SECRET
+        self.email = settings.DEYE_EMAIL
+        self.password = settings.DEYE_PASSWORD
+        self.sync_stations_on_poll = settings.DEYE_SYNC_STATIONS_ON_POLL
 
     def __str__(self):
         return (

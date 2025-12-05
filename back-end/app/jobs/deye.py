@@ -2,12 +2,12 @@ from datetime import datetime, timedelta
 from injector import Injector
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from app.config import Config
+from app.settings import Settings
 from app.services import DeyeApiService, DatabaseService
 from shared.services.events.service import EventsService
 from . import db_job
 
-def register(config: Config, injector: Injector):
+def register(settings: Settings, injector: Injector):
     scheduler = injector.get(BackgroundScheduler)
 
     @db_job(injector)
@@ -41,11 +41,10 @@ def register(config: Config, injector: Injector):
     
     @db_job(injector)
     def check_deye_status():
-        config: Config = injector.get(Config)
         deye_api: DeyeApiService = injector.get(DeyeApiService)
         database: DatabaseService = injector.get(DatabaseService)
         events: EventsService = injector.get(EventsService)
-        if config.DEYE_SYNC_STATIONS_ON_POLL:
+        if settings.DEYE_SYNC_STATIONS_ON_POLL:
             sync_deye_stations()
             database.save_changes()
 
@@ -82,9 +81,9 @@ def register(config: Config, injector: Injector):
         id      = 'check_deye_status',
         func    = check_deye_status,
         trigger = 'interval',
-        seconds = int(config.DEYE_FETCH_INTERVAL),
+        seconds = int(settings.DEYE_FETCH_INTERVAL),
     )
-    if not config.DEYE_SYNC_STATIONS_ON_POLL:
+    if not settings.DEYE_SYNC_STATIONS_ON_POLL:
         scheduler.add_job(
             id      = 'sync_deye_stations',
             func    = sync_deye_stations,

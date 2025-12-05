@@ -7,7 +7,7 @@ from injector import inject
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 
-from app.config import Config
+from app.settings import Settings
 from app.services.database.service import DatabaseService
 from app.models import User
 
@@ -19,9 +19,9 @@ ALGORITHM = "HS256"
 
 @inject
 class AuthorizationService:
-    def __init__(self, database: DatabaseService, config: Config):
+    def __init__(self, database: DatabaseService, settings: Settings):
         self._database = database
-        self._config: Config = config
+        self._settings: Settings = settings
 
     def create_access_token(
         self,
@@ -45,7 +45,7 @@ class AuthorizationService:
         if additional_claims:
             payload.update(additional_claims)
 
-        return jwt.encode(payload, self._config.JWT_SECRET_KEY, algorithm=ALGORITHM)
+        return jwt.encode(payload, self._settings.JWT_SECRET_KEY, algorithm=ALGORITHM)
 
     def create_refresh_token(self, identity: str, expires: timedelta):
         now = datetime.now(timezone.utc)
@@ -56,16 +56,16 @@ class AuthorizationService:
             "iat": now,
             "exp": expiration,
         }
-        return jwt.encode(payload, self._config.JWT_SECRET_KEY, algorithm=ALGORITHM)
+        return jwt.encode(payload, self._settings.JWT_SECRET_KEY, algorithm=ALGORITHM)
 
     def decode_token(self, token: str) -> dict:
         return jwt.decode(
             token,
-            self._config.JWT_SECRET_KEY,
+            self._settings.JWT_SECRET_KEY,
             algorithms=[ALGORITHM]
         )
 
-    async def get_current_user(token: str = Depends(oauth2_scheme)) -> str:
+    async def get_current_user(self, token: str = Depends(oauth2_scheme)) -> str:
         credentials_error = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token",
@@ -73,7 +73,7 @@ class AuthorizationService:
         )
 
         try:
-            payload = jwt.decode(token, Config.JWT_SECRET_KEY, algorithms=[ALGORITHM])
+            payload = jwt.decode(token, self._settings.JWT_SECRET_KEY, algorithms=[ALGORITHM])
             username: str = payload.get("sub")
             if username is None:
                 raise credentials_error
@@ -98,12 +98,12 @@ class AuthorizationService:
 
         access = self.create_access_token(
             user.name,
-            self._config.JWT_ACCESS_TOKEN_EXPIRES,
+            self._settings.JWT_ACCESS_TOKEN_EXPIRES,
         )
 
         refresh = self.create_refresh_token(
             user.name,
-            self._config.JWT_REFRESH_TOKEN_EXPIRES,
+            self._settings.JWT_REFRESH_TOKEN_EXPIRES,
         )
 
         return access, refresh
@@ -117,7 +117,7 @@ class AuthorizationService:
 
         return self.create_access_token(
             user.name,
-            self._config.JWT_REFRESH_TOKEN_EXPIRES,
+            self._settings.JWT_REFRESH_TOKEN_EXPIRES,
         )
 
     def _generate_passwd_reset_token(self, user: User, hours: int):

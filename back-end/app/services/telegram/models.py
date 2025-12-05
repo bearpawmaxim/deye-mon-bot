@@ -1,13 +1,14 @@
 from injector import inject
-from app.config import Config
+
+from app.settings import Settings
 
 
 @inject
 class TelegramConfig:
     hook_base_url: str
 
-    def __init__(self, config: Config):
-        self.hook_base_url = config.TG_HOOK_BASE_URL
+    def __init__(self, settings: Settings):
+        self.hook_base_url = settings.TG_HOOK_BASE_URL
 
     def __str__(self):
         return f"TelegramConfig(hook_base_url='{self.hook_base_url}')"
@@ -75,8 +76,8 @@ class TelegramChatInfo:
     @classmethod
     def from_json(cls, data: dict):
         return cls(
-            id = data['id'],
-            type = data['type'],
-            title = data.get('title', None),
-            username=data.get('username', None),
+            id       = data['id'],
+            type     = data['type'],
+            title    = data.get('title', None),
+            username = data.get('username', None),
         )

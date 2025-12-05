@@ -4,14 +4,14 @@ from sqlalchemy import Float, Integer, Numeric, func
 
 from .models import DBSession
 from app.models import Bot, Building, AllowedChat, ChatRequest, DashboardConfig, Message, Station, StationData, StationStatisticData, DeyeStationData, DeyeStation, User, ExtData
-from app.config import Config
+from app.settings import Settings
 
 
 @inject
 class DatabaseService:
-    def __init__(self, session_factory: DBSession, config: Config):
+    def __init__(self, session_factory: DBSession, settings: Settings):
         self._session_factory = session_factory
-        self._statistic_keep_days = config.STATISTIC_KEEP_DAYS
+        self._statistic_keep_days = settings.STATISTIC_KEEP_DAYS
 
     @property
     def session(self):

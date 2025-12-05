@@ -2,11 +2,11 @@ from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from injector import Injector
 
-from app.config import Config
+from app.settings import Settings
 from app.services import OutagesScheduleService
 
 
-def register(config: Config, injector: Injector):
+def register(settings: Settings, injector: Injector):
     scheduler = injector.get(BackgroundScheduler)
 
     def update_outages_schedule():

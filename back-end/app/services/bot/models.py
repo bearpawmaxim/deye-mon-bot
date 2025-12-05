@@ -2,15 +2,15 @@ from dataclasses import dataclass
 from datetime import datetime
 from injector import inject
 
-from app.config import Config
+from app.settings import Settings
 
 
 @inject
 class BotConfig:
     timezone: str
 
-    def __init__(self, config: Config):
-        self.timezone = config.BOT_TIMEZONE
+    def __init__(self, settings: Settings):
+        self.timezone = settings.BOT_TIMEZONE
 
     def __str__(self):
         return (f'BotConfig(timezone={self.timezone})')
