@@ -30,6 +30,8 @@ class BaseJWTSettings(BaseModel):
     @property
     def JWT_REFRESH_TOKEN_EXPIRES(self) -> timedelta:
         return timedelta(minutes=self.JWT_REFRESH_TOKEN_EXPIRES_MIN)
+    
+    DEBUG: bool = Field(default=False)
 
 
 class BaseRedisSettings(BaseModel):

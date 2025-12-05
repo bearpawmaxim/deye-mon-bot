@@ -2,16 +2,18 @@ from fastapi import FastAPI
 from app.settings import Settings
 from app.routes import register_routes
 from shared.services import EventsService
+from shared.services.events.models import EventsServiceConfig
 
-
-def register_extensions(app: FastAPI, settings: Settings):
-    pass
 
 def create_app(settings: Settings = None):
-    app = FastAPI(__name__)
+    app = FastAPI(
+        title = "Deye Monitor Bot SSE",
+        version = "1.0.0",
+        debug = settings.DEBUG,
+    )
 
-    register_extensions(app, settings)
-
-    events = EventsService(settings.REDIS_URL)
-    register_routes(app, events)
+    config = EventsServiceConfig(str(settings.REDIS_URL), settings.DEBUG)
+    print(config)
+    events = EventsService(config)
+    register_routes(app, events, settings)
     return app

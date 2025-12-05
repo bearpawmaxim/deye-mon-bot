@@ -8,24 +8,25 @@ from shared.utils.jwt_utils import InvalidTokenError, decode_jwt
 from app.settings import Settings
 
 
-def get_jwt_from_query(token: str | None = Query(default=None), secret_key: str = "YOUR_SECRET_KEY"):
-    if token is None:
-        return None
-
-    try:
-        return decode_jwt(token, secret_key)
-    except InvalidTokenError:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid or expired JWT token",
-        )
+def make_get_claims(settings: Settings):
+    def get_claims(token: str | None = Query(default=None)):
+        if token is None:
+            return None
+        try:
+            return decode_jwt(token, settings.JWT_SECRET_KEY)
+        except InvalidTokenError:
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid or expired JWT token",
+            )
+    return get_claims
 
 
 def register(app: FastAPI, service: EventsService, settings: Settings):
+    get_claims = make_get_claims(settings)
+
     @app.get("/api/events")
-    async def events(
-        claims: dict | None = Depends(lambda token=Depends(Query(None)): get_jwt_from_query(token, settings.JWT_SECRET_KEY))
-    ):
+    async def events(claims: dict | None = Depends(get_claims)):
         q = BoundedQueue(maxsize=100)
 
         user = claims["sub"] if claims else None

@@ -27,4 +27,3 @@ class EventItem:
             "private": self.private,
             "user": self.user
         }
-    
