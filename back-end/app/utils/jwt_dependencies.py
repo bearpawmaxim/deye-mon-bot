@@ -3,19 +3,20 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi_injector import Injected
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_401_UNAUTHORIZED
 
-from app.services.authorization import AuthorizationService
+from app.settings import Settings
+from shared.utils import decode_jwt, InvalidTokenError
 
 
 security = HTTPBearer()   
 
 def get_current_jwt(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-    authorization: AuthorizationService = Injected(AuthorizationService),
+    settings: Settings = Injected(Settings),
 ):
     token = credentials.credentials
     try:
-        return authorization.decode_token(token)
-    except Exception:
+        return decode_jwt(token, settings.JWT_SECRET_KEY)
+    except InvalidTokenError:
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired JWT token"
@@ -47,13 +48,13 @@ def jwt_reporter_only(current_claims: dict = Depends(get_current_jwt)):
 
 def get_jwt_from_query(
     token: str | None = Query(default=None),
-    authorization: AuthorizationService = Injected(AuthorizationService),
+    settings: Settings = Injected(Settings),
 ):
     if token is None:
         return None
 
     try:
-        return authorization.decode_token(token)
+        return decode_jwt(token, settings.JWT_SECRET_KEY)
     except Exception:
         raise HTTPException(
             status_code=HTTP_401_UNAUTHORIZED,

@@ -18,4 +18,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY sse-back-end/ /deye-mon-bot-sse-api/
 
 # gunicorn
-CMD ["gunicorn", "-k", "gevent", "--config", "gunicorn-cfg.py", "run:app"]
+CMD ["gunicorn", "-k", "gevent", "--config", "gunicorn-cfg.py", "run:app", "--workers", "5"]

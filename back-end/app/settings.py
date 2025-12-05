@@ -1,13 +1,13 @@
-from datetime import timedelta
 from functools import lru_cache
 import os
 
-from pydantic import Field, RedisDsn, computed_field
+from pydantic import Field, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from shared.settings.base import BaseJWTSettings, BaseRedisSettings
 from shared.utils import generate_secret_key
 
 
-class Settings(BaseSettings):
+class Settings(BaseSettings, BaseJWTSettings, BaseRedisSettings):
     model_config = SettingsConfigDict(
         env_file="../.env",
         env_file_encoding="utf-8",
@@ -51,32 +51,10 @@ class Settings(BaseSettings):
     BOT_TIMEZONE: str = "utc"
 
     # -------------------------
-    # JWT
-    # -------------------------
-    JWT_SECRET_KEY: str = Field(default_factory=lambda: generate_secret_key(64))
-    JWT_ACCESS_TOKEN_EXPIRES_DEF: int = Field(default=60)
-    JWT_REFRESH_TOKEN_EXPIRES_DEF: int = Field(default=60 * 24 * 7)
-
-    @computed_field
-    @property
-    def JWT_ACCESS_TOKEN_EXPIRES(self) -> timedelta:
-        return timedelta(minutes=self.JWT_ACCESS_TOKEN_EXPIRES_DEF)
-
-    @computed_field
-    @property
-    def JWT_REFRESH_TOKEN_EXPIRES(self) -> timedelta:
-        return timedelta(minutes=self.JWT_REFRESH_TOKEN_EXPIRES_DEF)
-
-    # -------------------------
     # Auth / Admin
     # -------------------------
     ADMIN_USER: str | None = None
     ADMIN_PASSWORD: str | None = None
-
-    # -------------------------
-    # Redis
-    # -------------------------
-    REDIS_URL: RedisDsn | None = Field(default=None)
 
     # -------------------------
     # Other

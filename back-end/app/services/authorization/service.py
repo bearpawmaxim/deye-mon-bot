@@ -58,13 +58,6 @@ class AuthorizationService:
         }
         return jwt.encode(payload, self._settings.JWT_SECRET_KEY, algorithm=ALGORITHM)
 
-    def decode_token(self, token: str) -> dict:
-        return jwt.decode(
-            token,
-            self._settings.JWT_SECRET_KEY,
-            algorithms=[ALGORITHM]
-        )
-
     async def get_current_user(self, token: str = Depends(oauth2_scheme)) -> str:
         credentials_error = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

@@ -13,8 +13,6 @@ if settings.DEBUG:
     print("DEBUG            =", settings.DEBUG)
     print("DBMS             =", settings.SQLALCHEMY_DATABASE_URI)
 
-print(settings.model_dump())
-
 if __name__ == "__main__":
     uvicorn.run(
         "run:app",
