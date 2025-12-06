@@ -3,11 +3,11 @@ import os
 
 from pydantic import Field, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from shared.settings.base import BaseJWTSettings, BaseRedisSettings
+from shared.settings.base import BaseJWTSettings, BaseMongoSettings, BaseRedisSettings
 from shared.utils import generate_secret_key
 
 
-class Settings(BaseSettings, BaseJWTSettings, BaseRedisSettings):
+class Settings(BaseSettings, BaseJWTSettings, BaseMongoSettings, BaseRedisSettings):
     model_config = SettingsConfigDict(
         env_file="../.env",
         env_file_encoding="utf-8",
@@ -20,7 +20,6 @@ class Settings(BaseSettings, BaseJWTSettings, BaseRedisSettings):
     # -------------------------
 
     SECRET_KEY: str = Field(default_factory=lambda: generate_secret_key(32))
-    SQLALCHEMY_TRACK_MODIFICATIONS: bool = False
 
     # SQLite path
     @computed_field

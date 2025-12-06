@@ -1,9 +1,9 @@
-from typing import List, Optional
+from typing import Optional
 from fastapi import Body, FastAPI, Depends, HTTPException, Path, status
 from pydantic import BaseModel
 from app.services import Services
 from app.utils.jwt_dependencies import jwt_reporter_only, jwt_required
-from datetime import datetime, timezone
+from datetime import datetime
 
 
 class GridPowerRequest(BaseModel):

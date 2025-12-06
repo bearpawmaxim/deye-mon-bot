@@ -4,7 +4,7 @@ from fastapi_injector import Injected
 from starlette.status import HTTP_403_FORBIDDEN, HTTP_401_UNAUTHORIZED
 
 from app.settings import Settings
-from shared.utils import decode_jwt, InvalidTokenError
+from shared.utils.jwt_utils import decode_jwt, InvalidTokenError
 
 
 security = HTTPBearer()   

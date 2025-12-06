@@ -11,7 +11,7 @@ class ExtData(Document):
     received_at: datetime = datetime.now(timezone.utc)
 
     class Settings:
-        name = "ExtData"
+        name = "ext_data"
         timeseries = {
             "time_field": "received_at",
             "meta_field": "user_id",

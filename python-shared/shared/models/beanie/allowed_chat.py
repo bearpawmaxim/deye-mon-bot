@@ -9,3 +9,6 @@ class AllowedChat(Document):
     chat_id: Optional[str] = None
     bot: Link[Bot]
     approve_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    class Settings:
+        name = "allowed_chats"

@@ -27,7 +27,7 @@ class StationData(Document):
     wire_power: Optional[float] = None
 
     class Settings:
-        name = "StationData"
+        name = "station_data"
         timeseries = {
             "time_field": "last_update_time",
             "meta_field": "station_id",

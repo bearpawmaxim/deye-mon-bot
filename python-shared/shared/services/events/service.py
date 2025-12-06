@@ -17,7 +17,7 @@ class EventsService:
             self.transport: EventsTransport = LocalTransport()
         else:
             self.transport: EventsTransport = RedisTransport(
-                config.redis_url,
+                config.redis_uri,
                 self.REDIS_PUBLIC_CHANNEL,
                 self.REDIS_PRIVATE_CHANNEL
             )

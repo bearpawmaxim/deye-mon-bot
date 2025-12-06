@@ -2,15 +2,15 @@ from dataclasses import dataclass
 
 
 class EventsServiceConfig:
-    redis_url: str
+    redis_uri: str
     is_debug: bool
 
-    def __init__(self, redis_url: str, is_debug: bool):
-        self.redis_url = redis_url
+    def __init__(self, redis_uri: str, is_debug: bool):
+        self.redis_uri = redis_uri
         self.is_debug = is_debug
 
     def __str__(self):
-        return (f'EventsServiceConfig(redis={self.redis_url}, debug={self.is_debug})')
+        return (f'EventsServiceConfig(redis={self.redis_uri}, debug={self.is_debug})')
 
 
 @dataclass

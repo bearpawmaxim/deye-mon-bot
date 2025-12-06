@@ -34,8 +34,8 @@ class LocalTransport(EventsTransport):
 
 class RedisTransport(EventsTransport):
 
-    def __init__(self, redis_url: str, *channels: str):
-        self.redis = redis.Redis.from_url(redis_url, decode_responses=True)
+    def __init__(self, redis_uri: str, *channels: str):
+        self.redis = redis.Redis.from_url(redis_uri, decode_responses=True)
         self.channels = channels
 
     def publish(self, channel: str, event: EventItem):

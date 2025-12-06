@@ -12,6 +12,9 @@ class Building(Document):
     station: Optional[Link[Station]] = None
     report_user: Link[User]
 
+    class Settings:
+        name = "buildings"
+
     def to_dict(self):
         return {
             "id": str(self.id),

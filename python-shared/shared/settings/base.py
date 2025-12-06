@@ -1,5 +1,5 @@
 from datetime import timedelta
-from pydantic import BaseModel, Field, computed_field
+from pydantic import BaseModel, Field, MongoDsn, computed_field
 from pydantic.networks import RedisDsn
 
 from shared.utils import generate_secret_key
@@ -35,7 +35,17 @@ class BaseJWTSettings(BaseModel):
 
 
 class BaseRedisSettings(BaseModel):
-    REDIS_URL: RedisDsn | None = Field(
+    REDIS_URI: RedisDsn | None = Field(
         default=None,
         description="Redis DSN (redis:// or rediss://)."
+    )
+
+class BaseMongoSettings(BaseModel):
+    MONGO_URI: MongoDsn = Field(
+        default=None,
+        description="Mongo DSN (mongo://)."
+    )
+    MONGO_DB: str = Field(
+        default="deye_mon_bot",
+        description="Mongo database name"
     )

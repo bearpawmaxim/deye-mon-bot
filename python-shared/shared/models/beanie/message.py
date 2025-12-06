@@ -19,6 +19,9 @@ class Message(Document):
 
     stations: List[Link[Station]] = Field(default_factory=list)
 
+    class Settings:
+        name = "messages"
+
     def __str__(self):
         station_ids = [str(s.id) for s in self.stations] if self.stations else []
         return (

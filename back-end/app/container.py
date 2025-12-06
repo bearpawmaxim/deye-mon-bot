@@ -56,7 +56,7 @@ class Container(Module):
         binder.bind(DeyeConfig, scope=singleton)
         binder.bind(DeyeApiService, scope=singleton)
 
-        events_service_config = EventsServiceConfig(str(self._settings.REDIS_URL), self._settings.DEBUG)
+        events_service_config = EventsServiceConfig(str(self._settings.REDIS_URI), self._settings.DEBUG)
         binder.bind(EventsServiceConfig, to=events_service_config, scope=singleton)
         binder.bind(EventsService, to=EventsService(events_service_config), scope=singleton)
         binder.bind(OutagesScheduleService, scope=singleton)

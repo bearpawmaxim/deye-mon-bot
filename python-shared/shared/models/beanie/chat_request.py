@@ -9,3 +9,6 @@ class ChatRequest(Document):
     chat_id: Optional[str] = None
     bot: Link[Bot]
     request_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    class Settings:
+        name = "chat_requests"

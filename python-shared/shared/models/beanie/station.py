@@ -33,6 +33,9 @@ class Station(Document):
     order: int = 1
     enabled: bool = True
 
+    class Settings:
+        name = "stations"
+
     def __str__(self):
         return (
             f"ClassName(id={self.id}, station_id='{self.station_id}', name='{self.station_name}', "

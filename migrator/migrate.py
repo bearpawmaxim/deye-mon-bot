@@ -3,6 +3,7 @@ from beanie import init_beanie
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from settings import Settings, get_settings
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from shared.models.beanie.station_data import StationData
@@ -32,12 +33,12 @@ from shared.models.beanie import (
     Message,
 )
 
-SQLITE_DB = "sqlite:///../back-end/db.sqlite3"
-engine_sql = create_engine(SQLITE_DB, echo=False)
+settings: Settings = get_settings()
+
+engine_sql = create_engine(settings.SQLITE_URI, echo=False)
 Session = sessionmaker(bind=engine_sql)
 
-MONGO_URI = "mongodb://admin:password@localhost:27017"
-mongo_client = AsyncIOMotorClient(MONGO_URI)
+mongo_client = AsyncIOMotorClient(str(settings.MONGO_URI))
 
 # Mapping from old SQLite IDs to new MongoDB IDs
 id_maps = {
@@ -50,7 +51,7 @@ id_maps = {
 
 async def init():
     await init_beanie(
-        database=mongo_client["deye-mon-bot"],
+        database=mongo_client[settings.MONGO_DB],
         document_models=[
             User,
             ExtData,

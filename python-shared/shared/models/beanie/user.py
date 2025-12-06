@@ -12,6 +12,9 @@ class User(Document):
     password_reset_token: Optional[str] = None
     reset_token_expiration: Optional[datetime] = None
 
+    class Settings:
+        name = "users"
+
     def __str__(self):
         return (
             f"User(id={self.id}, name='{self.name}', "
