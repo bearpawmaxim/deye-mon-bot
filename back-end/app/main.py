@@ -1,16 +1,14 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
-from sqlalchemy.orm import scoped_session
+from fastapi import FastAPI
+from injector import Injector
 
 from app.settings import Settings
 from app.jobs import register_jobs
 from app.routes import register_routes
-from app.services import Services
+from app.services import Services, BeanieInitializer
+from apscheduler.schedulers.background import BackgroundScheduler
 from .container import init_container
 
-
-def register_extensions(services: Services, settings: Settings):
-    services.scheduler.start()
 
 def create_user(config, services: Services):
     if not config.IS_MIGRATION_RUN and config.ADMIN_USER is not None:
@@ -30,11 +28,18 @@ def fetch_stations(services: Services):
         services.database.add_station(station)
     services.database.save_changes()
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    injector: Injector = app.state.injector
+    beanie_initializer = injector.get(BeanieInitializer)
+    scheduler = injector.get(BackgroundScheduler)
+    scheduler.start()
+    await beanie_initializer.init()
+    yield
+    scheduler.shutdown()
+
+
 def create_app(settings: Settings) -> FastAPI:
-    @asynccontextmanager
-    async def lifespan(app: FastAPI):
-        yield
-        services.scheduler.shutdown()
 
     app = FastAPI(
         title = "Deye Monitor Bot",
@@ -43,10 +48,8 @@ def create_app(settings: Settings) -> FastAPI:
         lifespan = lifespan
     )
     injector = init_container(app, settings)
-
     services = injector.get(Services)
 
-    register_extensions(services, settings)
     register_routes(app, services)
     register_jobs(settings, injector)
     create_user(settings, services)

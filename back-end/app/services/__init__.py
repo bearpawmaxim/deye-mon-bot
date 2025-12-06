@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 from injector import Injector, inject
 
 from .bot import BotService
+from .beanie_initializer import BeanieInitializer
 from .database import DatabaseService
 from .deye_api import DeyeConfig, DeyeApiService
 from .telegram import TelegramConfig, TelegramService
@@ -48,6 +49,6 @@ class Services:
         self.events = events
 
 
-__all__ = [Services, DatabaseService, BotService, DeyeConfig,
+__all__ = [Services, BeanieInitializer, DatabaseService, BotService, DeyeConfig,
            DeyeApiService, TelegramConfig, TelegramService,
            VisitCounterService, EventsService, EventItem, OutagesScheduleService]

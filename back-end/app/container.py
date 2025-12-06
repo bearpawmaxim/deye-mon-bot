@@ -8,6 +8,7 @@ from concurrent.futures import Executor, ThreadPoolExecutor
 
 from app.settings import Settings
 from shared.services.events.models import EventsServiceConfig
+from .services.beanie_initializer import BeanieInitializer
 from .services.authorization import AuthorizationService
 from .services.database import DatabaseService, DBSession
 from .services.bot import BotConfig, BotService
@@ -50,6 +51,12 @@ class Container(Module):
         binder.bind(DBSession, to=session_local, scope=singleton)
 
         binder.bind(DatabaseService, scope=noscope)
+
+        beanie = BeanieInitializer(
+            mongo_uri=str(self._settings.MONGO_URI),
+            db_name=self._settings.MONGO_DB,
+        )
+        binder.bind(BeanieInitializer, to=beanie, scope=singleton)
 
         binder.bind(AuthorizationService, scope=singleton)
 
