@@ -10,6 +10,7 @@ from shared.models.beanie.visit_counter import DailyVisitCounter, VisitCounter
 from shared.models.sqlalchemy import (
     User as SQLUser,
     Building as SQLBuilding,
+    ExtData as SQLExtData,
     Station as SQLStation,
     StationData as SQLStationData,
     Bot as SQLBot,
@@ -23,6 +24,7 @@ from shared.models.sqlalchemy import (
 from shared.models.beanie import (
     User,
     Building,
+    ExtData,
     Station,
     Bot,
     AllowedChat,
@@ -51,6 +53,7 @@ async def init():
         database=mongo_client["deye-mon-bot"],
         document_models=[
             User,
+            ExtData,
             Station,
             StationData,
             Building,
@@ -81,6 +84,21 @@ async def migrate_users(session):
         id_maps["users"][u.id] = m.id
     print(f"  Migrated {len(users)} users")
 
+
+async def migrate_ext_data(session):
+    print("Migrating ExtData...")
+    ext_data: SQLExtData = session.query(SQLExtData).all()
+    for row in ext_data:
+        user_id = id_maps["users"][row.user.id]
+        if user_id is None:
+            print("  !! Missing User {e.user}, skipping ExtData {e.id}")
+        m = ExtData(
+            grid_state=row.grid_state,
+            user_id=user_id,
+            received_at=row.received_at
+        )
+        await m.insert()
+    print(f"  Migrated {len(ext_data)} ExtData records")
 
 async def migrate_stations(session):
     print("Migrating Stations...")
@@ -114,17 +132,15 @@ async def migrate_stations(session):
 
 async def migrate_station_data(session):
     print("Migrating StationData...")
-
-    mongo_stations = {str(s.id): s for s in await Station.find_all().to_list()}
-
-    for row in session.query(SQLStationData).all():
-        station = mongo_stations.get(str(id_maps["stations"][int(row.station_id)]))
-        if not station:
+    station_data =  session.query(SQLStationData).all()
+    for row in station_data:
+        station_id = id_maps["stations"][int(row.station_id)]
+        if not station_id:
             print(f"  !! Missing Station {row.station_id}, skipping StationData {row.id}")
             continue
 
         m = StationData(
-            station=station,
+            station_id=station_id,
             battery_power=row.battery_power,
             battery_soc=row.battery_soc,
             charge_power=row.charge_power,
@@ -141,7 +157,7 @@ async def migrate_station_data(session):
             wire_power=row.wire_power,
         )
         await m.insert()
-    print("  Done StationData")
+    print(f"  Migrated {len(station_data)} StationData records")
 
 
 async def migrate_buildings(session):
@@ -267,6 +283,7 @@ async def main():
     session = Session()
     await init()
     await migrate_users(session)
+    await migrate_ext_data(session)
     await migrate_stations(session)
     await migrate_station_data(session)
     await migrate_buildings(session)
