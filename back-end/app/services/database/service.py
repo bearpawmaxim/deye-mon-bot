@@ -556,11 +556,11 @@ class DatabaseService:
             print(f'Error getting latest ext data by user id: {e}')
             return []
 
-    def update_ext_data_grid_state(self, user: str, grid_state: bool):
+    def update_ext_data_grid_state(self, user_name: str, grid_state: bool):
         try:
-            user_obj = self.get_user(user)
+            user_obj = self.get_user(user_name)
             if not user_obj:
-                print(f"User not found: {user}")
+                print(f"User not found: {user_name}")
                 return None
 
             new_data = ExtData(
@@ -675,3 +675,6 @@ class DatabaseService:
 
     def save_changes(self):
         self.session.commit()
+
+    def cancel_changes(self):
+        self.session.rollback()

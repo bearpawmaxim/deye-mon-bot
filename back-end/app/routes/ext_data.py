@@ -39,15 +39,15 @@ def register(app: FastAPI, services: Services):
     @app.post("/api/ext-data/grid-power")
     def update_grid_power(
         body: GridPowerRequest,
-        claims=Depends(jwt_reporter_only),  # Only reporter users
+        claims=Depends(jwt_reporter_only),
     ):
         grid_power = body.grid_power
         grid_state = grid_power.get("state", False)
-        user = claims["sub"]
+        user_name = claims["sub"]
 
         try:
             data_id = services.database.update_ext_data_grid_state(
-                user=user,
+                user_name=user_name,
                 grid_state=grid_state
             )
             if data_id is None:
@@ -62,7 +62,7 @@ def register(app: FastAPI, services: Services):
             return {"status": "ok"}
 
         except Exception as e:
-            services.db.session.rollback()
+            services.database.cancel_changes()
             print(f"Error updating grid power: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -93,7 +93,7 @@ def register(app: FastAPI, services: Services):
             return {"status": "ok", "id": data_id}
 
         except Exception as e:
-            services.database.rollback()
+            services.database.cancel_changes()
             print(f"Error creating ext data: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -120,7 +120,7 @@ def register(app: FastAPI, services: Services):
             return {"status": "ok"}
 
         except Exception as e:
-            services.database.rollback()
+            services.database.cancel_changes()
             print(f"Error deleting ext data: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
