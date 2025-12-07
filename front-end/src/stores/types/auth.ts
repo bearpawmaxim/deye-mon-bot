@@ -2,7 +2,7 @@ import { ProfileEdit } from "../../schemas";
 import { AuthData } from "../../types";
 
 export type ProfileData = {
-  userId: number;
+  userId: string;
   userName: string;
 };
 

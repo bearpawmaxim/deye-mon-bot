@@ -10,9 +10,14 @@ from .telegram import TelegramConfig, TelegramService
 from .visit_counter import VisitCounterService
 from .outages_schedule import OutagesScheduleService
 from shared.services import EventsService, EventItem
+from .users import UsersService
+from .container import ServicesContainer
+from .authorization import AuthorizationService
+
 
 @inject
 class Services:
+    authorization: AuthorizationService
     deye_api: DeyeApiService
     telegram: TelegramService
     scheduler: BackgroundScheduler
@@ -22,10 +27,12 @@ class Services:
     visit_counter: VisitCounterService
     outages_schedule: OutagesScheduleService
     events: EventsService
+    users: UsersService
     injector: Injector
 
     def __init__(
         self,
+        authorization: AuthorizationService,
         deye_api: DeyeApiService,
         telegram: TelegramService,
         scheduler: BackgroundScheduler,
@@ -35,8 +42,10 @@ class Services:
         visit_counter: VisitCounterService,
         outages_schedule: OutagesScheduleService,
         events: EventsService,
+        users: UsersService,
         injector: Injector
     ):
+        self.authorization = authorization
         self.injector = injector
         self.deye_api = deye_api
         self.telegram = telegram
@@ -47,8 +56,10 @@ class Services:
         self.visit_counter = visit_counter
         self.outages_schedule = outages_schedule
         self.events = events
+        self.users = users
 
 
 __all__ = [Services, BeanieInitializer, DatabaseService, BotService, DeyeConfig,
-           DeyeApiService, TelegramConfig, TelegramService,
-           VisitCounterService, EventsService, EventItem, OutagesScheduleService]
+           DeyeApiService, TelegramConfig, TelegramService, ServicesContainer,
+           AuthorizationService, VisitCounterService, EventsService, EventItem,
+           OutagesScheduleService]

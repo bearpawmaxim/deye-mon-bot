@@ -5,7 +5,7 @@ from beanie import Document
 
 class User(Document):
     name: str
-    password: str
+    password: Optional[str]
     is_active: bool = True
     is_reporter: bool = False
     api_key: Optional[str] = None

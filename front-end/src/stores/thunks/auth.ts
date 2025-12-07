@@ -5,6 +5,7 @@ import apiClient from '../../utils/apiClient';
 import { getErrorMessage } from '../../utils';
 import { RootState } from '../store';
 import { AuthData } from '../../types';
+import { logout } from '../slices';
 
 export const fetchProfile = createAsyncThunk('auth/fetchProfile', async (_, {rejectWithValue}) => {
   try {
@@ -64,6 +65,9 @@ export const changePassword = createAsyncThunk<void, ChangePasswordRequest>(
       await apiClient.post('/auth/changePassword', request);
       dispatch(logout());
     } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        return rejectWithValue(error.response?.data?.detail);
+      }
       return rejectWithValue(getErrorMessage(error) || 'Failed change password');
     }
   });
@@ -74,7 +78,7 @@ export type LoginRequest = {
 };
 
 export type LoginResponse = BaseResponse & AuthData & {
-  error?: string;
+  detail?: string;
 };
 
 export const login = createAsyncThunk<LoginResponse, LoginRequest>(
@@ -85,12 +89,8 @@ export const login = createAsyncThunk<LoginResponse, LoginRequest>(
       return fulfillWithValue(response.data);
     } catch(error: unknown) {
       if (error instanceof AxiosError) {
-        return rejectWithValue(error.response?.data?.error);
+        return rejectWithValue(error.response?.data?.detail);
       }
       return rejectWithValue(getErrorMessage(error));
     }
   });
-
-export const logout = createAsyncThunk('auth/logout', async () => {
-  await apiClient.post('/auth/logout');
-});

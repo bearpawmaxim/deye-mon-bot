@@ -11,10 +11,11 @@ import { Header } from "./components/header";
 import { Navbar } from "./components/navbar";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { ProfileData } from "../stores/types";
-import { fetchProfile, logout } from "../stores/thunks";
+import { fetchProfile } from "../stores/thunks";
 import { openProfileEditDialog } from "../dialogs";
 import { authDataSelector } from "../stores/selectors";
 import { AuthData } from "../types";
+import { logout } from "../stores/slices";
 
 type ComponentProps = {
   authData: AuthData | null;

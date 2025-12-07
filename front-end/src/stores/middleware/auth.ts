@@ -1,8 +1,8 @@
 import { createListenerMiddleware, PayloadAction } from "@reduxjs/toolkit";
 import { AppDispatch, RootState } from "../store";
 import { removeTokens, setAuthorizationHeader, setTokens } from "../../utils";
-import { login, logout } from "../thunks";
-import { resetAuthData, updateAuthData } from "../slices";
+import { login } from "../thunks";
+import { resetAuthData, updateAuthData, logout } from "../slices";
 import { AuthData } from "../../types";
 import { eventsService } from "../../services";
 import { UpdateAuthDataPayload } from "../types";
@@ -24,7 +24,7 @@ startListening({
 });
 
 startListening({
-  actionCreator: logout.fulfilled,
+  actionCreator: logout,
   effect: async () => {
     removeTokens();
     setAuthorizationHeader(null);

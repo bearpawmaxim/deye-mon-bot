@@ -8,8 +8,10 @@ from jose import jwt, JWTError
 from passlib.context import CryptContext
 
 from app.settings import Settings
-from app.services.database.service import DatabaseService
-from app.models import User
+from app.models.beanie import User
+from app.repositories import IUsersRepository
+from shared.utils.jwt_utils import create_access_token, create_refresh_token
+from shared.utils.key_generation import generate_password_reset_token
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
@@ -19,44 +21,13 @@ ALGORITHM = "HS256"
 
 @inject
 class AuthorizationService:
-    def __init__(self, database: DatabaseService, settings: Settings):
-        self._database = database
-        self._settings: Settings = settings
-
-    def create_access_token(
+    def __init__(
         self,
-        identity: str,
-        expires: timedelta,
-        additional_claims: Optional[Dict[str, Any]] = None
+        users_repository: IUsersRepository,
+        settings: Settings,
     ):
-        now = datetime.now(timezone.utc)
-        
-        expiration = now + expires
-        payload = {
-            "sub": identity,
-            "type": "access",
-            "iat": now,
-        }
-
-        if expires is not None:
-            expiration = now + expires
-            payload["exp"] = expiration
-
-        if additional_claims:
-            payload.update(additional_claims)
-
-        return jwt.encode(payload, self._settings.JWT_SECRET_KEY, algorithm=ALGORITHM)
-
-    def create_refresh_token(self, identity: str, expires: timedelta):
-        now = datetime.now(timezone.utc)
-        expiration = now + expires
-        payload = {
-            "sub": identity,
-            "type": "refresh",
-            "iat": now,
-            "exp": expiration,
-        }
-        return jwt.encode(payload, self._settings.JWT_SECRET_KEY, algorithm=ALGORITHM)
+        self._settings: Settings = settings
+        self._users_repository: IUsersRepository = users_repository
 
     async def get_current_user(self, token: str = Depends(oauth2_scheme)) -> str:
         credentials_error = HTTPException(
@@ -76,8 +47,8 @@ class AuthorizationService:
             raise credentials_error
 
 
-    def _get_user(self, user_name: str, password: str):
-        user = self._database.get_user(user_name)
+    async def _get_user(self, user_name: str, password: str):
+        user = await self._users_repository.get_user(user_name)
         if not user:
             raise ValueError("User not found")
         if user.is_reporter:
@@ -86,23 +57,28 @@ class AuthorizationService:
             raise ValueError("Invalid password")
         return user
 
-    def login(self, user_name: str, password: str):
-        user = self._get_user(user_name, password)
+    async def login(self, user_name: str, password: str):
+        user = await self._get_user(user_name, password)
 
-        access = self.create_access_token(
-            user.name,
-            self._settings.JWT_ACCESS_TOKEN_EXPIRES,
+        access = create_access_token(
+            identity   = user.name,
+            expires    = self._settings.JWT_ACCESS_TOKEN_EXPIRES,
+            secret_key = self._settings.JWT_SECRET_KEY,
         )
 
-        refresh = self.create_refresh_token(
-            user.name,
-            self._settings.JWT_REFRESH_TOKEN_EXPIRES,
+        refresh = create_refresh_token(
+            identity   = user.name,
+            expires    = self._settings.JWT_REFRESH_TOKEN_EXPIRES,
+            secret_key = self._settings.JWT_SECRET_KEY,
         )
 
         return access, refresh
+    
+    async def get_user(self, user_name: str) -> User:
+        return await self._users_repository.get_user(user_name)
 
-    def refresh_token(self, user_name):
-        user = self._database.get_user(user_name)
+    async def refresh_token(self, user_name):
+        user = await self._users_repository.get_user(user_name)
         if not user:
             raise ValueError("User not found")
         if user.is_reporter:
@@ -113,86 +89,54 @@ class AuthorizationService:
             self._settings.JWT_REFRESH_TOKEN_EXPIRES,
         )
 
-    def _generate_passwd_reset_token(self, user: User, hours: int):
-        user.password_reset_token = secrets.token_urlsafe(64)
-        user.reset_token_expiration = (
-            datetime.now(timezone.utc) + timedelta(hours=hours)
+    async def _generate_passwd_reset_token(self, user: User, hours: int):
+        password_reset_token, reset_token_expiration = generate_password_reset_token(hours)
+        await self._users_repository.set_password_reset_token(
+            user_id                = user.id,
+            reset_token            = password_reset_token,
+            reset_token_expiration = reset_token_expiration
         )
-        self._database.save_changes()
-        return user.password_reset_token
 
-    def start_change_password(self, user_name: str, hours: int = 1):
-        user = self._database.get_user(user_name)
+        return password_reset_token
+
+    async def start_change_password(self, user_name: str, hours: int = 1):
+        user = await self._users_repository.get_user(user_name)
         if not user:
             raise ValueError("User not found")
-        return self._generate_passwd_reset_token(user, hours)
+        return await self._generate_passwd_reset_token(user, hours)
 
-    def change_password(self, token: str, new_password: str):
-        user = self._database.get_user_by_reset_token(token)
-        if not user:
-            raise ValueError("Invalid token")
-
-        if user.reset_token_expiration < datetime.utcnow():
-            raise ValueError("Token expired")
-
-        user.password_reset_token = None
-        user.reset_token_expiration = None
-        user.password = pwd_context.hash(new_password)
-        self._database.save_changes()
-
-
-    def _validate_reset_token(self, user: User):
+    async def _validate_reset_token(self, user: User):
         expiration = user.reset_token_expiration
 
         if expiration.tzinfo is None:
             expiration = expiration.replace(tzinfo=timezone.utc)
 
         if expiration < datetime.now(timezone.utc):
-            user.password_reset_token = None
-            user.reset_token_expiration = None
-            self._database.save_changes()
+            await self._users_repository.remove_password_reset_token(user.id)
             raise ValueError("Token expired")
 
         return user
 
-    def create_reporter_token(self, user_name: str):
-        return self.create_access_token(
-            identity          = user_name,
-            expires_minutes   = None,
-            additional_claims = {
-                "is_reporter": True
-            }
-        )
-
-    def add_user(self, user_name: str, password: str):
+    async def add_user(self, user_name: str, password: str):
         hashed = pwd_context.hash(password)
-        self._database.create_user(user_name, hashed)
+        await self._users_repository.create_user(user_name, hashed)
 
-    def start_change_password(self, user_name: str, hours: int = 1):
-        user = self._database.get_user(user_name)
+    async def cancel_change_password(self, user_name: str):
+        user = await self._users_repository.get_user(user_name)
         if user is None:
             raise ValueError(f"Cannot find user '{user_name}'")
 
-        return self._generate_passwd_reset_token(user, hours)
+        await self._users_repository.remove_password_reset_token(user.id)
 
-    def cancel_change_password(self, user_name: str):
-        user = self._database.get_user(user_name)
-        if user is None:
-            raise ValueError(f"Cannot find user '{user_name}'")
-
-        user.password_reset_token = None
-        user.reset_token_expiration = None
-        self._database.save_changes()
-
-    def change_password(self, token: str, new_password: str):
-        user = self._database.get_user_by_reset_token(token)
+    async def change_password(self, token: str, new_password: str):
+        user = await self._users_repository.get_user_by_reset_token(token)
         if user is None:
             raise ValueError("Cannot find user")
 
-        self._validate_reset_token(user)
+        await self._validate_reset_token(user)
 
         hashed_new_password = pwd_context.hash(new_password)
-        self._database.change_password(user.id, hashed_new_password)
+        await self._users_repository.change_password(user.id, hashed_new_password)
 
-    def update_user(self, user_id: int, user_name: str):
-        self._database.update_user(user_id, user_name)
+    async def rename_user(self, user_id: int, user_name: str):
+        await self._users_repository.rename_user(user_id, user_name)

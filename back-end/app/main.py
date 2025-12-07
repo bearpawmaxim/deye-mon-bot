@@ -7,7 +7,7 @@ from app.jobs import register_jobs
 from app.routes import register_routes
 from app.services import Services, BeanieInitializer
 from apscheduler.schedulers.background import BackgroundScheduler
-from .container import init_container
+from app.app_container import init_container
 
 
 def create_user(config, services: Services):

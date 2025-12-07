@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { logout } from '../stores/thunks';
+import { logout } from '../stores/slices';
 import { StoreType } from '../stores/store';
 import { NavigateFunction } from 'react-router-dom';
 

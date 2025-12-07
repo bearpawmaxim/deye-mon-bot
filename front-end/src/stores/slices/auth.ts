@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AuthState, ProfileData, UpdateAuthDataPayload } from "../types";
-import { fetchProfile, login, LoginResponse, logout } from "../thunks";
+import { fetchProfile, login, LoginResponse } from "../thunks";
 import { getAccessToken, getRefreshToken } from "../../utils/tokenStorage";
 import { ProfileEdit } from "../../schemas";
 
@@ -34,15 +34,13 @@ export const authSlice = createSlice({
     finishEditingProfile: (state) => {
       delete state.editingProfile;
     },
+    logout: (state) => {
+      delete state.profile;
+      state.accessToken = null;
+      state.refreshToken = null;
+    },
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(logout.fulfilled, (state) => {
-        state.loading = false;
-        delete state.profile;
-        state.accessToken = null;
-        state.refreshToken = null;
-      });
     builder
       .addCase(login.pending, (state) => {
         state.loading = true;
@@ -79,5 +77,6 @@ export const {
   resetAuthData,
   startEditingProfile,
   finishEditingProfile,
+  logout,
 } = authSlice.actions;
 export const authReducer = authSlice.reducer;

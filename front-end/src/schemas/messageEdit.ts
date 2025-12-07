@@ -2,7 +2,7 @@ import * as v from 'valibot';
 
 export const messageEditSchema = v.object({
   id: v.nullable(
-    v.number(),
+    v.string(),
   ),
   name: v.pipe(
     v.string(),

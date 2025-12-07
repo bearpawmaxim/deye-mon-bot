@@ -2,10 +2,11 @@ import { FC, SetStateAction, useEffect, useState } from 'react'
 import { useAppDispatch } from '../stores/store';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PasswordEdit, passwordEditSchema } from '../schemas';
-import { changePassword, logout } from '../stores/thunks';
+import { changePassword } from '../stores/thunks';
 import { useFormHandler } from '../hooks';
 import { Button, PasswordInput, Text } from '@mantine/core';
 import { ErrorMessage } from '../components';
+import { logout } from '../stores/slices';
 
 export const ChangePasswordPage: FC = () => {
   const [ error, setError ] = useState<string | null>(null);
