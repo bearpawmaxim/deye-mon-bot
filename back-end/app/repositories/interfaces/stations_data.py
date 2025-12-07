@@ -11,3 +11,7 @@ class IStationsDataRepository(ABC):
     @abstractmethod
     async def add_station_data(self, station: Station, station_data: DeyeStationData):
         ...
+
+    @abstractmethod
+    async def get_full_station_data(self, station_id: str, last_seconds: int) -> List[StationData]:
+        ...

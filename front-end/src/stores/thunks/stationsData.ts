@@ -2,6 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { StationDetailsData, StationDataItem } from "../types";
 import apiClient from "../../utils/apiClient";
 import { getErrorMessage } from "../../utils";
+import { ObjectId } from "../../schemas";
 
 
 export const fetchStationsData = createAsyncThunk<Array<StationDataItem>, number>('stationsSata/fetchStationsData', async (lastSeconds, thunkAPI) => {
@@ -13,7 +14,7 @@ export const fetchStationsData = createAsyncThunk<Array<StationDataItem>, number
   }
 });
 
-export const fetchStationDetails = createAsyncThunk<StationDetailsData, { stationId: number, lastSeconds: number }>(
+export const fetchStationDetails = createAsyncThunk<StationDetailsData, { stationId: ObjectId, lastSeconds: number }>(
   'stationsData/fetchStationDetails',
   async ({ stationId, lastSeconds }, thunkAPI) => {
     try {

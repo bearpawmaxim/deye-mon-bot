@@ -13,6 +13,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { generatePasswordResetLink, getApiBaseUrl, getCurlExample, getCurlExampleOneLine, getHomeAssistantExample, integrationNotes } from "../../utils";
+import { ObjectId } from "../../schemas";
 
 
 type ComponentProps = {
@@ -222,11 +223,11 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
     return <ErrorMessage content={error}/>;
   }
 
-  const onUserActiveChange = (id: number, isActive: boolean) => {
+  const onUserActiveChange = (id: ObjectId, isActive: boolean) => {
     dispatch(updateUser({ id, isActive }));
   };
   
-  const onUserReporterChange = (id: number, isReporter: boolean) => {
+  const onUserReporterChange = (id: ObjectId, isReporter: boolean) => {
     dispatch(updateUser({ id, isReporter }));
   };
 

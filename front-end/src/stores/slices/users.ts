@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { UsersState, ServerUserItem } from "../types";
 import { fetchUsers, saveUsers, generateUserToken, deleteUserToken, createUser } from "../thunks";
+import { ObjectId } from "../../schemas";
 
 const initialState: UsersState = {
   users: [],
@@ -10,7 +11,7 @@ const initialState: UsersState = {
 };
 
 export type UpdateUserActionPayload = {
-  id?: number;
+  id?: ObjectId;
   name?: string;
   password?: string;
   isActive?: boolean;
@@ -36,7 +37,7 @@ export const usersSlice = createSlice({
         user.changed = true;
       }
     },
-    userSaved(state, { payload: userId }: PayloadAction<number>) {
+    userSaved(state, { payload: userId }: PayloadAction<ObjectId>) {
       const user = state.users.find(u => u.id === userId);
       if (user) {
         user.changed = false;

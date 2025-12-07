@@ -23,6 +23,7 @@ import { clearStationDetails } from "../../stores/slices";
 import { StationDetailsData } from "../../stores/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toLocalDateTime } from "../../utils/dateUtils";
+import { ObjectId } from "../../schemas";
 
 type ComponentProps = {
   detailsData: StationDetailsData | null;
@@ -61,14 +62,14 @@ const Component: FC<ComponentProps> = ({
 }: ComponentProps) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { stationId } = useParams<{ stationId: string }>();
+  const { stationId } = useParams<{ stationId: ObjectId }>();
   const [timeRange, setTimeRange] = useState<string>("86400"); // 24 hours default
 
   const fetchData = useCallback(() => {
     if (stationId) {
       dispatch(
         fetchStationDetails({
-          stationId: parseInt(stationId),
+          stationId: stationId,
           lastSeconds: parseInt(timeRange),
         })
       );

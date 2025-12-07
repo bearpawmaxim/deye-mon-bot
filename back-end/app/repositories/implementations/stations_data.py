@@ -1,5 +1,9 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import traceback
+from typing import List
+
+from beanie import PydanticObjectId, SortDirection
+import pymongo
 
 from ..interfaces.stations_data import IStationsDataRepository
 from shared.models.beanie import Station, StationData
@@ -38,3 +42,20 @@ class StationsDataRepository(IStationsDataRepository):
         except Exception as e:
             print(f"Error updating station data:")
             traceback.print_exc()
+
+    async def get_full_station_data(self, station_id: str, last_seconds: int) -> List[StationData]:
+        try:
+            min_date = datetime.now(timezone.utc) - timedelta(seconds=last_seconds)
+            stations = await (
+                StationData.find(
+                    StationData.station_id == PydanticObjectId(station_id),
+                    StationData.last_update_time >= min_date
+                )
+                .sort(StationData.last_update_time)
+                .to_list()
+            )
+            return stations
+        except Exception as e:
+            print(f"Error fetching station data: {e}")
+            return []
+

@@ -84,9 +84,10 @@ class AuthorizationService:
         if user.is_reporter:
             raise ValueError("Reporter cannot log in")
 
-        return self.create_access_token(
-            user.name,
-            self._settings.JWT_REFRESH_TOKEN_EXPIRES,
+        return create_access_token(
+            identity   = user.name,
+            expires    = self._settings.JWT_ACCESS_TOKEN_EXPIRES,
+            secret_key = self._settings.JWT_SECRET_KEY
         )
 
     async def _generate_passwd_reset_token(self, user: User, hours: int):

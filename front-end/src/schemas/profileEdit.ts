@@ -1,7 +1,8 @@
 import * as v from 'valibot';
+import { objectIdSchema } from './base';
 
 export const profileEditSchema = v.object({
-  userId: v.string(),
+  userId: objectIdSchema,
   userName: v.pipe(
     v.string(),
     v.trim(),

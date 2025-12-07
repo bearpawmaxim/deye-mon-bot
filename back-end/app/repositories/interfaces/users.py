@@ -50,7 +50,6 @@ class IUsersRepository(ABC):
     @abstractmethod
     async def create_user(
         self,
-        id: str,
         user_name: str,
         is_active: bool,
         is_reporter: bool,

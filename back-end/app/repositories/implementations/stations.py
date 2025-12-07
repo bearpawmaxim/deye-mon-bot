@@ -11,6 +11,10 @@ from app.models.deye import DeyeStation
 
 class StationsRepository(IStationsRepository):
 
+    async def get_stations(self, all: bool = False) -> List[Station]:
+        query = {} if all else {"enabled": True}
+        return await Station.find(query).sort(Station.order).to_list()
+
     async def get_station(self, station_id: str) -> Station | None:
         return await Station.find_one(Station.id == PydanticObjectId(station_id))
 
@@ -32,10 +36,6 @@ class StationsRepository(IStationsRepository):
         station.order = order
         station.battery_capacity = battery_capacity
         await station.save()
-
-    async def get_stations(self, all: bool = False) -> List[Station]:
-        query = {} if all else {"enabled": True}
-        return await Station.find(query).to_list()
 
     async def add_station(self, station: DeyeStation):
         try:

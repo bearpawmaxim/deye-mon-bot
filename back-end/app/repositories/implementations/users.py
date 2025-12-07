@@ -20,15 +20,6 @@ class UsersRepository(IUsersRepository):
     async def get_user_by_reset_token(self, token: str):
         return await User.find_one(User.password_reset_token == token, User.is_active == True)
 
-    async def create_user(self, user_name: str, password: str):
-        existing_user = await self.get_user(user_name)
-        if not existing_user:
-            user = User(
-                name = user_name,
-                password = password
-            )
-            await user.insert()
-
     async def rename_user(self, user_id: str, user_name: str):
         existing_user: User = await self.get_user_by_id(user_id)
         if existing_user:
@@ -71,7 +62,6 @@ class UsersRepository(IUsersRepository):
 
     async def create_user(
         self,
-        id: str,
         user_name: str,
         is_active: bool,
         is_reporter: bool,
@@ -82,6 +72,7 @@ class UsersRepository(IUsersRepository):
         if not existing_user:
             user = User(
                 name                   = user_name,
+                password               = None,
                 is_active              = is_active,
                 is_reporter            = is_reporter,
                 password_reset_token   = password_reset_token,

@@ -1,7 +1,8 @@
+import { ObjectId } from "../../schemas";
 import { BaseEditableState } from "./base";
 
 export type BaseServerUserItem = {
-  id?: number;
+  id?: ObjectId;
   name: string;
   password?: string;
   isActive: boolean;
@@ -10,7 +11,7 @@ export type BaseServerUserItem = {
 };
 
 export type ServerUserItem = BaseServerUserItem & {
-  id: number;
+  id: ObjectId;
 };
 
 export type UserItem = ServerUserItem & {
