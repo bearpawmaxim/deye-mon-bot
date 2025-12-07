@@ -20,6 +20,23 @@ class StationsService(BaseService):
         self._stations = stations
         self._stations_data = stations_data
 
+    async def get_stations(self):
+        return await self._stations.get_stations(all=True)
+
+    async def edit_station(
+        self,
+        station_id: str,
+        enabled: bool,
+        order: int,
+        battery_capacity: float,
+    ):
+        await self._stations.edit_station(
+            station_id       = station_id,
+            enabled          = enabled,
+            order            = order,
+            battery_capacity = battery_capacity
+        )
+
     async def sync_stations(self):
         stations = self._deye_api.get_station_list()
         if stations is None:

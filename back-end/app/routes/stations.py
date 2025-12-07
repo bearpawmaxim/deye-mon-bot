@@ -1,17 +1,22 @@
 from fastapi import FastAPI, Depends, Body
-from app.services import Services
+from fastapi_injector import Injected
+
+from app.services import StationsService
 from app.utils.jwt_dependencies import jwt_required
 
 
-def register(app: FastAPI, services: Services):
+def register(app: FastAPI):
 
     @app.post("/api/stations/stations")
-    def get_stations(claims=Depends(jwt_required)):
-        stations = services.database.get_stations(True)
+    async def get_stations(
+        _=Depends(jwt_required),
+        stations=Injected(StationsService),
+    ):
+        stations = await stations.get_stations()
 
         stations_dict = [
             {
-                "id": station.id,
+                "id": str(station.id),
                 "stationName": station.station_name,
                 "connectionStatus": station.connection_status,
                 "gridInterconnectionType": station.grid_interconnection_type,
@@ -26,18 +31,16 @@ def register(app: FastAPI, services: Services):
         return stations_dict
 
     @app.put("/api/stations/save")
-    def save_station(
+    async def save_station(
         payload: dict = Body(...),
-        claims=Depends(jwt_required)
+        _=Depends(jwt_required),
+        stations=Injected(StationsService),
     ):
-        station_id = services.database.save_station_data(
-            payload.get("id"),
-            payload.get("enabled", False),
-            payload.get("order", 1),
-            payload.get("batteryCapacity"),
-        )
+        station_id = payload.get("id")
+        enabled = payload.get("enabled", False)
+        order = payload.get("order", 1)
+        battery_capacity = payload.get("batteryCapacity")
 
-        services.database.save_changes()
-        services.events.broadcast_private("stations_updated")
+        await stations.edit_station(station_id, enabled, order, battery_capacity)
 
-        return {"success": True, "id": station_id}
+        return {"success": True, "id": station_id }
