@@ -3,7 +3,7 @@ from typing import List
 
 from beanie import PydanticObjectId
 from shared.models.beanie.user import User
-from app.repositories import IUsersRepository
+from ..interfaces.users_repository import IUsersRepository
 
 
 class UsersRepository(IUsersRepository):

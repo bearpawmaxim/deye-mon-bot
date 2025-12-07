@@ -1,7 +1,8 @@
 from .interfaces import (
-    IUsersRepository
+    IUsersRepository,
+    IVisitsCounterRepository,
 )
 from .container import RepositoryContainer
 
 
-__ALL__ = [IUsersRepository, RepositoryContainer]
+__ALL__ = [IUsersRepository, IVisitsCounterRepository, RepositoryContainer]

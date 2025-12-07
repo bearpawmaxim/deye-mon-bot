@@ -1,10 +1,12 @@
 from injector import Binder, Module, singleton
 
 from .interfaces import (
-    IUsersRepository
+    IUsersRepository,
+    IVisitsCounterRepository,
 )
 from .implementations import (
-    UsersRepository
+    UsersRepository,
+    VisitsCounterRepository
 )
 
 
@@ -12,3 +14,5 @@ class RepositoryContainer(Module):
 
     def configure(self, binder: Binder):
         binder.bind(IUsersRepository, to=UsersRepository, scope=singleton)
+        binder.bind(IVisitsCounterRepository, to=VisitsCounterRepository, scope=singleton)
+        
