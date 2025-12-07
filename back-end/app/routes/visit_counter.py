@@ -1,18 +1,19 @@
-from fastapi import FastAPI, Request, Query
-from app.services import Services
+from fastapi import FastAPI, Query
+from fastapi_injector import Injected
+from app.services import VisitCounterService
 
 
-def register(app: FastAPI, services: Services):
+def register(app: FastAPI):
 
     @app.post("/api/visit/add")
     async def visit(
         visit_type: str | None = Query(None, alias="type"),
-        visit_date: str | None = Query(None, alias="date")
+        visit_date: str | None = Query(None, alias="date"),
+        visit_counter = Injected(VisitCounterService),
     ):
-        services.visit_counter.add_visit(visit_type, visit_date)
-        services.database.save_changes()
-        return {"success": True}
+        visit_counter.add_visit(visit_type, visit_date)
+        return { "success": True }
 
     @app.get("/api/visit/stats")
-    async def stats():
-        return services.visit_counter.get_today_stats()
+    async def stats(visit_counter = Injected(VisitCounterService)):
+        return visit_counter.get_today_stats()

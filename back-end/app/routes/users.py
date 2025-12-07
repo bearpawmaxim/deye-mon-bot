@@ -1,11 +1,10 @@
 from fastapi import FastAPI, Depends, Request, HTTPException
 from fastapi_injector import Injected
-from app.services import Services, UsersService
+from app.services import UsersService
 from app.utils.jwt_dependencies import jwt_required
-from shared.utils import generate_api_token
 
 
-def register(app: FastAPI, services: Services):
+def register(app: FastAPI):
 
     @app.post("/api/users/users")
     async def get_users(

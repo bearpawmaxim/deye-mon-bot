@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException
 
 FIRESTORE_URL = 'https://firestore.googleapis.com/v1/projects/svitlo-power/databases/(default)/documents/sites/app'
 
-def register(app, services):
+def register(app):
     @app.get("/api/app/info")
     async def get_app_info():
         try:

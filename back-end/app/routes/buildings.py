@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException
 from pydantic import BaseModel
 from app.services import Services
 from app.utils import get_average_discharge_time
@@ -84,7 +84,7 @@ def register(app: FastAPI, services: Services):
         return [f.result() for f in futures]
 
     @app.post("/api/buildings/updateDashboardConfig")
-    def update_dashboard_config(body: List[dict], claims=Depends(jwt_required)):
+    def update_dashboard_config(body: List[dict], _=Depends(jwt_required)):
         if not body or not isinstance(body, list):
             raise HTTPException(status_code=400, detail="Invalid payload")
 
@@ -104,7 +104,7 @@ def register(app: FastAPI, services: Services):
         return [{"key": c.key, "value": c.value} for c in configs]
 
     @app.get("/api/buildings/building/{building_id}")
-    def get_building(building_id: int, claims=Depends(jwt_required)):
+    def get_building(building_id: int, _=Depends(jwt_required)):
         building = services.database.get_building(building_id)
         if not building:
             raise HTTPException(status_code=404, detail="Building not found")
@@ -117,7 +117,7 @@ def register(app: FastAPI, services: Services):
         }
 
     @app.put("/api/buildings/save")
-    def save_building(body: SaveBuildingRequest, claims=Depends(jwt_required)):
+    def save_building(body: SaveBuildingRequest, _=Depends(jwt_required)):
         building = Building(
             id=body.id,
             name=body.name,
@@ -131,7 +131,7 @@ def register(app: FastAPI, services: Services):
         return {"success": True, "id": building_id}
 
     @app.delete("/api/buildings/delete/{building_id}")
-    def delete_building(building_id: int, claims=Depends(jwt_required)):
+    def delete_building(building_id: int, _=Depends(jwt_required)):
         services.database.delete_building(building_id)
         services.database.save_changes()
         services.events.broadcast_public("buildings_updated")

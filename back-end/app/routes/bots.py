@@ -1,10 +1,10 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends
 from pydantic import BaseModel
 from typing import Optional, List
 from app.services import Services
 from app.utils.jwt_dependencies import jwt_required
 
-# Pydantic models for request/response
+
 class SaveBotRequest(BaseModel):
     id: Optional[int] = None
     token: str
@@ -22,7 +22,7 @@ class BotResponse(BaseModel):
 def register(app: FastAPI, services: Services):
 
     @app.post("/api/bots/bots", response_model=List[BotResponse])
-    def get_bots(claims=Depends(jwt_required)):
+    def get_bots(_=Depends(jwt_required)):
         bots = services.database.get_bots(all=True)
 
         def process_bot(bot):
@@ -45,7 +45,7 @@ def register(app: FastAPI, services: Services):
         return bots_list
 
     @app.put("/api/bots/save")
-    def save_bot(body: SaveBotRequest, claims=Depends(jwt_required)):
+    def save_bot(body: SaveBotRequest, _=Depends(jwt_required)):
         bot_id = services.database.save_bot(
             body.id, body.token, body.enabled, body.hookEnabled
         )

@@ -29,7 +29,7 @@ class ChangePasswordRequest(BaseModel):
     new_password: str = Field(alias="newPassword")
 
 
-def register(app: FastAPI, services: Services):
+def register(app: FastAPI):
     @app.post("/api/auth/login")
     async def login(
         body: LoginRequest,
