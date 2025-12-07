@@ -1,5 +1,5 @@
 from injector import Binder, Module, singleton, noscope
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from concurrent.futures import ThreadPoolExecutor
 
 from app.settings import Settings
@@ -13,6 +13,7 @@ from .telegram import TelegramConfig, TelegramService
 from .deye_api import DeyeConfig, DeyeApiService
 from .visit_counter import VisitCounterService
 from .users import UsersService
+from .stations import StationsService
 
 
 class ServicesContainer(Module):
@@ -30,24 +31,27 @@ class ServicesContainer(Module):
 
         binder.bind(AuthorizationService, scope=singleton)
 
-        binder.bind(DeyeConfig, scope=singleton)
+        binder.bind(DeyeConfig, scope=noscope)
         binder.bind(DeyeApiService, scope=singleton)
 
+        binder.bind(StationsService, scope=noscope)
+
         events_service_config = EventsServiceConfig(str(self._settings.REDIS_URI), self._settings.DEBUG)
-        binder.bind(EventsServiceConfig, to=events_service_config, scope=singleton)
+        binder.bind(EventsServiceConfig, to=events_service_config, scope=noscope)
         binder.bind(EventsService, to=EventsService(events_service_config), scope=singleton)
         binder.bind(OutagesScheduleService, scope=singleton)
 
-        binder.bind(TelegramConfig, scope=singleton)
+        binder.bind(TelegramConfig, scope=noscope)
         binder.bind(TelegramService, scope=singleton)
 
-        binder.bind(BotConfig, scope=singleton)
+        binder.bind(BotConfig, scope=noscope)
         binder.bind(BotService, scope=singleton)
 
         binder.bind(VisitCounterService, scope=noscope)
 
         binder.bind(UsersService, scope=noscope)
 
-        scheduler = BackgroundScheduler()
-        binder.bind(BackgroundScheduler, to=scheduler, scope=singleton)
-        binder.bind(ThreadPoolExecutor, to=ThreadPoolExecutor(), scope=singleton)
+        scheduler = AsyncIOScheduler()
+        binder.bind(AsyncIOScheduler, to=scheduler, scope=singleton)
+        executor = ThreadPoolExecutor()
+        binder.bind(ThreadPoolExecutor, to=executor, scope=singleton)

@@ -1,50 +1,59 @@
-from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
+from pydantic import BaseModel, ConfigDict, Field
 
 
-@dataclass
-class DeyeStation:
-    battery_soc: float
-    connection_status: str
-    contact_phone: str
-    created_date: float
-    generation_power: str
-    grid_interconnection_type: str
-    id: str
-    installed_capacity: float
-    last_update_time: float
-    location_address: str
-    location_lat: float
-    location_lng: float
+class DeyeStation(BaseModel):
+    id: int
     name: str
-    owner_name: str
-    region_nation_id: int
-    region_timezone: str
-    start_operating_time: float
+    owner_name: Optional[str] = Field(None, alias="ownerName")
+    battery_soc: Optional[float] = Field(None, alias="batterySOC")
+    connection_status: Optional[str] = Field(None, alias="connectionStatus")
+    contact_phone: Optional[str] = Field(None, alias="contactPhone")
+    created_date: Optional[float] = Field(None, alias="createdDate")
+    generation_power: Optional[float] = Field(None, alias="generationPower")
+    grid_interconnection_type: Optional[str] = Field(None, alias="gridInterconnectionType")
+    installed_capacity: Optional[float] = Field(None, alias="installedCapacity")
+    last_update_time: Optional[float] = Field(None, alias="lastUpdateTime")
+    location_address: Optional[str] = Field(None, alias="locationAddress")
+    location_lat: Optional[float] = Field(None, alias="locationLat")
+    location_lng: Optional[float] = Field(None, alias="locationLng")
+    region_nation_id: Optional[int] = Field(None, alias="regionNationId")
+    region_timezone: Optional[str] = Field(None, alias="regionTimezone")
+    start_operating_time: Optional[float] = Field(None, alias="startOperatingTime")
 
-@dataclass
-class DeyeStationList:
+    model_config = ConfigDict(extra='ignore', populate_by_name=True)
+
+
+class DeyeStationList(BaseModel):
     code: str
     msg: str
-    request_id: str
-    station_list: List[DeyeStation]
+    request_id: str = Field(..., alias="requestId")
+    station_list: List[DeyeStation] = Field(default_factory=list, alias="stationList")
     success: bool
     total: int
 
-@dataclass
-class DeyeStationData:
-    battery_power: float
-    battery_soc: float
-    charge_power: float
+    model_config = ConfigDict(extra='ignore', populate_by_name=True)
+
+
+class DeyeStationData(BaseModel):
+    battery_power: Optional[float] = Field(None, alias="batteryPower")
+    battery_soc: Optional[float] = Field(None, alias="batterySOC")
+    charge_power: Optional[float] = Field(None, alias="chargePower")
     code: str
-    consumption_power: float
-    discharge_power: float
-    generation_power: float
-    grid_power: float
-    irradiate_intensity: float
-    last_update_time: float
+    consumption_power: Optional[float] = Field(None, alias="consumptionPower")
+    discharge_power: Optional[float] = Field(None, alias="dischargePower")
+    generation_power: Optional[float] = Field(None, alias="generationPower")
+    grid_power: Optional[float] = Field(None, alias="gridPower")
+    irradiate_intensity: Optional[float] = Field(None, alias="irradiateIntensity")
+    last_update_time: float = Field(alias="lastUpdateTime")
     msg: str
-    purchase_power: float
-    request_id: str
+    purchase_power: Optional[float] = Field(None, alias="purchasePower")
+    request_id: str = Field(alias="requestId")
     success: bool
-    wire_power: float
+    wire_power: Optional[float] = Field(None, alias="wirePower")
+
+    model_config = ConfigDict(
+        frozen=False,
+        populate_by_name=True,
+        extra='ignore',
+    )

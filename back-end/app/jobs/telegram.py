@@ -1,5 +1,5 @@
 from injector import Injector
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.settings import Settings
 from app.services import BotService, DatabaseService
@@ -16,7 +16,7 @@ def register(settings: Settings, injector: Injector):
         database.save_changes()
 
 
-    scheduler = injector.get(BackgroundScheduler)
+    scheduler = injector.get(AsyncIOScheduler)
     scheduler.add_job(
         id      = 'periodic_send_message',
         func    = periodic_send_message,

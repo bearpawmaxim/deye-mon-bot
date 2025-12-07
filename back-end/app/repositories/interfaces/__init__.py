@@ -1,4 +1,6 @@
-from .users_repository import IUsersRepository
-from .visits_counter_repository import IVisitsCounterRepository
+from .users import IUsersRepository
+from .visits_counter import IVisitsCounterRepository
+from .stations import IStationsRepository
+from .stations_data import IStationsDataRepository
 
-__ALL__ = [IUsersRepository, IVisitsCounterRepository]
+__ALL__ = [IUsersRepository, IStationsRepository, IStationsDataRepository, IVisitsCounterRepository]

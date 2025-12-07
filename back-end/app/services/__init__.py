@@ -1,4 +1,4 @@
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from concurrent.futures import ThreadPoolExecutor
 from injector import Injector, inject
 
@@ -13,14 +13,14 @@ from shared.services import EventsService, EventItem
 from .users import UsersService
 from .container import ServicesContainer
 from .authorization import AuthorizationService
-
+from .stations import StationsService
 
 @inject
 class Services:
     authorization: AuthorizationService
     deye_api: DeyeApiService
     telegram: TelegramService
-    scheduler: BackgroundScheduler
+    scheduler: AsyncIOScheduler
     database: DatabaseService
     bot: BotService
     executor: ThreadPoolExecutor
@@ -35,7 +35,7 @@ class Services:
         authorization: AuthorizationService,
         deye_api: DeyeApiService,
         telegram: TelegramService,
-        scheduler: BackgroundScheduler,
+        scheduler: AsyncIOScheduler,
         database: DatabaseService,
         bot: BotService,
         executor: ThreadPoolExecutor,
@@ -62,4 +62,4 @@ class Services:
 __all__ = [Services, BeanieInitializer, DatabaseService, BotService, DeyeConfig,
            DeyeApiService, TelegramConfig, TelegramService, ServicesContainer,
            AuthorizationService, VisitCounterService, EventsService, EventItem,
-           OutagesScheduleService]
+           OutagesScheduleService, StationsService]

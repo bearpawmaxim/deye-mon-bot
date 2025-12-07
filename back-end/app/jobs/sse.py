@@ -1,12 +1,12 @@
 from injector import Injector
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.settings import Settings
 from shared.services.events.service import EventsService
 
 
 def register(settings: Settings, injector: Injector):
-    scheduler = injector.get(BackgroundScheduler)
+    scheduler = injector.get(AsyncIOScheduler)
 
     def send_ping():
         injector.get(EventsService).broadcast_public("ping")

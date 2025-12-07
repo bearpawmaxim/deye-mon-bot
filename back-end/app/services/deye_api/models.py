@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 from injector import inject
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.settings import Settings
 
@@ -29,15 +29,21 @@ class DeyeConfig:
         )
 
 
-@dataclass
-class DeyeApiTokenResponse:
-    accessToken: str
+class DeyeApiTokenResponse(BaseModel):
+    access_token: str = Field(alias="accessToken")
     code: str
-    expiresIn: str
+    expires_in: str = Field(alias="expiresIn")
     msg: str
-    refreshToken: str
-    requestId: str
+    refresh_token: str = Field(alias="refreshToken")
+    request_id: str = Field(alias="requestId")
     scope: str
     success: bool
-    tokenType: str
+    token_type: str = Field(alias="tokenType")
     uid: int
+
+    model_config = ConfigDict(
+        frozen=False,
+        populate_by_name=True,
+        extra='ignore',
+    )
+

@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from ..interfaces.visits_counter_repository import IVisitsCounterRepository
+from ..interfaces.visits_counter import IVisitsCounterRepository
 from shared.models.beanie.visit_counter import DailyVisitCounter, VisitCounter
 
 

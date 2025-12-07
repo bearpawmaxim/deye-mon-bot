@@ -6,7 +6,7 @@ from pydantic import Field
 
 
 class Station(Document):
-    station_id: Optional[str] = Field(None, max_length=64)
+    station_id: Optional[int]
     station_name: Optional[str] = Field(None, max_length=128)
 
     location_lat: Optional[float] = None

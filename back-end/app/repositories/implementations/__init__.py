@@ -1,4 +1,8 @@
-from .users_repository import UsersRepository
-from .visits_counter_repository import VisitsCounterRepository
+from .users import UsersRepository
+from .stations import StationsRepository
+from .stations_data import StationsDataRepository
+from .visits_counter import VisitsCounterRepository
 
-__ALL__ = [UsersRepository, VisitsCounterRepository]
+
+__ALL__ = [UsersRepository, StationsRepository, StationsDataRepository,
+           VisitsCounterRepository]

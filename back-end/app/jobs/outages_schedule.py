@@ -1,5 +1,5 @@
 from datetime import datetime
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from injector import Injector
 
 from app.settings import Settings
@@ -7,7 +7,7 @@ from app.services import OutagesScheduleService
 
 
 def register(settings: Settings, injector: Injector):
-    scheduler = injector.get(BackgroundScheduler)
+    scheduler = injector.get(AsyncIOScheduler)
 
     def update_outages_schedule():
         # TODO: fetch from config
