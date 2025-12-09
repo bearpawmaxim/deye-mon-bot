@@ -2,18 +2,22 @@ from datetime import datetime
 from typing import Optional, List
 from beanie import Document, Link
 from pydantic import Field
+
+from shared.models.beanie.beanie_filter import BeanieFilter
+
+from .lookup import LookupModel, LookupValue
 from .bot import Bot
 from .station import Station
 
 
-class Message(Document):
+class Message(Document, LookupModel):
     channel_id: Optional[str] = None
     name: Optional[str] = None
     message_template: Optional[str] = None
     should_send_template: Optional[str] = None
     timeout_template: Optional[str] = None
 
-    bot: Link[Bot]
+    bot: Optional[Link[Bot]] = None
     last_sent_time: Optional[datetime] = None
     enabled: Optional[bool] = True
 
@@ -31,6 +35,9 @@ class Message(Document):
         )
 
     @classmethod
-    def get_lookup_values(cls):
-        messages = cls.find_all().to_list()
-        return [{'value': m.id, 'text': m.name} for m in messages]
+    async def get_lookup_values(self, filter: BeanieFilter) -> List[LookupValue]:
+        messages = await self.find_all(filter).to_list()
+        return [LookupValue(
+            value = m.id,
+            text  = m.name,
+        ) for m in messages]

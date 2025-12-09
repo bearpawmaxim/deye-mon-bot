@@ -1,59 +1,39 @@
+from beanie import PydanticObjectId
 from fastapi import FastAPI, Depends
-from pydantic import BaseModel
-from typing import Optional, List
-from app.services import Services
+from fastapi_injector import Injected
+from typing import List
+
+from app.models.api import BotResponse, CreateBotRequest, UpdateBotRequest
+from app.services import BotsService
 from app.utils.jwt_dependencies import jwt_required
 
 
-class SaveBotRequest(BaseModel):
-    id: Optional[int] = None
-    token: str
-    enabled: bool = False
-    hookEnabled: bool = False
+def register(app: FastAPI):
 
-class BotResponse(BaseModel):
-    id: int
-    name: str
-    token: str
-    enabled: bool
-    hookEnabled: bool
+    @app.get("/api/bots", response_model=List[BotResponse])
+    async def get_bots(
+        _ = Depends(jwt_required),
+        bots_service = Injected(BotsService),
+    ):
+        return await bots_service.get_bots()
 
 
-def register(app: FastAPI, services: Services):
+    @app.post("/api/bots")
+    async def create_bot(
+        body: CreateBotRequest,
+        _ = Depends(jwt_required),
+        bots_service = Injected(BotsService),
+    ):
+        bot = await bots_service.create_bot(body)
+        return { "success": True, "id": str(bot.id) }
 
-    @app.post("/api/bots/bots", response_model=List[BotResponse])
-    def get_bots(_=Depends(jwt_required)):
-        bots = services.database.get_bots(all=True)
 
-        def process_bot(bot):
-            bot_name = "Invalid bot token"
-            try:
-                bot_name = services.telegram.get_bot_info(bot.id).username
-            except Exception:
-                print(f"Cannot get bot info for bot {bot.id}")
-            return BotResponse(
-                id=bot.id,
-                name=bot_name,
-                token=bot.bot_token,
-                enabled=bot.enabled,
-                hookEnabled=bot.hook_enabled,
-            )
-
-        futures = [services.executor.submit(process_bot, bot) for bot in bots]
-        bots_list = [future.result() for future in futures]
-
-        return bots_list
-
-    @app.put("/api/bots/save")
-    def save_bot(body: SaveBotRequest, _=Depends(jwt_required)):
-        bot_id = services.database.save_bot(
-            body.id, body.token, body.enabled, body.hookEnabled
-        )
-        services.database.save_changes()
-
-        if body.enabled:
-            services.telegram.add_bot(bot_id, body.token)
-        else:
-            services.telegram.remove_bot(bot_id)
-
-        return {"success": True, "id": bot_id}
+    @app.put("/api/bots/{bot_id}")
+    async def update_bot(
+        bot_id: PydanticObjectId,
+        body: UpdateBotRequest,
+        _ = Depends(jwt_required),
+        bots_service = Injected(BotsService),
+    ):
+        await bots_service.update_bot(bot_id, body)
+        return { "success": True, "id": str(bot_id) }

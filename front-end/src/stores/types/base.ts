@@ -1,3 +1,5 @@
+import { ObjectId } from "../../schemas";
+
 export type BaseState = {
   loading: boolean;
   error: string | null;
@@ -13,5 +15,5 @@ export type BaseResponse = {
 }
 
 export type BaseSaveDataResponse = BaseResponse & {
-  id: number;
+  id: ObjectId;
 };

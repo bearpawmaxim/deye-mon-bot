@@ -5,7 +5,7 @@ from injector import Injector
 from app.settings import Settings
 from app.jobs import register_jobs
 from app.routes import register_routes
-from app.services import Services, BeanieInitializer
+from app.services import Services, BeanieInitializer, BotsService, TelegramService
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from app.app_container import init_container
 
@@ -15,10 +15,14 @@ def create_user(config, services: Services):
         services.authorization.add_user(config.ADMIN_USER, config.ADMIN_PASSWORD)
         services.database.save_changes()
 
-def setup_bots(services: Services):
-    bots = services.database.get_bots()
+
+async def setup_bots(injector: Injector):
+    bots_service = injector.get(BotsService)
+    telegram_service = injector.get(TelegramService)
+    bots = await bots_service.get_enabled_bots()
     for bot in bots:
-        services.telegram.add_bot(bot.id, bot.bot_token)
+        telegram_service.add_bot(bot.id, bot.token, bot.hook_enabled)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -27,6 +31,7 @@ async def lifespan(app: FastAPI):
     await beanie_initializer.init()
     scheduler = injector.get(AsyncIOScheduler)
     scheduler.start()
+    await setup_bots(injector)
     yield
     scheduler.shutdown()
 
@@ -44,6 +49,5 @@ def create_app(settings: Settings) -> FastAPI:
     register_routes(app, services)
     register_jobs(settings, injector)
     create_user(settings, services)
-    setup_bots(services)
 
     return app

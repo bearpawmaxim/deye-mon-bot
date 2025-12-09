@@ -1,3 +1,4 @@
+import { ObjectId } from "../../schemas";
 import { BaseState } from "./base";
 
 export type PowerLogPeriod = {
@@ -16,6 +17,6 @@ export type PowerLogsData = {
 
 export type PowerLogsState = BaseState & {
   data: PowerLogsData | null;
-  buildingId: number | null;
+  buildingId: ObjectId | null;
 };
 

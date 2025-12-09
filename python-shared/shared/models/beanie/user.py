@@ -1,9 +1,12 @@
-from typing import Optional
+from typing import List, Optional
 from datetime import datetime
 from beanie import Document
 
+from .beanie_filter import BeanieFilter
+from .lookup import LookupModel, LookupValue
 
-class User(Document):
+
+class User(Document, LookupModel):
     name: str
     password: Optional[str]
     is_active: bool = True
@@ -22,6 +25,10 @@ class User(Document):
         )
 
     @classmethod
-    async def get_lookup_values(cls):
-        users = await cls.find_all().to_list()
-        return [{"value": str(u.id), "text": u.name} for u in users]
+    async def get_lookup_values(self, filter: BeanieFilter) -> List[LookupValue]:
+        users = await self.find(filter).to_list()
+        return [LookupValue(
+            value = u.id,
+            text  = u.name
+        ) for u in users]
+

@@ -8,6 +8,7 @@ def register(app: FastAPI, services: Services):
     async def tg_callback_get(bot_id: int):
         return {"ok": True}
 
+
     @app.post("/api/tg/callback/{bot_id}")
     async def tg_callback_post(bot_id: int, request: Request):
         try:

@@ -2,7 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import apiClient from "../../utils/apiClient";
 import { getErrorMessage } from "../../utils";
 import { BuildingListItem } from "../types";
-import { BuildingEditType } from "../../schemas";
+import { BuildingEditType, ObjectId } from "../../schemas";
 import { RootState } from "../store";
 
 export const fetchBuildings = createAsyncThunk('buildings/fetchBuildings', async (_, thunkAPI) => {
@@ -14,7 +14,7 @@ export const fetchBuildings = createAsyncThunk('buildings/fetchBuildings', async
   }
 });
 
-export const startEditingBuilding = createAsyncThunk('buildings/startEditingBuilding', async (buildingId: number, thunkAPI) => {
+export const startEditingBuilding = createAsyncThunk('buildings/startEditingBuilding', async (buildingId: ObjectId, thunkAPI) => {
   try {
     const state = thunkAPI.getState() as RootState;
     const building = state.buildings.edittedItems.find(b => b.id === buildingId);
@@ -49,7 +49,7 @@ export const saveBuildings = createAsyncThunk('buildings/saveBuildings', async (
   }  
 });
 
-export const deleteBuilding = createAsyncThunk('buildings/deleteBuilding', async (buildingId: number, { getState }) => {
+export const deleteBuilding = createAsyncThunk('buildings/deleteBuilding', async (buildingId: ObjectId, { getState }) => {
   try {
     const state = getState() as RootState;
     const building = state.buildings.edittedItems.find(f => f.id === buildingId);

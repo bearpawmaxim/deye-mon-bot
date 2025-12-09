@@ -194,7 +194,7 @@ async def migrate_bots(session):
     bots = session.query(SQLBot).all()
     for b in bots:
         m = Bot(
-            bot_token=b.bot_token,
+            token=b.bot_token,
             enabled=b.enabled,
             hook_enabled=b.hook_enabled,
         )

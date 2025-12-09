@@ -1,5 +1,4 @@
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
 from typing import List
 from injector import inject
 
@@ -18,13 +17,11 @@ class StationsService(BaseService):
         deye_api: DeyeApiService,
         stations: IStationsRepository,
         stations_data: IStationsDataRepository,
-        executor: ThreadPoolExecutor,
     ):
         super().__init__(events)
         self._deye_api = deye_api
         self._stations = stations
         self._stations_data = stations_data
-        self._executor = executor
 
     async def get_stations(self):
         return await self._stations.get_stations(all=True)

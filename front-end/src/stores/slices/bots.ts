@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { BotsState, ServerBotItem } from "../types";
 import { fetchBots, saveBots } from "../thunks";
+import { ObjectId } from "../../schemas";
 
 const initialState: BotsState = {
   bots: [],
@@ -10,7 +11,7 @@ const initialState: BotsState = {
 };
 
 export type UpdateBotActionPayload = {
-  id: number;
+  id: ObjectId;
   enabled?: boolean;
   hookEnabled?: boolean;
   token?: string;
@@ -29,7 +30,7 @@ export const botsSlice = createSlice({
         bot.changed = true;
       }
     },
-    botSaved(state, { payload: botId }: PayloadAction<number>) {
+    botSaved(state, { payload: botId }: PayloadAction<ObjectId>) {
       const bot = state.bots.find(bot => bot.id === botId);
       if (bot) {
         bot.changed = false;
@@ -47,7 +48,8 @@ export const botsSlice = createSlice({
         enabled: true,
         hookEnabled: true,
         token: token,
-        changed: true
+        changed: true,
+        created: true,
       })
     }
   },
@@ -58,7 +60,7 @@ export const botsSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchBots.fulfilled, (state, action: PayloadAction<Array<ServerBotItem>>) => {
-        state.bots = action.payload.map(bot => ({ ...bot, changed: false}));
+        state.bots = action.payload.map(bot => ({ ...bot, changed: false, created: false }));
         state.loading = false;
         state.creating = false;
       })

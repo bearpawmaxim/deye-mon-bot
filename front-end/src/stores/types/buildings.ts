@@ -1,9 +1,9 @@
 import { MantineColor } from "@mantine/core";
 import { BaseState } from "./base";
-import { BuildingEditType } from "../../schemas";
+import { BuildingEditType, ObjectId } from "../../schemas";
 
 export type BuildingListItem = {
-  id?: number;
+  id?: ObjectId;
   name: string;
   color: MantineColor;
   batteryPercent?: number;

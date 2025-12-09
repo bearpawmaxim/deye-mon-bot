@@ -1,9 +1,10 @@
 import { FC } from "react";
 import { Anchor, Text } from '@mantine/core';
+import { ObjectId } from "../../../schemas";
 import { LookupValue } from "../../../types";
 
 type StationsCellProps = {
-  stations: number[];
+  stations: ObjectId[];
   stationsLookup: LookupValue[];
 }
 

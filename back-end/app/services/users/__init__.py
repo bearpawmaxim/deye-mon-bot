@@ -1,3 +1,3 @@
 from .service import UsersService
 
-__ALL__ = [UsersService]
+__all__ = [UsersService]

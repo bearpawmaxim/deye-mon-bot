@@ -2,7 +2,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from concurrent.futures import ThreadPoolExecutor
 from injector import Injector, inject
 
-from .bot import BotService
+from .bots import BotsService
 from .beanie_initializer import BeanieInitializer
 from .database import DatabaseService
 from .deye_api import DeyeConfig, DeyeApiService
@@ -13,7 +13,10 @@ from shared.services import EventsService, EventItem
 from .users import UsersService
 from .container import ServicesContainer
 from .authorization import AuthorizationService
+from .messages import MessagesService
 from .stations import StationsService
+from .lookups import LookupsService
+
 
 @inject
 class Services:
@@ -22,7 +25,7 @@ class Services:
     telegram: TelegramService
     scheduler: AsyncIOScheduler
     database: DatabaseService
-    bot: BotService
+    bots: BotsService
     executor: ThreadPoolExecutor
     visit_counter: VisitCounterService
     outages_schedule: OutagesScheduleService
@@ -37,7 +40,7 @@ class Services:
         telegram: TelegramService,
         scheduler: AsyncIOScheduler,
         database: DatabaseService,
-        bot: BotService,
+        bots: BotsService,
         executor: ThreadPoolExecutor,
         visit_counter: VisitCounterService,
         outages_schedule: OutagesScheduleService,
@@ -51,7 +54,7 @@ class Services:
         self.telegram = telegram
         self.scheduler = scheduler
         self.database = database
-        self.bot = bot
+        self.bots = bots
         self.executor = executor
         self.visit_counter = visit_counter
         self.outages_schedule = outages_schedule
@@ -59,7 +62,7 @@ class Services:
         self.users = users
 
 
-__all__ = [Services, BeanieInitializer, DatabaseService, BotService, DeyeConfig,
+__all__ = [Services, BeanieInitializer, DatabaseService, BotsService, DeyeConfig,
            DeyeApiService, TelegramConfig, TelegramService, ServicesContainer,
            AuthorizationService, VisitCounterService, EventsService, EventItem,
-           OutagesScheduleService, StationsService]
+           MessagesService, OutagesScheduleService, StationsService, LookupsService]

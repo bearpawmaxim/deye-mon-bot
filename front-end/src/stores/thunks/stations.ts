@@ -1,10 +1,9 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { BaseServerStationItem, ServerStationItem } from "../types";
+import { BaseSaveDataResponse, BaseServerStationItem, ServerStationItem } from "../types";
 import { RootState } from "../store";
 import { stationStateSaved } from "../slices";
 import apiClient from "../../utils/apiClient";
 import { getErrorMessage } from "../../utils";
-import { ObjectId } from "../../schemas";
 
 
 export const fetchStations = createAsyncThunk('stations/fetchStations', async (_, thunkAPI) => {
@@ -27,7 +26,7 @@ export const saveStations = createAsyncThunk('stations/saveStationData', async (
         order: station.order,
         batteryCapacity: station.batteryCapacity,
       } as BaseServerStationItem;
-      const response = await apiClient.put<{ id: ObjectId }>('/stations/save', serverDto);
+      const response = await apiClient.put<BaseSaveDataResponse>('/stations/save', serverDto);
       dispatch(stationStateSaved(response.data.id));
     });
     await Promise.all(promises);

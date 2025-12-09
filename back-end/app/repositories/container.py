@@ -1,23 +1,32 @@
-from injector import Binder, Module, noscope, singleton
+from injector import Binder, Module, noscope
 
 from .interfaces import (
-    IUsersRepository,
+    IMessagesRepository,
     IStationsRepository,
     IStationsDataRepository,
+    IUsersRepository,
     IVisitsCounterRepository,
+    ILookupsRepository,
+    IBotsRepository,
 )
 from .implementations import (
-    UsersRepository,
+    MessagesRepository,
     StationsRepository,
     StationsDataRepository,
+    UsersRepository,
     VisitsCounterRepository,
+    LookupsRepository,
+    BotsRepository,
 )
 
 
 class RepositoryContainer(Module):
 
     def configure(self, binder: Binder):
-        binder.bind(IUsersRepository, to=UsersRepository, scope=noscope)
+        binder.bind(IMessagesRepository, to=MessagesRepository, scope=noscope)
         binder.bind(IStationsRepository, to=StationsRepository, scope=noscope)
         binder.bind(IStationsDataRepository, to=StationsDataRepository, scope=noscope)
+        binder.bind(IUsersRepository, to=UsersRepository, scope=noscope)
         binder.bind(IVisitsCounterRepository, to=VisitsCounterRepository, scope=noscope)
+        binder.bind(ILookupsRepository, to=LookupsRepository, scope=noscope)
+        binder.bind(IBotsRepository, to=BotsRepository, scope=noscope)

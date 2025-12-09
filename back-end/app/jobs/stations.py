@@ -4,7 +4,6 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.settings import Settings
 from app.services import DeyeApiService, DatabaseService, StationsService
-from . import db_job
 
 
 def register(settings: Settings, injector: Injector):
@@ -38,7 +37,6 @@ def register(settings: Settings, injector: Injector):
     #     deye_api: DeyeApiService = injector.get(DeyeApiService)
     #     deye_api.refresh_token()
 
-    @db_job(injector)
     def remove_old_data():
         database: DatabaseService = injector.get(DatabaseService)
         database.delete_old_station_data()

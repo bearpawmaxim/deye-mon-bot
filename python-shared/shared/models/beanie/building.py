@@ -1,11 +1,13 @@
 from beanie import Document, Link
-from typing import Optional
+from typing import List, Optional
 
+from .beanie_filter import BeanieFilter
+from .lookup import LookupModel, LookupValue
 from .station import Station
 from .user import User
 
 
-class Building(Document):
+class Building(Document, LookupModel):
     name: str
     color: str
 
@@ -25,6 +27,9 @@ class Building(Document):
         }
 
     @classmethod
-    async def get_lookup_values(cls):
-        buildings = await cls.find_all().to_list()
-        return [{"value": str(b.id), "text": b.name} for b in buildings]
+    async def get_lookup_values(self, filter: BeanieFilter) -> List[LookupValue]:
+        buildings = await self.find_all(filter).to_list()
+        return [LookupValue(
+            value = b.id,
+            text  = b.name
+        ) for b in buildings]

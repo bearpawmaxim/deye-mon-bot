@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { createExtData, deleteExtData, fetchExtData, fetchLookupValues } from "../../stores/thunks";
 import { DataTable, ErrorMessage, Page } from "../../components";
-import { ColumnDataType, LookupSchema } from "../../types";
+import { ColumnDataType, LookupSchema, LookupValue } from "../../types";
 import { Column } from "@tanstack/react-table";
 import { Button, Group, Modal, Select, Stack, Switch, Tooltip } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -16,7 +16,7 @@ type ComponentProps = {
   extData: ExtDataItem[];
   loading: boolean;
   error: string | null;
-  userLookup: Array<{ value?: number; text: string }>;
+  userLookup: Array<LookupValue>;
   lookupLoading: boolean;
 };
 

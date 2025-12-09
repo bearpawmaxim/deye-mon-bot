@@ -2,19 +2,16 @@ from injector import Injector
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.settings import Settings
-from app.services import BotService, DatabaseService
-from . import db_job
+from app.services import BotsService, TelegramService
 
 def register(settings: Settings, injector: Injector):
 
-    @db_job(injector)
     def periodic_send_message():
-        bot: BotService = injector.get(BotService)
-        database: DatabaseService = injector.get(DatabaseService)
+        # bots: BotsService = injector.get(BotsService)
+        # telegram: TelegramService = injector.get(TelegramService)
 
-        bot.periodic_send()
-        database.save_changes()
-
+        # bots.periodic_send()
+        ...
 
     scheduler = injector.get(AsyncIOScheduler)
     scheduler.add_job(

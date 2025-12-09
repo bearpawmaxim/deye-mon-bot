@@ -13,6 +13,7 @@ import { modals } from "@mantine/modals";
 import { StationsCell } from "./components";
 import { useLookup } from "../../hooks";
 import { Row } from "@tanstack/react-table";
+import { ObjectId } from "../../schemas";
 
 type ComponentProps = {
   messages: Array<ServerMessageListItem>;
@@ -52,7 +53,7 @@ const Component: FC<ComponentProps> = ({ messages, loading, error, dataChanged }
     create();
   }, [dataChanged, navigate]);
 
-  const onEditClick = (messageId: number) => {
+  const onEditClick = (messageId: ObjectId) => {
     const edit = () => navigate(`/messages/edit/${messageId}`);
     if (dataChanged) {
       showUnsavedChangesModal(edit);
@@ -88,7 +89,7 @@ const Component: FC<ComponentProps> = ({ messages, loading, error, dataChanged }
     }, 1);
   }
 
-  const onMessageEnableChange = (id: number, enabled: boolean) => {
+  const onMessageEnableChange = (id: ObjectId, enabled: boolean) => {
     dispatch(updateMessageState({ id, enabled }));
   };
 
@@ -125,7 +126,7 @@ const Component: FC<ComponentProps> = ({ messages, loading, error, dataChanged }
             dataType: ColumnDataType.Text,
           },
           sortingFn: (rowA: Row<ServerMessageListItem>, rowB: Row<ServerMessageListItem>) => {
-            const mapToNames = (stationIDs: number[]) => {
+            const mapToNames = (stationIDs: ObjectId[]) => {
               return stationIDs
                 .map(stationId => stations.find(s => s.value! === stationId))
                 .join(',');

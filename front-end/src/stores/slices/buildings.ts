@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { BuildingListItem, BuildingsState } from "../types";
 import { startEditingBuilding, fetchBuildings, deleteBuilding } from "../thunks";
-import { BuildingEditType } from "../../schemas";
+import { BuildingEditType, ObjectId } from "../../schemas";
 
 const initialState: BuildingsState = {
   items: [],
@@ -22,7 +22,7 @@ export const buildingsSlice = createSlice({
         name: '',
         color: 'blue.4',
         stationId: null,
-        reportUserId: 0,
+        reportUserId: '0',
       };
     },
     finishCreatingBuilding(state, { payload }: PayloadAction<BuildingEditType>) {
@@ -98,7 +98,7 @@ export const buildingsSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(deleteBuilding.fulfilled, (state, { payload }: PayloadAction<number>) => {
+      .addCase(deleteBuilding.fulfilled, (state, { payload }: PayloadAction<ObjectId>) => {
         const edittedItemIndex = state.edittedItems.findIndex(i => i.id === payload);
         if (edittedItemIndex >= 0) {
           state.edittedItems.splice(edittedItemIndex, 1);

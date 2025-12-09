@@ -44,7 +44,6 @@ class Settings(BaseSettings, BaseJWTSettings, BaseMongoSettings, BaseRedisSettin
     # -------------------------
     # Telegram
     # -------------------------
-    TG_BOT_TOKEN: str | None = None
     TG_HOOK_BASE_URL: str | None = None
 
     BOT_TIMEZONE: str = "utc"

@@ -2,9 +2,10 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import apiClient from "../../utils/apiClient";
 import { getErrorMessage } from "../../utils";
 import { PowerLogsData } from "../types";
+import { ObjectId } from "../../schemas";
 
 export type FetchPowerLogsParams = {
-  buildingId: number;
+  buildingId: ObjectId;
   startDate: string;
   endDate: string;
 };

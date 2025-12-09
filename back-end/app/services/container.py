@@ -7,13 +7,15 @@ from shared.services.events import EventsService, EventsServiceConfig
 from .beanie_initializer import BeanieInitializer
 from .authorization import AuthorizationService
 from .database import DatabaseService
-from .bot import BotConfig, BotService
+from .bots import BotConfig, BotsService
 from .outages_schedule import OutagesScheduleService
 from .telegram import TelegramConfig, TelegramService
 from .deye_api import DeyeConfig, DeyeApiService
 from .visit_counter import VisitCounterService
 from .users import UsersService
 from .stations import StationsService
+from .messages import MessagesService
+from .lookups import LookupsService
 
 
 class ServicesContainer(Module):
@@ -45,11 +47,13 @@ class ServicesContainer(Module):
         binder.bind(TelegramService, scope=singleton)
 
         binder.bind(BotConfig, scope=noscope)
-        binder.bind(BotService, scope=singleton)
+        binder.bind(BotsService, scope=singleton)
 
         binder.bind(VisitCounterService, scope=noscope)
 
         binder.bind(UsersService, scope=noscope)
+        binder.bind(MessagesService, scope=noscope)
+        binder.bind(LookupsService, scope=noscope)
 
         scheduler = AsyncIOScheduler()
         binder.bind(AsyncIOScheduler, to=scheduler, scope=singleton)

@@ -1,11 +1,13 @@
 from datetime import datetime
-from typing import Optional
-
+from typing import List, Optional
 from beanie import Document
 from pydantic import Field
 
+from .beanie_filter import BeanieFilter
+from .lookup import LookupModel, LookupValue
 
-class Station(Document):
+
+class Station(Document, LookupModel):
     station_id: Optional[int]
     station_name: Optional[str] = Field(None, max_length=128)
 
@@ -74,6 +76,9 @@ class Station(Document):
         }
 
     @classmethod
-    async def get_lookup_values(cls):
-        stations = await cls.find_all().to_list()
-        return [{"value": str(s.id), "text": s.station_name} for s in stations]
+    async def get_lookup_values(self, filter: BeanieFilter) -> List[LookupValue]:
+        stations = await self.find(filter).to_list()
+        return [LookupValue(
+            text  = s.station_name,
+            value = s.id
+        ) for s in stations]

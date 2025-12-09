@@ -1,3 +1,5 @@
+import { ObjectId } from "../schemas";
+
 export enum LookupSchema {
   Building = 'building',
   Message = 'message',
@@ -7,6 +9,6 @@ export enum LookupSchema {
 };
 
 export type LookupValue = {
-  value?: number;
+  value?: ObjectId;
   text: string;
 };

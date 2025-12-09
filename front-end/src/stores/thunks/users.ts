@@ -28,7 +28,7 @@ export const saveUsers = createAsyncThunk('users/saveUsers', async (_, { getStat
         isActive: user.isActive,
         isReporter: user.isReporter,
       } as BaseServerUserItem;
-      const response = await apiClient.put<{ id: ObjectId }>('/users/save', serverDto);
+      const response = await apiClient.put<BaseSaveDataResponse>('/users/save', serverDto);
       dispatch(userSaved(response.data.id));
     });
     await Promise.all(promises);

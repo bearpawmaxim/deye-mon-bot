@@ -9,9 +9,11 @@ from .station import Station
 from .station_data import StationData
 from .user import User
 from .visit_counter import VisitCounter, DailyVisitCounter
+from .beanie_filter import BeanieFilter
+
 
 __all__ = [
-    Bot, AllowedChat, ChatRequest,
+    BeanieFilter, Bot, AllowedChat, ChatRequest,
     User, Message, Station, Building,
     StationData, ExtData, DashboardConfig,
     VisitCounter, DailyVisitCounter

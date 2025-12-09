@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { MessagesState, ServerMessageListItem, TemplatePreviewResponse } from "../types";
-import { editMessage, fetchMessages, getChannel, getTemplatePreview, saveMessage } from "../thunks";
-import { MessageEdit } from "../../schemas";
+import { editMessage, fetchMessages, getChannel, getTemplatePreview, createMessage, updateMessage } from "../thunks";
+import { MessageEdit, ObjectId } from "../../schemas";
 
 
 const initialState: MessagesState = {
@@ -14,7 +14,7 @@ const initialState: MessagesState = {
 };
 
 export type UpdateMessageActionPayload = {
-  id: number;
+  id: ObjectId;
   enabled: boolean;
 };
 
@@ -32,17 +32,17 @@ export const messagesSlice = createSlice({
           message.changed = true;
         }
       },
-      messageStateSaved(state, { payload: stationId }: PayloadAction<number>) {
+      messageStateSaved(state, { payload: stationId }: PayloadAction<ObjectId>) {
         const station = state.messages.find(s => s.id === stationId);
         if (station) {
           station.changed = false;
         }
       },
-      updateMessage(state, { payload }: PayloadAction<MessageEdit>) {
+      updateEditingMessage(state, { payload }: PayloadAction<MessageEdit>) {
         state.editingMessage = payload;
         state.changed = true;
       },
-      createMessage(state) {
+      startCreatingMessage(state) {
         const messageNumber = state.messages?.length ?? 0;
         state.editingMessage = {
           name: `New message ${messageNumber + 1}`,
@@ -114,16 +114,30 @@ export const messagesSlice = createSlice({
           state.previewError = action.payload as string;
         });
       builder
-        .addCase(saveMessage.pending, (state) => {
+        .addCase(updateMessage.pending, (state) => {
           state.loading = true;
           state.error = null;
         })
-        .addCase(saveMessage.fulfilled, (state) => {
+        .addCase(updateMessage.fulfilled, (state) => {
           state.loading = false;
           state.creating = false;
           state.changed = false;
         })
-        .addCase(saveMessage.rejected, (state, action: PayloadAction<unknown>) => {
+        .addCase(updateMessage.rejected, (state, action: PayloadAction<unknown>) => {
+          state.loading = false;
+          state.error = action.payload as string;
+        });
+      builder
+        .addCase(createMessage.pending, (state) => {
+          state.loading = true;
+          state.error = null;
+        })
+        .addCase(createMessage.fulfilled, (state) => {
+          state.loading = false;
+          state.creating = false;
+          state.changed = false;
+        })
+        .addCase(createMessage.rejected, (state, action: PayloadAction<unknown>) => {
           state.loading = false;
           state.error = action.payload as string;
         });
@@ -131,8 +145,8 @@ export const messagesSlice = createSlice({
   });
   
   export const {
-    updateMessage,
-    createMessage,
+    updateEditingMessage,
+    startCreatingMessage,
     finishEditingMessage,
     updateMessageState,
     messageStateSaved,

@@ -6,10 +6,11 @@ import { Text, Group, Loader, Stack } from '@mantine/core'
 import { modals } from '@mantine/modals'
 import { connect } from "react-redux";
 import { MessagePreview } from "./messagePreview";
+import { ObjectId } from "../../../schemas";
 
 type OpenMessagePreviewOptions = {
   name: string,
-  stations: number[];
+  stations: ObjectId[];
   shouldSendTemplate: string;
   timeoutTemplate: string;
   messageTemplate: string;
