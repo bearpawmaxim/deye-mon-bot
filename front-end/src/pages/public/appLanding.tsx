@@ -11,6 +11,7 @@ import iconLight from '../../assets/icon_light_with_text.png';
 import appImage1 from '../../assets/app/app01.png';
 import appImage2 from '../../assets/app/app02.png';
 import appImage3 from '../../assets/app/app03.png';
+import { initGA, trackPageView } from '../../utils/analytics';
 
 interface FeatureCardProps {
   icon: IconName;
@@ -67,6 +68,12 @@ export const AppLandingPage = () => {
     };
 
     fetchDownloadUrl();
+  }, []);
+
+  // Google Analytics
+  useEffect(() => {
+    initGA();
+    trackPageView('/app', 'App Landing Page');
   }, []);
 
   const features = [
