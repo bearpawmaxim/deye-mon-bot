@@ -11,8 +11,6 @@ class EventsService:
     REDIS_PRIVATE_CHANNEL = "sse_private"
 
     def __init__(self, config: EventsServiceConfig):
-        print(config)
-
         if config.is_debug:
             self.transport: EventsTransport = LocalTransport()
         else:

@@ -6,11 +6,11 @@ from app.services import BotsService, TelegramService
 
 def register(settings: Settings, injector: Injector):
 
-    def periodic_send_message():
-        # bots: BotsService = injector.get(BotsService)
-        # telegram: TelegramService = injector.get(TelegramService)
+    async def periodic_send_message():
+        bots: BotsService = injector.get(BotsService)
+        telegram: TelegramService = injector.get(TelegramService)
 
-        # bots.periodic_send()
+        await bots.periodic_send()
         ...
 
     scheduler = injector.get(AsyncIOScheduler)

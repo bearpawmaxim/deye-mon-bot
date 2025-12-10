@@ -59,7 +59,6 @@ class Settings(BaseSettings, BaseJWTSettings, BaseMongoSettings, BaseRedisSettin
     # -------------------------
     HOST: str = "127.0.0.1"
     STATISTIC_KEEP_DAYS: int = 3
-    IS_MIGRATION_RUN: bool = False
     SSE_PING_INTERVAL: int = 45
 
 

@@ -1,3 +1,4 @@
+from aiohttp import ClientSession
 from fastapi import FastAPI
 from fastapi_injector import attach_injector
 from injector import Binder, Injector, Module, noscope, singleton
@@ -9,6 +10,7 @@ from .repositories import RepositoryContainer
 from .services import Services, ServicesContainer
 from .services.authorization import AuthorizationService
 from .services.database import DBSession
+
 
 class AppContainer(Module):
     def __init__(self, settings: Settings):
@@ -42,6 +44,8 @@ class AppContainer(Module):
 
         binder.bind(AuthorizationService, scope=singleton)
 
+        binder.bind(ClientSession, to=None)
+
         binder.bind(Services, scope=noscope)
 
 
@@ -56,3 +60,7 @@ def init_container(app: FastAPI, settings: Settings) -> Injector:
     injector = Injector(containers)
     attach_injector(app, injector)
     return injector
+
+def bind_client_session(injector: Injector):
+    session = ClientSession()
+    injector.binder.bind(ClientSession, to=session, scope=singleton)

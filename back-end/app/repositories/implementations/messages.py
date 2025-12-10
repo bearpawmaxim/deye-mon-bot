@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import List
 
 from beanie import PydanticObjectId
@@ -59,3 +60,10 @@ class MessagesRepository(IMessagesRepository):
                 print(f"No attr {key} in Message")
         await message.save()
         return message
+
+    async def set_last_sent(self, message_id: PydanticObjectId):
+        message = await Message.get(message_id)
+        if not message:
+            return
+        message.last_sent_time = datetime.now(timezone.utc)
+        await message.save()

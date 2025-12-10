@@ -9,9 +9,10 @@ from app.services import OutagesScheduleService
 def register(settings: Settings, injector: Injector):
     scheduler = injector.get(AsyncIOScheduler)
 
-    def update_outages_schedule():
+    async def update_outages_schedule():
         # TODO: fetch from config
-        injector.get(OutagesScheduleService).update(25, 902)
+        service = injector.get(OutagesScheduleService)
+        await service.update(25, 902)
 
     scheduler.add_job(
         id            = 'update_outages_schedule',

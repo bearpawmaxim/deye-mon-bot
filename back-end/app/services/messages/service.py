@@ -29,17 +29,18 @@ class MessagesService(BaseService):
         self._telegram = telegram
 
 
-    def _get_bot_name(self, bot_id: str):
+    async def _get_bot_name(self, bot_id: str):
         try:
-            return self._telegram.get_bot_info(bot_id).username
+            bot_info = await self._telegram.get_bot_info(bot_id)
+            return bot_info.username
         except:
             print(f'Cannot get bot info for bot {bot_id}')
             return 'Invalid bot identifier'
 
 
-    def _get_channel_name(self, channel_id: str, bot_id: str):
+    async def _get_channel_name(self, channel_id: str, bot_id: str):
         try:
-            chat_info = self._telegram.get_chat_info(channel_id, bot_id)
+            chat_info = await self._telegram.get_chat_info(channel_id, bot_id)
             return chat_info.title
         except:
             print(f'Cannot get channel info for channel {channel_id}')
@@ -47,8 +48,8 @@ class MessagesService(BaseService):
 
 
     async def _process_message(self, message):
-        bot_name = self._get_bot_name(message.bot.id)
-        channel_name = self._get_channel_name(message.channel_id, message.bot.id)
+        bot_name = await self._get_bot_name(message.bot.id)
+        channel_name = await self._get_channel_name(message.channel_id, message.bot.id)
         stations = [station.id for station in message.stations]
         return MessageListResponseModel(
             id             = message.id,
@@ -75,8 +76,8 @@ class MessagesService(BaseService):
     async def get_message(self, message_id: PydanticObjectId) -> MessageEditResponseModel:
         message = await self._messages.get_message(message_id)
 
-        bot_name = self._get_bot_name(message.bot.id)
-        channel_name = self._get_channel_name(message.channel_id, message.bot.id)
+        bot_name = await self._get_bot_name(message.bot.id)
+        channel_name = await self._get_channel_name(message.channel_id, message.bot.id)
         stations = [station.id for station in message.stations]
         return MessageEditResponseModel(
             id                   = message.id,

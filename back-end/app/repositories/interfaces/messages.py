@@ -27,3 +27,7 @@ class IMessagesRepository(ABC):
     @abstractmethod
     async def update(self, message_id: PydanticObjectId, data: dict) -> Message:
         ...
+
+    @abstractmethod
+    async def set_last_sent(self, message_id: PydanticObjectId):
+        ...

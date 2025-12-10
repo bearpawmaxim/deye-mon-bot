@@ -57,9 +57,9 @@ class BotsService(BaseService):
         async def process_bot(bot: Bot):
             bot_name = "Invalid bot token"
             try:
-                bot_name = self._telegram.get_bot_info(bot.id).username
-            except Exception:
-                print(f"Cannot get bot info for bot {bot.id}")
+                bot_name = (await self._telegram.get_bot_info(bot.id)).username
+            except Exception as e:
+                print(f"Cannot get bot info for bot {bot.id}: {str(e)}")
             return BotResponse(
                 id           = bot.id,
                 name         = bot_name,
@@ -84,21 +84,21 @@ class BotsService(BaseService):
         print(dto.model_dump())
         bot = await self._bots.create_bot(dto.model_dump())
         if bot.enabled:
-            self._telegram.add_bot(bot.id, bot.token, bot.hook_enabled)
+            await self._telegram.add_bot(bot.id, bot.token, bot.hook_enabled)
         return bot
 
 
     async def update_bot(self, bot_id: PydanticObjectId, dto: UpdateBotRequest):
         bot = await self._bots.update_bot(bot_id, dto.model_dump())
         if bot.enabled:
-            self._telegram.add_bot(bot.id, bot.token, bot.hook_enabled)
+            await self._telegram.add_bot(bot.id, bot.token, bot.hook_enabled)
         else:
-            self._telegram.remove_bot(bot.id)
+            await self._telegram.remove_bot(bot.id)
 
         return bot
 
 
-    def update(self, bot_id: int, message):
+    async def update(self, bot_id: int, message):
         bot_id = int(bot_id)
         if 'message' in message:
             chat_id = message["message"]["chat"]["id"]
@@ -107,7 +107,7 @@ class BotsService(BaseService):
                 return
             if self._database.get_is_chat_allowed(chat_id, bot_id):
                 text = message['message']['text']
-                self._telegram.send_message(bot_id, chat_id, f"pong '{text}'")
+                await self._telegram.send_message(bot_id, chat_id, f"pong '{text}'")
             else:
                 self._database.add_chat_request(chat_id, bot_id)
                 self.broadcast_private("chats_updated")
@@ -175,7 +175,7 @@ class BotsService(BaseService):
 
     async def _send_message(self, message, message_content):
         try:
-            self._telegram.send_message(message.bot.id, message.channel_id, message_content)
+            await self._telegram.send_message(message.bot.id, message.channel_id, message_content)
             await self._messages.set_last_sent(message.id)
             message.last_sent_time = datetime.now(timezone.utc)
         except Exception as e:
@@ -224,7 +224,7 @@ class BotsService(BaseService):
                 if info is None:
                     continue
                 if info.should_send and info.next_send_time <= datetime.now(timezone.utc):
-                    self._send_message(message, info.message)
+                    await self._send_message(message, info.message)
             except Exception as e:
                 print(f"Error sending message '{message.name}': {e}")
 

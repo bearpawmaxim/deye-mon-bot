@@ -1,7 +1,7 @@
 from injector import inject
 from pydantic import ValidationError
-import requests
 from datetime import datetime, timezone
+import aiohttp
 
 from app.services.base import BaseService
 from shared.services.events.service import EventsService
@@ -10,69 +10,80 @@ from .models import SchedulesResponse, DayStatus
 
 @inject
 class OutagesScheduleService(BaseService):
-    def __init__(self, events: EventsService):
+    def __init__(self, events: EventsService, session: aiohttp.ClientSession):
         super().__init__(events)
+        self._session = session
         self._cache = SchedulesResponse({})
 
     def get_schedule(self, queue: str):
-        schedule = self._cache.root.get(queue)
-        return schedule
+        return self._cache.root.get(queue)
 
-    def update(self, region: int, dso: int):
-        yasno_url = f"https://app.yasno.ua/api/blackout-service/public/shutdowns/regions/{region}/dsos/{dso}/planned-outages"
+    async def update(self, region: int, dso: int):
+        yasno_url = (
+            f"https://app.yasno.ua/api/blackout-service/public/shutdowns/"
+            f"regions/{region}/dsos/{dso}/planned-outages"
+        )
+
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko)"
+            ),
+            "Accept": "application/json",
+        }
+
         try:
-            response = requests.get(
-                yasno_url,
-                timeout=10,
-                headers={
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                    'Accept': 'application/json',
-                }
-            )
+            async with self._session.get(yasno_url, headers=headers, timeout=10) as resp:
+                if resp.status != 200:
+                    print(f"Failed to fetch YASNO data. Status: {resp.status}")
+                    return None
 
-            if not response.ok:
-                print(f"Failed to fetch data from YASNO API. Status: {response.status_code}")
-                return None
+                data = await resp.json()
 
-            data = response.json()
-            
             transformed_data = {}
             for queue, unit_data in data.items():
                 days_list = []
-                if 'today' in unit_data:
-                    days_list.append(unit_data['today'])
-                if 'tomorrow' in unit_data:
-                    days_list.append(unit_data['tomorrow'])
-                
+                if "today" in unit_data:
+                    days_list.append(unit_data["today"])
+                if "tomorrow" in unit_data:
+                    days_list.append(unit_data["tomorrow"])
                 transformed_data[queue] = {
-                    'days': days_list,
-                    'updatedOn': unit_data.get('updatedOn')
+                    "days": days_list,
+                    "updatedOn": unit_data.get("updatedOn")
                 }
-            
+
             parsed = SchedulesResponse.model_validate(transformed_data)
-            
+
             now = datetime.now(timezone.utc)
             for unit in parsed.root.values():
                 for day in unit.days:
-                    day_date = day.date.replace(tzinfo=timezone.utc) if day.date.tzinfo is None else day.date.astimezone(timezone.utc)
-                    days_diff = abs((day_date.date() - now.date()).days)
-                    if days_diff > 2:
+                    day_date = (
+                        day.date.replace(tzinfo=timezone.utc)
+                        if day.date.tzinfo is None 
+                        else day.date.astimezone(timezone.utc)
+                    )
+                    if abs((day_date.date() - now.date()).days) > 2:
                         day.status = DayStatus.WaitingForSchedule
 
             self._cache = parsed
             self.broadcast_public("outages_updated")
 
-        except requests.exceptions.Timeout:
-            print("Request to YASNO API timed out")
+        except aiohttp.ClientConnectionError as e:
+            print(f"YASNO connection error: {e}")
             return None
-            
-        except requests.exceptions.RequestException as e:
-            print(f"Failed to fetch data from YASNO API: {str(e)}")
+
+        except aiohttp.ClientTimeout:
+            print("Timeout while requesting YASNO API")
+            return None
+
+        except aiohttp.ClientError as e:
+            print(f"YASNO request error: {e}")
             return None
 
         except ValidationError as ve:
-            print(repr(ve.errors()[0]['type']))
+            print(f"Validation error: {ve}")
+            return None
 
         except Exception as e:
-            print(f"Internal server error: {str(e)}")
+            print(f"Internal error in outage schedule update: {e}")
             return None

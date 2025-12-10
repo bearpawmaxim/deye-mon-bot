@@ -61,7 +61,7 @@ class StationsService(BaseService):
         )
 
     async def sync_stations(self):
-        stations = self._deye_api.get_station_list()
+        stations = await self._deye_api.get_station_list()
         if stations is None:
             return
         for station in stations.station_list:
@@ -71,7 +71,7 @@ class StationsService(BaseService):
         stations = await self._stations.get_stations()
         
         for station in stations:
-            station_data = self._deye_api.get_station_data(station.station_id)
+            station_data = await self._deye_api.get_station_data(station.station_id)
             if station_data is None:
                 continue
 
