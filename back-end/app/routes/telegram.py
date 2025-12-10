@@ -1,19 +1,25 @@
+from beanie import PydanticObjectId
 from fastapi import FastAPI, Request
-from app.services import Services
+from fastapi_injector import Injected
+from app.services import BotsService
 
 
-def register(app: FastAPI, services: Services):
+def register(app: FastAPI):
 
     @app.get("/api/tg/callback/{bot_id}")
-    async def tg_callback_get(bot_id: int):
+    async def tg_callback_get(bot_id: PydanticObjectId):
         return {"ok": True}
 
 
     @app.post("/api/tg/callback/{bot_id}")
-    async def tg_callback_post(bot_id: int, request: Request):
+    async def tg_callback_post(
+        bot_id: PydanticObjectId,
+        request: Request,
+        bots = Injected(BotsService)
+    ):
         try:
             data = await request.json()
-            services.bot.update(bot_id, data)
+            await bots.update(bot_id, data)
         except Exception as e:
             print(f"Error processing request: {e}")
         finally:

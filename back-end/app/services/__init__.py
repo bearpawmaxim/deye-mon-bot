@@ -16,6 +16,7 @@ from .authorization import AuthorizationService
 from .messages import MessagesService
 from .stations import StationsService
 from .lookups import LookupsService
+from .chats import ChatsService
 
 
 @inject
@@ -65,4 +66,5 @@ class Services:
 __all__ = [Services, BeanieInitializer, DatabaseService, BotsService, DeyeConfig,
            DeyeApiService, TelegramConfig, TelegramService, ServicesContainer,
            AuthorizationService, VisitCounterService, EventsService, EventItem,
-           MessagesService, OutagesScheduleService, StationsService, LookupsService]
+           MessagesService, OutagesScheduleService, StationsService, LookupsService,
+           ChatsService]

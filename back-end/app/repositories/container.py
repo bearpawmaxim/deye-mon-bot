@@ -8,6 +8,7 @@ from .interfaces import (
     IVisitsCounterRepository,
     ILookupsRepository,
     IBotsRepository,
+    IChatsRepository,
 )
 from .implementations import (
     MessagesRepository,
@@ -17,6 +18,7 @@ from .implementations import (
     VisitsCounterRepository,
     LookupsRepository,
     BotsRepository,
+    ChatsRepository,
 )
 
 
@@ -30,3 +32,4 @@ class RepositoryContainer(Module):
         binder.bind(IVisitsCounterRepository, to=VisitsCounterRepository, scope=noscope)
         binder.bind(ILookupsRepository, to=LookupsRepository, scope=noscope)
         binder.bind(IBotsRepository, to=BotsRepository, scope=noscope)
+        binder.bind(IChatsRepository, to=ChatsRepository, scope=noscope)

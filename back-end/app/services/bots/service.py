@@ -8,7 +8,7 @@ from contextlib import redirect_stdout
 from beanie import PydanticObjectId
 from injector import inject
 
-from app.repositories import IBotsRepository, IMessagesRepository
+from app.repositories import IBotsRepository, IChatsRepository, IMessagesRepository
 from app.services.database.service import DatabaseService
 from app.services.telegram.service import TelegramService
 from app.models.api import BotResponse, CreateBotRequest, UpdateBotRequest
@@ -37,6 +37,7 @@ class BotsService(BaseService):
         database: DatabaseService,
         messages: IMessagesRepository,
         bots: IBotsRepository,
+        chats: IChatsRepository,
         events: EventsService,
     ):
         super().__init__(events)
@@ -45,6 +46,7 @@ class BotsService(BaseService):
         self._database = database
         self._messages = messages
         self._bots = bots
+        self._chats = chats
 
 
     async def get_enabled_bots(self) -> List[Bot]:
@@ -98,21 +100,19 @@ class BotsService(BaseService):
         return bot
 
 
-    async def update(self, bot_id: int, message):
-        bot_id = int(bot_id)
+    async def update(self, bot_id: PydanticObjectId, message):
         if 'message' in message:
             chat_id = message["message"]["chat"]["id"]
-            if not self._database.get_is_hook_enabled(bot_id):
+            if not (await self._bots.get_is_hook_enabled(bot_id)):
                 print(f'hook processing is disabled for bot {bot_id}')
                 return
-            if self._database.get_is_chat_allowed(chat_id, bot_id):
+            if (await self._chats.get_is_chat_allowed(chat_id, bot_id)):
                 text = message['message']['text']
                 await self._telegram.send_message(bot_id, chat_id, f"pong '{text}'")
             else:
-                self._database.add_chat_request(chat_id, bot_id)
+                await self._chats.add_chat_request(chat_id, bot_id)
                 self.broadcast_private("chats_updated")
                 print(f'request from not allowed chat {chat_id}')
-            self._database.save_changes()
 
 
     def _populate_stations_data(self, template_data, stations: List[Station], force):

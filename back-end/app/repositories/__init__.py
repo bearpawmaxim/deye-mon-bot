@@ -6,10 +6,11 @@ from .interfaces import (
     IVisitsCounterRepository,
     IBotsRepository,
     ILookupsRepository,
+    IChatsRepository,
 )
 from .container import RepositoryContainer
 
 
 __all__ = [IMessagesRepository, IBotsRepository, IStationsRepository, 
-           IStationsDataRepository, ILookupsRepository,
+           IStationsDataRepository, ILookupsRepository, IChatsRepository,
            IUsersRepository, IVisitsCounterRepository, RepositoryContainer]

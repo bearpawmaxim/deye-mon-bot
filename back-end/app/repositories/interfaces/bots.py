@@ -22,3 +22,7 @@ class IBotsRepository(ABC):
     @abstractmethod
     async def update_bot(self, bot_id: PydanticObjectId, data: dict) -> Bot:
         ...
+
+    @abstractmethod
+    async def get_is_hook_enabled(self, bot_id: PydanticObjectId) -> bool:
+        ...

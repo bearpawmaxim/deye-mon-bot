@@ -5,7 +5,8 @@ from .visits_counter import VisitsCounterRepository
 from .messages import MessagesRepository
 from .bots import BotsRepository
 from .lookups import LookupsRepository
+from .chats import ChatsRepository
 
 
 __all__ = [UsersRepository, MessagesRepository, BotsRepository, StationsRepository,
-           StationsDataRepository, VisitsCounterRepository, LookupsRepository]
+           StationsDataRepository, VisitsCounterRepository, LookupsRepository, ChatsRepository]
