@@ -2,7 +2,6 @@ from beanie import PydanticObjectId
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi_injector import Injected
 from pydantic import BaseModel, Field
-from app.services import Services
 from app.services.authorization import AuthorizationService
 from app.utils.jwt_dependencies import jwt_refresh_required, jwt_required
 

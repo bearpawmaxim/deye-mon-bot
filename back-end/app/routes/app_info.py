@@ -1,5 +1,5 @@
 import httpx
-from fastapi import APIRouter, HTTPException
+from fastapi import HTTPException
 
 FIRESTORE_URL = 'https://firestore.googleapis.com/v1/projects/svitlo-power/databases/(default)/documents/sites/app'
 

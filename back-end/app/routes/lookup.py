@@ -1,10 +1,10 @@
 from fastapi import FastAPI, Depends
 from fastapi_injector import Injected
-from app.services import Services, LookupsService
+from app.services import LookupsService
 from app.utils.jwt_dependencies import jwt_required
 
 
-def register(app: FastAPI, services: Services):
+def register(app: FastAPI):
 
     @app.get("/api/lookup/{lookup_name}")
     async def get_lookup_values(

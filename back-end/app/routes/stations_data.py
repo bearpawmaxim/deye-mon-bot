@@ -1,10 +1,10 @@
 from typing import List
 from fastapi import FastAPI, Depends, HTTPException, Body, Path
 from fastapi_injector import Injected
-from app.services import Services, StationsService
+from app.services import StationsService
 from app.utils.jwt_dependencies import jwt_required
 
-def register(app: FastAPI, services: Services):
+def register(app: FastAPI):
 
     @app.post("/api/stationsData/stationsData")
     async def get_stations_data(
