@@ -14,6 +14,7 @@ import { IconButton } from "../../components";
 import { PageHeaderButton, useHeaderContent } from "../../providers";
 import { BuildingEditType } from "../../schemas";
 import { authDataSelector, createSelectEdittedBuildings } from "../../stores/selectors";
+import { initGA, trackPageView } from "../../utils/analytics";
 
 type ComponentProps = {
   loadingConfig: boolean;
@@ -85,6 +86,12 @@ const Component: FC<ComponentProps> = ({
   useEffect(() => {
     fetchOutages();
   }, [fetchOutages]);
+
+  // Google Analytics
+  useEffect(() => {
+    initGA();
+    trackPageView('/', 'Buildings Dashboard');
+  }, []);
 
   const getHeaderButtons = useCallback((dataChanged: boolean): PageHeaderButton[] => [
     { text: 'Save', icon: "save", color: "green", onClick: saveData, disabled: !dataChanged, },

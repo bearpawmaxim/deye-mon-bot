@@ -7,6 +7,7 @@ import { fetchStationsData } from "../../stores/thunks";
 import { ErrorMessage } from "../../components";
 import { ComboboxItem, Select, SimpleGrid } from "@mantine/core";
 import useLocalStorage from "../../hooks/useLocalStorage";
+import { initGA, trackPageView } from "../../utils/analytics";
 
 type ComponentProps = {
   stationsData: Array<StationDataItem>;
@@ -60,6 +61,12 @@ const Component: FC<ComponentProps> = ({ stationsData, loading, error }) => {
     const interval = setInterval(() => dispatch(fetchStationsData(parseInt(dataInterval))), 30000);
     return () => clearInterval(interval);
   }, [dispatch, dataInterval]);
+
+  // Google Analytics
+  useEffect(() => {
+    initGA();
+    trackPageView('/', 'Home Page');
+  }, []);
 
   const onDataIntervalChange = (_: unknown, option: ComboboxItem) => {
     const interval = parseInt(option.value);
