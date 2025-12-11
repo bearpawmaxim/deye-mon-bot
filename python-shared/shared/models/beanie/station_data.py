@@ -35,5 +35,5 @@ class StationData(Document):
         }
 
     @property
-    def station(self):
-        return Station.get_link(self.station_id)
+    async def station(self):
+        return await Station.get(self.station_id)

@@ -2,37 +2,35 @@ import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { ExtDataItem } from "../../stores/types";
 import { connect } from "react-redux";
 import { RootState, useAppDispatch } from "../../stores/store";
-import { createExtData, deleteExtData, fetchExtData, fetchLookupValues } from "../../stores/thunks";
+import { createExtData, deleteExtData, fetchExtData } from "../../stores/thunks";
 import { DataTable, ErrorMessage, Page } from "../../components";
-import { ColumnDataType, LookupSchema, LookupValue } from "../../types";
+import { ColumnDataType, LookupSchema } from "../../types";
 import { Column } from "@tanstack/react-table";
-import { Button, Group, Modal, Select, Stack, Switch, Tooltip } from "@mantine/core";
+import { Button, Group, Modal, Select, Stack, Switch, Text, Tooltip } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { modals } from "@mantine/modals";
 import { DateTimePicker } from "@mantine/dates";
 import { PageHeaderButton, useHeaderContent } from "../../providers";
+import { useLookup } from "../../hooks";
+import { ObjectId } from "../../schemas";
 
 type ComponentProps = {
   extData: ExtDataItem[];
   loading: boolean;
   error: string | null;
-  userLookup: Array<LookupValue>;
-  lookupLoading: boolean;
 };
 
 const mapStateToProps = (state: RootState): ComponentProps => ({
   extData: state.extData.extData,
   loading: state.extData.loading,
   error: state.extData.error,
-  userLookup: state.lookupValues.items[LookupSchema.ReporterUser] || [],
-  lookupLoading: state.lookupValues.loading[LookupSchema.ReporterUser] || false,
 });
 
-const Component: FC<ComponentProps> = ({ extData, loading, error, userLookup, lookupLoading }) => {
+const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
   const dispatch = useAppDispatch();
   const [modalOpened, setModalOpened] = useState(false);
   const [formData, setFormData] = useState({
-    user_id: null as number | null,
+    user_id: null as ObjectId | null,
     grid_state: false,
     received_at: null as Date | string | null,
   });
@@ -44,13 +42,9 @@ const Component: FC<ComponentProps> = ({ extData, loading, error, userLookup, lo
 
   useEffect(() => {
     fetchData();
-    dispatch(fetchLookupValues(LookupSchema.ReporterUser));
   }, [fetchData, dispatch]);
 
-  const userOptions = useMemo(() => {
-    const users = Array.from(new Set(extData.map(item => item.user).filter(Boolean)));
-    return users.map(user => ({ value: user!, label: user! }));
-  }, [extData]);
+  const { loading: lookupLoading, data: userLookup } = useLookup(LookupSchema.ReporterUser);
 
   const userLookupOptions = useMemo(() => {
     return userLookup.map(user => ({
@@ -65,7 +59,7 @@ const Component: FC<ComponentProps> = ({ extData, loading, error, userLookup, lo
     return (
       <Select
         placeholder="All users"
-        data={userOptions}
+        data={userLookupOptions}
         value={value || null}
         onChange={(val) => column.setFilterValue(val || undefined)}
         clearable
@@ -107,7 +101,7 @@ const Component: FC<ComponentProps> = ({ extData, loading, error, userLookup, lo
   const handleCreate = useCallback(() => {
     if (!formData.user_id) return;
 
-    const data: { user_id: number; grid_state: boolean; received_at?: string } = {
+    const data: { user_id: ObjectId; grid_state: boolean; received_at?: string } = {
       user_id: formData.user_id,
       grid_state: formData.grid_state,
     };
@@ -134,12 +128,17 @@ const Component: FC<ComponentProps> = ({ extData, loading, error, userLookup, lo
       });
   }, [formData, dispatch, handleCloseModal]);
 
-  const handleDelete = useCallback((item: ExtDataItem) => {
-    if (!item.id) return;
+  const getUserName = useCallback((userId?: ObjectId): string => {
+    return userLookup?.find(f => f.value === userId)?.text ?? 'unknown';
+  }, [userLookup]);
 
+  const handleDelete = useCallback((item: ExtDataItem) => {
+    if (!item.id) {
+      return;
+    }
     modals.openConfirmModal({
       title: 'Delete Event',
-      children: `Are you sure you want to delete this event? User: ${item.user}, State: ${item.grid_state ? 'ON' : 'OFF'}`,
+      children: `Are you sure you want to delete this event? User: ${getUserName(item.userId)}, State: ${item.gridState ? 'ON' : 'OFF'}`,
       labels: { confirm: 'Delete', cancel: 'Cancel' },
       confirmProps: { color: 'red' },
       onConfirm: () => {
@@ -150,7 +149,7 @@ const Component: FC<ComponentProps> = ({ extData, loading, error, userLookup, lo
           });
       },
     });
-  }, [dispatch]);
+  }, [dispatch, getUserName]);
 
   const getHeaderButtons = useCallback((): PageHeaderButton[] => [
     { text: 'Create Event', icon: "add", color: "teal", onClick: handleOpenCreateModal, disabled: false },
@@ -188,6 +187,9 @@ const Component: FC<ComponentProps> = ({ extData, loading, error, userLookup, lo
                   customFilterCell: UserFilter,
                 },
               },
+              cell: ({ row }) => {
+                return <Text>{getUserName(row.original.userId)}</Text>
+              }
             },
             {
               id: 'grid_state',
@@ -207,7 +209,7 @@ const Component: FC<ComponentProps> = ({ extData, loading, error, userLookup, lo
                 },
               },
               cell: ({ row }) => {
-                const gridState = row.original.grid_state;
+                const gridState = row.original.gridState;
                 return (
                   <Group justify="center">
                     <Tooltip label={gridState ? 'ON' : 'OFF'}>
@@ -225,9 +227,9 @@ const Component: FC<ComponentProps> = ({ extData, loading, error, userLookup, lo
               },
             },
             {
-              id: 'received_at',
+              id: 'receivedAt',
               header: 'Received At',
-              accessorKey: 'received_at',
+              accessorKey: 'receivedAt',
               enableSorting: true,
               enableColumnFilter: true,
               meta: {
@@ -264,7 +266,7 @@ const Component: FC<ComponentProps> = ({ extData, loading, error, userLookup, lo
             placeholder="Select user"
             data={userLookupOptions}
             value={formData.user_id ? String(formData.user_id) : null}
-            onChange={(val) => setFormData({ ...formData, user_id: val ? parseInt(val) : null })}
+            onChange={(val) => setFormData({ ...formData, user_id: val })}
             searchable
             required
             disabled={lookupLoading}

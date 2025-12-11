@@ -19,8 +19,8 @@ class ExtData(Document):
         }
 
     @property
-    def user(self):
-        return User.get_link(self.user_id)
+    async def user(self) -> User:
+        return await User.get(self.user_id)
 
     def __str__(self):
         return (

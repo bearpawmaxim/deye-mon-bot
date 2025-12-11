@@ -1,54 +1,33 @@
-from typing import Optional
+from beanie import PydanticObjectId
 from fastapi import Body, FastAPI, Depends, HTTPException, Path, status
-from pydantic import BaseModel
-from app.services import Services
+from fastapi_injector import Injected
+from app.models.api import GridPowerRequest, ExtDataCreateRequest
+from app.services import Services, ExtDataService
 from app.utils.jwt_dependencies import jwt_reporter_only, jwt_required
-from datetime import datetime
-
-
-class GridPowerRequest(BaseModel):
-    grid_power: dict
-
-class ExtDataCreateRequest(BaseModel):
-    user_id: int
-    grid_state: bool
-    received_at: Optional[datetime] = None
 
 
 def register(app: FastAPI, services: Services):
 
     @app.get("/api/ext-data/list")
-    def get_ext_data_list(claims=Depends(jwt_required)):
-        """
-        Returns list of ext-data.
-        Authenticated users only.
-        """
-        data_list = services.database.get_ext_data()
-        result = [
-            {
-                'id': data.id,
-                "user": data.user.name if data.user else None,
-                'user_id': data.user_id,
-                "grid_state": data.grid_state,
-                "received_at": data.received_at.isoformat() if data.received_at else None,
-            }
-            for data in data_list
-        ]
-        return result
+    async def get_ext_data_list(
+        _ = Depends(jwt_required),
+        ext_data_service = Injected(ExtDataService),
+    ):
+        return await ext_data_service.get_ext_data()
 
     @app.post("/api/ext-data/grid-power")
-    def update_grid_power(
+    async def update_grid_power(
         body: GridPowerRequest,
-        claims=Depends(jwt_reporter_only),
+        claims = Depends(jwt_reporter_only),
+        ext_data_service = Injected(ExtDataService),
     ):
-        grid_power = body.grid_power
-        grid_state = grid_power.get("state", False)
+        grid_state = body.grid_power.state
         user_name = claims["sub"]
 
         try:
-            data_id = services.database.update_ext_data_grid_state(
-                user_name=user_name,
-                grid_state=grid_state
+            data_id = await ext_data_service.add_ext_data(
+                user_name = user_name,
+                grid_state = grid_state
             )
             if data_id is None:
                 raise HTTPException(
@@ -70,15 +49,16 @@ def register(app: FastAPI, services: Services):
             )
 
     @app.post("/api/ext-data/create", status_code=status.HTTP_201_CREATED)
-    def create_ext_data(
+    async def create_ext_data(
         body: ExtDataCreateRequest = Body(...),
-        claims=Depends(jwt_required),
+        _ = Depends(jwt_required),
+        ext_data_service = Injected(ExtDataService),
     ):
         try:
-            data_id = services.database.create_ext_data_manual(
-                user_id=body.user_id,
-                grid_state=body.grid_state,
-                received_at=body.received_at,
+            data_id = await ext_data_service.add_ext_data_by_user_id(
+                user_id    = body.user_id,
+                grid_state = body.grid_state,
+                date       = body.received_at,
             )
 
             if data_id is None:
@@ -87,11 +67,7 @@ def register(app: FastAPI, services: Services):
                     detail="Failed to create ext_data",
                 )
 
-            services.database.save_changes()
-            services.events.broadcast_public("ext_data_updated")
-
-            return {"status": "ok", "id": data_id}
-
+            return { "status": "ok", "id": data_id }
         except Exception as e:
             services.database.cancel_changes()
             print(f"Error creating ext data: {e}")
@@ -101,12 +77,13 @@ def register(app: FastAPI, services: Services):
             )
 
     @app.delete("/api/ext-data/delete/{data_id}")
-    def delete_ext_data(
-        data_id: int = Path(...),
-        claims=Depends(jwt_required),
+    async def delete_ext_data(
+        data_id: PydanticObjectId = Path(...),
+        _ = Depends(jwt_required),
+        ext_data_service = Injected(ExtDataService),
     ):
         try:
-            success = services.database.delete_ext_data_by_id(data_id)
+            success = await ext_data_service.delete_ext_data(data_id)
 
             if not success:
                 raise HTTPException(
@@ -114,8 +91,6 @@ def register(app: FastAPI, services: Services):
                     detail="Ext_data not found or failed to delete",
                 )
 
-            services.database.save_changes()
-            services.events.broadcast_public("ext_data_updated")
 
             return {"status": "ok"}
 
@@ -128,12 +103,13 @@ def register(app: FastAPI, services: Services):
             )
 
     @app.get("/api/ext-data/{data_id}")
-    def get_ext_data_by_id(
-        data_id: int = Path(...),
-        claims=Depends(jwt_required),
+    async def get_ext_data_by_id(
+        data_id: PydanticObjectId = Path(...),
+        _ = Depends(jwt_required),
+        ext_data_service = Injected(ExtDataService),
     ):
         try:
-            data = services.database.get_ext_data_by_id(data_id)
+            data = await ext_data_service.get_by_id(data_id)
 
             if not data:
                 raise HTTPException(

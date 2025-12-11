@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ExtDataItem, ExtDataState } from "../types";
 import { createExtData, deleteExtData, fetchExtData } from "../thunks";
+import { ObjectId } from "../../schemas";
 
 const initialState: ExtDataState = {
   extData: [],
@@ -43,7 +44,7 @@ export const extDataSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(deleteExtData.fulfilled, (state, action: PayloadAction<number>) => {
+      .addCase(deleteExtData.fulfilled, (state, action: PayloadAction<ObjectId>) => {
         state.extData = state.extData.filter(item => item.id !== action.payload);
         state.loading = false;
       })

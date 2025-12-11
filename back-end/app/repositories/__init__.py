@@ -7,10 +7,12 @@ from .interfaces import (
     IBotsRepository,
     ILookupsRepository,
     IChatsRepository,
+    IExtDataRepository,
 )
 from .container import RepositoryContainer
 
 
 __all__ = [IMessagesRepository, IBotsRepository, IStationsRepository, 
            IStationsDataRepository, ILookupsRepository, IChatsRepository,
-           IUsersRepository, IVisitsCounterRepository, RepositoryContainer]
+           IUsersRepository, IVisitsCounterRepository, RepositoryContainer,
+           IExtDataRepository]

@@ -58,4 +58,3 @@ async def lifespan(app: FastAPI):
         await telegram_service.shutdown()
     if 'deye_service' in locals() and hasattr(deye_service, "shutdown"):
         await deye_service.shutdown()
-    await session.close()
