@@ -2,11 +2,11 @@ from beanie import PydanticObjectId
 from fastapi import Body, FastAPI, Depends, HTTPException, Path, status
 from fastapi_injector import Injected
 from app.models.api import GridPowerRequest, ExtDataCreateRequest
-from app.services import Services, ExtDataService
+from app.services import ExtDataService
 from app.utils.jwt_dependencies import jwt_reporter_only, jwt_required
 
 
-def register(app: FastAPI, services: Services):
+def register(app: FastAPI):
 
     @app.get("/api/ext-data/list")
     async def get_ext_data_list(
@@ -35,13 +35,9 @@ def register(app: FastAPI, services: Services):
                     detail="Failed to update data state"
                 )
 
-            services.database.save_changes()
-            services.events.broadcast_public("ext_data_updated")
-
             return {"status": "ok"}
 
         except Exception as e:
-            services.database.cancel_changes()
             print(f"Error updating grid power: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -69,7 +65,6 @@ def register(app: FastAPI, services: Services):
 
             return { "status": "ok", "id": data_id }
         except Exception as e:
-            services.database.cancel_changes()
             print(f"Error creating ext data: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -95,7 +90,6 @@ def register(app: FastAPI, services: Services):
             return {"status": "ok"}
 
         except Exception as e:
-            services.database.cancel_changes()
             print(f"Error deleting ext data: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

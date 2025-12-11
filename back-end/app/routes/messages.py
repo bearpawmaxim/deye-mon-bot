@@ -1,50 +1,26 @@
-from typing import List, Optional
+from typing import List
 from beanie import PydanticObjectId
 from fastapi import FastAPI, Depends, HTTPException, Body
 from fastapi_injector import Injected
-from pydantic import BaseModel, Field
 
 from app.models.api import (
     MessageListResponseModel,
     MessageEditResponseModel,
     MessageUpdateRequest,
     MessageCreateRequest,
+    MessagePreviewRequest,
+    SaveMessageStateRequest,
 )
-from app.services import Services, MessagesService, BotsService, StationsService
+from app.services import MessagesService, BotsService, StationsService, TelegramService
 from app.utils.jwt_dependencies import jwt_required
 from shared.models.beanie.message import Message
 
-class MessagePreviewRequest(BaseModel):
-    name: str
-    #channel_id: str = Field(alias="channelId")
-    message_template: str = Field(alias="messageTemplate")
-    timeout_template: str = Field(alias="timeoutTemplate")
-    should_send_template: Optional[str] = Field(None, alias="shouldSendTemplate")
-    stations: List[PydanticObjectId]
-    #bot_id: PydanticObjectId = Field(alias="botId")
 
-    model_config = {
-        "populate_by_name": True,
-        "from_attributes": True,
-    }
+def register(app: FastAPI):
 
-
-class SaveMessageStateRequest(BaseModel):
-    enabled: bool = False
-
-
-def register(app: FastAPI, services: Services):
-
-    def _get_bot_name(bot_id: str):
+    def _get_channel_name(telegram: TelegramService, channel_id: str, bot_id: str):
         try:
-            return services.telegram.get_bot_info(bot_id).username
-        except:
-            print(f'Cannot get bot info for bot {bot_id}')
-            return 'Invalid bot identifier'
-
-    def _get_channel_name(channel_id: str, bot_id: str):
-        try:
-            chat_info = services.telegram.get_chat_info(channel_id, bot_id)
+            chat_info = telegram.get_chat_info(channel_id, bot_id)
             return chat_info.title
         except Exception as e:
             print(f'Cannot get channel info for channel {channel_id}: {str(e)}')
@@ -64,6 +40,7 @@ def register(app: FastAPI, services: Services):
         channel_id: str = Body(..., alias="channelId"), 
         bot_id: PydanticObjectId = Body(..., alias="botId"), 
         _ = Depends(jwt_required),
+        telegram = Injected(TelegramService)
     ):
         if not channel_id or not bot_id:
             raise HTTPException(status_code=400, detail="channelId and botId should be specified")
@@ -91,16 +68,12 @@ def register(app: FastAPI, services: Services):
         id_set = set(body.stations)
         stations = [s for s in server_stations if s.id in id_set]
 
-        #bot = await bots.get_bot(body.bot_id)
-
         message = Message(
             name                 = body.name,
-            #channel_id           = body.channel_id,
             message_template     = body.message_template,
             timeout_template     = body.timeout_template,
             should_send_template = body.should_send_template,
             stations             = stations,
-            #bot                  = bot
         )
 
         try:

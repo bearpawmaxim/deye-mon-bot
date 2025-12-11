@@ -62,9 +62,27 @@ class MessageUpdateRequest(MessageCreateRequest):
     }
 
 
+class MessagePreviewRequest(BaseModel):
+    name: str
+    message_template: str = Field(alias="messageTemplate")
+    timeout_template: str = Field(alias="timeoutTemplate")
+    should_send_template: Optional[str] = Field(None, alias="shouldSendTemplate")
+    stations: List[PydanticObjectId]
+    model_config = {
+        "populate_by_name": True,
+        "from_attributes": True,
+    }
+
+
+class SaveMessageStateRequest(BaseModel):
+    enabled: bool = False
+
+
 __all__ = [
     "MessageListResponseModel",
     "MessageEditResponseModel",
+    "MessagePreviewRequest",
+    "SaveMessageStateRequest",
     "MessageCreateRequest",
     "MessageUpdateRequest",
 ]
