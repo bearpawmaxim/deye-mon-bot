@@ -17,6 +17,10 @@ class IExtDataRepository(ABC):
         ...
 
     @abstractmethod
+    async def get_last_ext_data_by_user_id(self, user_id: PydanticObjectId) -> ExtData:
+        ...
+
+    @abstractmethod
     async def add_ext_data(
         self,
         user_id: PydanticObjectId,

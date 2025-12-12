@@ -2,6 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import apiClient from "../../utils/apiClient";
 import { AllowedChatListItem, ChatRequestListItem } from "../types";
 import { getErrorMessage } from "../../utils";
+import { ObjectId } from "../../schemas";
 
 export const fetchAllowedChats = createAsyncThunk('chats/fetchAllowedChats', async (_, thunkAPI) => {
   try {
@@ -21,7 +22,7 @@ export const fetchChatRequests = createAsyncThunk('chats/fetchChatRequests', asy
   }
 });
 
-export const approveChatRequest = createAsyncThunk('chats/approve', async (id: number, { rejectWithValue, dispatch }) => {
+export const approveChatRequest = createAsyncThunk('chats/approve', async (id: ObjectId, { rejectWithValue, dispatch }) => {
   try {
     await apiClient.patch('/chats/approve', { id: id });
   } catch (error: unknown) {
@@ -32,7 +33,7 @@ export const approveChatRequest = createAsyncThunk('chats/approve', async (id: n
   }
 });
 
-export const rejectChatRequest = createAsyncThunk('chats/reject', async (id: number, { rejectWithValue, dispatch }) => {
+export const rejectChatRequest = createAsyncThunk('chats/reject', async (id: ObjectId, { rejectWithValue, dispatch }) => {
   try {
     await apiClient.patch('/chats/reject', { id: id });
   } catch (error: unknown) {
@@ -42,7 +43,7 @@ export const rejectChatRequest = createAsyncThunk('chats/reject', async (id: num
   }
 });
 
-export const disallowChat = createAsyncThunk('chats/disallow', async (id: number, { rejectWithValue, dispatch }) => {
+export const disallowChat = createAsyncThunk('chats/disallow', async (id: ObjectId, { rejectWithValue, dispatch }) => {
   try {
     await apiClient.patch('/chats/disallow', { id: id });
   } catch (error: unknown) {

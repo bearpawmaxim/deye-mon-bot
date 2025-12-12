@@ -1,5 +1,5 @@
 from datetime import timezone
-from shared.models.sqlalchemy import StationData
+from shared.models.beanie import StationData
 
 class StationStatisticData:
     _previous: StationData

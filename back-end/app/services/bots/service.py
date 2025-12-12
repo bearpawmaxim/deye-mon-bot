@@ -8,7 +8,7 @@ from contextlib import redirect_stdout
 from beanie import PydanticObjectId
 from injector import inject
 
-from app.repositories import IBotsRepository, IChatsRepository, IMessagesRepository
+from app.repositories import IBotsRepository, IChatsRepository, IMessagesRepository, IStationsDataRepository
 from app.services.database.service import DatabaseService
 from app.services.telegram.service import TelegramService
 from app.models.api import BotResponse, CreateBotRequest, UpdateBotRequest
@@ -29,6 +29,16 @@ class BotsService(BaseService):
             print(f'Cannot get timezone {timezone}, falling back to UTC')
             return ZoneInfo('utc')
 
+    def _run_async(self, coro):
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            return asyncio.run(coro)
+        else:
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(asyncio.run, coro)
+                return future.result()
 
     def __init__(
         self,
@@ -38,6 +48,7 @@ class BotsService(BaseService):
         messages: IMessagesRepository,
         bots: IBotsRepository,
         chats: IChatsRepository,
+        stations_data: IStationsDataRepository,
         events: EventsService,
     ):
         super().__init__(events)
@@ -47,6 +58,7 @@ class BotsService(BaseService):
         self._messages = messages
         self._bots = bots
         self._chats = chats
+        self._stations_data = stations_data
 
 
     async def get_enabled_bots(self) -> List[Bot]:
@@ -115,13 +127,13 @@ class BotsService(BaseService):
                 print(f'request from not allowed chat {chat_id}')
 
 
-    def _populate_stations_data(self, template_data, stations: List[Station], force):
+    async def _populate_stations_data(self, template_data, stations: List[Station], force):
         message_station = None
         for station in stations:
             if not station.enabled and not force:
                 continue
 
-            data = self._database.get_station_data_tuple(station.station_id)
+            data = await self._stations_data.get_station_data_tuple(station.station_id)
 
             station_data = {
                 **(data.to_dict(self._message_timezone) if data is not None else {}),
@@ -140,23 +152,27 @@ class BotsService(BaseService):
 
 
     def _get_average_method(self, station_id, start_date = None):
-        return partial(
-            self._database.get_station_data_average_column,
-            start_date,
-            datetime.now(timezone.utc),
-            station_id
-        )
+        def sync_wrapper(column_name):
+            coro = self._stations_data.get_station_data_average_column(
+                start_date,
+                datetime.now(timezone.utc),
+                station_id,
+                column_name
+            )
+            return self._run_async(coro)
+        return sync_wrapper
 
 
     def _get_average_minutes_method(self, station_id):
-        return (
-            lambda column_name,minutes: self._database.get_station_data_average_column(
+        def sync_wrapper(column_name, minutes):
+            coro = self._stations_data.get_station_data_average_column(
                 datetime.now(timezone.utc) - timedelta(minutes=minutes),
                 datetime.now(timezone.utc),
                 station_id,
                 column_name
             )
-        )
+            return self._run_async(coro)
+        return sync_wrapper
 
 
     def _add_average_methods(self, template_data, last_sent_time):
@@ -193,7 +209,7 @@ class BotsService(BaseService):
             print(f"All stations for message '{message.name}' are disabled")
             return None
 
-        message_station = self._populate_stations_data(template_data, message.stations, force)
+        message_station = await self._populate_stations_data(template_data, message.stations, force)
         if len(message.stations) == 1 and message_station is None:
             print(f"The station for message '{message.name}' is disabled")
             return None

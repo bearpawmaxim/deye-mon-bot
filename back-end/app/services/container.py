@@ -17,6 +17,7 @@ from .stations import StationsService
 from .messages import MessagesService
 from .lookups import LookupsService
 from .ext_data import ExtDataService
+from .dashboard import DashboardService
 
 
 class ServicesContainer(Module):
@@ -57,6 +58,8 @@ class ServicesContainer(Module):
         binder.bind(LookupsService, scope=noscope)
 
         binder.bind(ExtDataService, scope=noscope)
+
+        binder.bind(DashboardService, scope=noscope)
 
         scheduler = AsyncIOScheduler()
         binder.bind(AsyncIOScheduler, to=scheduler, scope=singleton)

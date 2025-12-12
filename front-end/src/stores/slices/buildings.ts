@@ -18,7 +18,7 @@ export const buildingsSlice = createSlice({
   reducers: {
     startCreatingBuilding(state) {
       state.editingItem = {
-        id: state.globalId + 1,
+        id: (state.globalId + 1).toString(),
         name: '',
         color: 'blue.4',
         stationId: null,
@@ -32,7 +32,6 @@ export const buildingsSlice = createSlice({
       });
       delete state.editingItem;
       state.changed = true;
-      state.globalId = payload.id!;
     },
     finishEditingBuilding(state, { payload }: PayloadAction<BuildingEditType>) {
       const itemIndex = state.items.findIndex(i => i.id === payload.id);
@@ -74,7 +73,7 @@ export const buildingsSlice = createSlice({
         state.edittedItems = [];
         state.loading = false;
         state.changed = false;
-        state.globalId = action.payload.reduce((maxId, item) => item.id && item.id > maxId ? item.id : maxId, 0);
+        state.globalId = state.items.length + state.edittedItems.length;
       })
       .addCase(fetchBuildings.rejected, (state, action: PayloadAction<unknown>) => {
         state.loading = false;

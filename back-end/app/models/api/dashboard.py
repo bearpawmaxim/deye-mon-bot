@@ -1,0 +1,65 @@
+from typing import Optional
+from beanie import PydanticObjectId
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class SaveBuildingRequest(BaseModel):
+    id: Optional[int] = None
+    name: str
+    color: str = "#FFFFFF"
+    station_id: Optional[int] = Field(None, alias="stationId")
+    report_user_id: Optional[int] = Field(None, alias="reportUserId")
+
+    model_config = ConfigDict(
+        populate_by_name = True,
+        from_attributes  = True,
+    )
+
+
+class PowerLogsRequest(BaseModel):
+    start_date: str = Field(None, alias="startDate")
+    end_date: str = Field(None, alias="endDate")
+
+    model_config = ConfigDict(
+        populate_by_name = True,
+        from_attributes  = True,
+    )
+
+
+class BuildingResponse(BaseModel):
+    id: PydanticObjectId
+    name: str
+    color: str
+    
+    model_config = ConfigDict(
+        populate_by_name = True,
+        from_attributes  = True,
+    )
+
+
+class BuildingSummaryResponse(BaseModel):
+    id: PydanticObjectId
+    is_grid_available: Optional[bool] = Field(None, alias="isGridAvailable")
+    is_charging: Optional[bool] = Field(None, alias="isCharging")
+    is_discharging: Optional[bool] = Field(None, alias="isDischarging")
+    battery_percent: Optional[float] = Field(None, alias="batteryPercent")
+    consumption_power: Optional[str] = Field(None, alias="consumptionPower")
+    battery_discharge_time: Optional[str] = Field(None, alias="batteryDischargeTime")
+
+    model_config = ConfigDict(
+        populate_by_name = True,
+        from_attributes  = True,
+    )
+
+
+class BuildingWithSummaryResponse(BuildingSummaryResponse, BuildingResponse):
+    ...
+
+
+__all__ = [
+    "SaveBuildingRequest",
+    "PowerLogsRequest",
+    "BuildingResponse",
+    "BuildingSummaryResponse",
+    "BuildingWithSummaryResponse",
+]

@@ -18,6 +18,7 @@ from .stations import StationsService
 from .lookups import LookupsService
 from .chats import ChatsService
 from .ext_data import ExtDataService
+from .dashboard import DashboardService
 
 
 @inject
@@ -68,4 +69,4 @@ __all__ = [Services, BeanieInitializer, DatabaseService, BotsService, DeyeConfig
            DeyeApiService, TelegramConfig, TelegramService, ServicesContainer,
            AuthorizationService, VisitCounterService, EventsService, EventItem,
            MessagesService, OutagesScheduleService, StationsService, LookupsService,
-           ChatsService, ExtDataService]
+           ChatsService, ExtDataService, DashboardService]

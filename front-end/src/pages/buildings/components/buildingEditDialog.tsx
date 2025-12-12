@@ -3,7 +3,7 @@ import { modals } from "@mantine/modals";
 import { Button, ColorInput, Group, Loader, parseThemeColor, Select, Stack, TextInput, useMantineColorScheme, useMantineTheme } from "@mantine/core";
 import { useFormHandler, useLookup } from "../../../hooks";
 import { RootState, useAppDispatch } from "../../../stores/store";
-import { buildingEditSchema, BuildingEditType } from "../../../schemas";
+import { buildingEditSchema, BuildingEditType, ObjectId } from "../../../schemas";
 import { startEditingBuilding } from "../../../stores/thunks";
 import { cancelEditingOrCreatingBuilding, finishCreatingBuilding, finishEditingBuilding, startCreatingBuilding } from "../../../stores/slices";
 import { connect } from "react-redux";
@@ -12,7 +12,7 @@ import { LookupSchema } from "../../../types";
 
 type OpenBuildingEditOptions = {
   creating?: boolean;
-  buildingId?: number;
+  buildingId?: ObjectId;
   title?: string;
 };
 
@@ -20,7 +20,7 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
   type InnerProps = {
     building: BuildingEditType;
     loading: boolean;
-    buildingId?: number;
+    buildingId?: ObjectId;
   };
 
   const mapStateToProps = (state: RootState): InnerProps => ({
@@ -121,7 +121,7 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
             return <Controller
               name="stationId"
               control={context.helpers.control}
-              defaultValue={0}
+              defaultValue={'0'}
               render={({ field }) => (
                 <Select
                   clearable
@@ -132,8 +132,7 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
                   value={field.value?.toString() ?? ''}
                   error={context.helpers.getFieldError('stationId')}
                   onChange={(value) => {
-                    const convertedValue = value ? parseInt(value) : null;
-                    context.helpers.setControlValue('stationId', convertedValue, true, false);
+                    context.helpers.setControlValue('stationId', value, true, false);
                   }}
                 />
               )}
@@ -147,7 +146,7 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
             return <Controller
               name="reportUserId"
               control={context.helpers.control}
-              defaultValue={0}
+              defaultValue={'0'}
               render={({ field }) => (
                 <Select
                   required
@@ -159,7 +158,7 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
                   value={field.value?.toString() ?? ''}
                   error={context.helpers.getFieldError('reportUserId')}
                   onChange={(value) => context.helpers
-                    .setControlValue('reportUserId', parseInt(value!), true, false)}
+                    .setControlValue('reportUserId', value!, true, false)}
                 />
               )}
             />;

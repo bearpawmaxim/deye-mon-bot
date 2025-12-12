@@ -1,77 +1,35 @@
-from datetime import datetime, timedelta, timezone
-from typing import List, Optional
-from fastapi import FastAPI, Depends, HTTPException
-from pydantic import BaseModel
-from app.services import Services
-from app.utils import get_average_discharge_time
+from datetime import datetime, timezone
+from typing import List
+from beanie import PydanticObjectId
+from fastapi import Body, FastAPI, Depends, HTTPException
+from fastapi_injector import Injected
+from app.services import Services, DashboardService
 from app.utils.jwt_dependencies import jwt_required
 from app.models import Building
-
-
-class SaveBuildingRequest(BaseModel):
-    id: Optional[int] = None
-    name: str
-    color: str = "#FFFFFF"
-    stationId: Optional[int] = None
-    reportUserId: Optional[int] = None
-
-
-class PowerLogsRequest(BaseModel):
-    startDate: str
-    endDate: str
+from app.models.api import SaveBuildingRequest, PowerLogsRequest
+from app.models.api.dashboard import BuildingResponse, BuildingSummaryResponse, BuildingWithSummaryResponse
 
 
 def register(app: FastAPI, services: Services):
 
+    @app.get("/api/dashboard/buildings")
+    async def get_buildings(
+        dashboard = Injected(DashboardService),
+    ) -> List[BuildingResponse]:
+        return await dashboard.get_buildings()
+
+    @app.get("/api/dashboard/summary")
+    async def get_buildings_summary(
+        building_ids: List[PydanticObjectId] = Body(...),
+        dashboard = Injected(DashboardService),
+    ) -> List[BuildingSummaryResponse]:
+        return await dashboard.get_buildings_summary(building_ids)
+
     @app.get("/api/buildings/buildings")
-    def get_buildings():
-        buildings = services.database.get_buildings()
-        minutes = 25
-
-        def process_building(building):
-            result_dict = {
-                "id": building.id,
-                "name": building.name,
-                "color": building.color,
-            }
-
-            ext_data = services.database.get_latest_ext_data_by_user_id(building.report_user_id)
-            if ext_data:
-                result_dict["isGridAvailable"] = ext_data.grid_state
-
-            if building.station:
-                station_id = building.station_id
-                station_data = services.database.get_last_station_data(station_id)
-                if station_data is None:
-                    return result_dict
-
-                is_discharging = (station_data.discharge_power or 0) > 200
-                is_charging = (station_data.charge_power or 0) * -1 > 200
-
-                result_dict["isCharging"] = is_charging
-                result_dict["isDischarging"] = is_discharging
-                result_dict["batteryPercent"] = station_data.battery_soc
-
-                average_consumption_w = services.database.get_station_data_average_column(
-                    datetime.now(timezone.utc) - timedelta(minutes=minutes),
-                    datetime.now(timezone.utc),
-                    station_id,
-                    "consumption_power",
-                ) or 0
-
-                result_dict["consumptionPower"] = f"{(average_consumption_w / 1000):.2f}"
-
-                if is_discharging and average_consumption_w > 0:
-                    batt_capacity = building.station.battery_capacity
-                    soc = station_data.battery_soc
-                    estimate_discharge_time = get_average_discharge_time(
-                        batt_capacity, soc, average_consumption_w / 1000
-                    )
-                    result_dict["batteryDischargeTime"] = estimate_discharge_time
-
-            return result_dict
-
-        return [process_building(b) for b in buildings]
+    async def get_buildings_data(
+        dashboard = Injected(DashboardService),
+    ) -> List[BuildingWithSummaryResponse]:
+        return await dashboard.get_buildings_with_summary()
 
     @app.get("/api/buildings/dashboardConfig")
     def get_dashboard_config():
@@ -128,14 +86,14 @@ def register(app: FastAPI, services: Services):
         building_id = services.database.save_building(building)
         services.database.save_changes()
         services.events.broadcast_public("buildings_updated")
-        return {"success": True, "id": building_id}
+        return { "success": True, "id": building_id }
 
     @app.delete("/api/buildings/delete/{building_id}")
     def delete_building(building_id: int, _=Depends(jwt_required)):
         services.database.delete_building(building_id)
         services.database.save_changes()
         services.events.broadcast_public("buildings_updated")
-        return {"success": True, "id": building_id}
+        return { "success": True, "id": building_id }
 
     @app.post("/api/buildings/{building_id}/power-logs")
     def get_building_power_logs(building_id: int, body: PowerLogsRequest):

@@ -8,9 +8,10 @@ import { clearPowerLogs } from "../stores/slices";
 import { connect } from "react-redux";
 import { PowerLogPeriod, PowerLogsData } from "../stores/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ObjectId } from "../schemas";
 
 type OpenPowerLogsDialogOptions = {
-  buildingId: number;
+  buildingId: ObjectId;
   buildingName: string;
 };
 

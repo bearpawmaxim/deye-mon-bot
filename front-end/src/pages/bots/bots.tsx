@@ -9,6 +9,7 @@ import { BotItem } from "../../stores/types";
 import { openTokenEditDialog } from "./components/tokenEditDialog";
 import { DataTable, ErrorMessage, Page } from "../../components";
 import { ColumnDataType } from "../../types";
+import { ObjectId } from "../../schemas";
 
 
 type ComponentProps = {
@@ -75,10 +76,10 @@ const Component: FC<ComponentProps> = ({ bots, loading, error, changed }: Compon
     return <ErrorMessage content={error}/>;
   }
 
-  const onBotHookEnableChange = (id: number, enabled: boolean) => {
+  const onBotHookEnableChange = (id: ObjectId, enabled: boolean) => {
     dispatch(updateBot({ id, hookEnabled: enabled }));
   };
-  const onBotEnableChange = (id: number, enabled: boolean) => {
+  const onBotEnableChange = (id: ObjectId, enabled: boolean) => {
     dispatch(updateBot({ id, enabled }));
   };
 

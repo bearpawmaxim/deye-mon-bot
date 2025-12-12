@@ -13,6 +13,15 @@ class ExtDataRepository(IExtDataRepository):
     
     async def get_ext_data_by_id(self, ext_data_id: PydanticObjectId) -> ExtData:
         return await ExtData.get(ext_data_id)
+    
+    async def get_last_ext_data_by_user_id(self, user_id: PydanticObjectId) -> ExtData:
+        documents = await ExtData.find(
+            ExtData.user_id == user_id,
+            fetch_links = True
+        ).sort(
+            -ExtData.received_at
+        ).to_list()
+        return documents[0] if documents else None
 
     async def add_ext_data(
         self,
