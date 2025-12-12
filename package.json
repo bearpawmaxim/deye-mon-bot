@@ -4,14 +4,14 @@
   "description": "Svitlo Power monitoring tool - Development Environment",
   "scripts": {
     "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"bgBlue.bold,bgMagenta.bold\" \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "dev:backend": "cd back-end && cross-env DEBUG=True python run.py",
+    "dev:backend": "cd back-end && .venv\\Scripts\\python run.py",
     "dev:frontend": "cd front-end && npm run dev",
     "build:frontend": "cd front-end && npm run build",
-    "init:all": "npm install && cd front-end && npm install && cd ../back-end && pip install -r requirements.txt"
+    "init:all": "npm install && cd front-end && npm install && cd ../back-end && pip install -r requirements.txt",
+    "kill:all": "taskkill /F /IM node.exe /IM python.exe 2>nul || true"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2",
+    "concurrently": "^9.2.1",
     "cross-env": "^7.0.3"
   }
 }
-
