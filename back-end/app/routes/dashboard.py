@@ -3,11 +3,18 @@ from typing import List
 from beanie import PydanticObjectId
 from fastapi import Body, FastAPI, Depends, HTTPException
 from fastapi_injector import Injected
+
 from app.services import Services, DashboardService
 from app.utils.jwt_dependencies import jwt_required
 from app.models import Building
 from app.models.api import SaveBuildingRequest, PowerLogsRequest
-from app.models.api.dashboard import BuildingResponse, BuildingSummaryResponse, BuildingWithSummaryResponse
+from app.models.api.dashboard import (
+    BuildingResponse,
+    BuildingSummaryResponse,
+    BuildingWithSummaryResponse,
+    DashboardConfigResponse,
+    SaveDashboardConfigRequest,
+)
 
 
 def register(app: FastAPI, services: Services):
@@ -31,35 +38,21 @@ def register(app: FastAPI, services: Services):
     ) -> List[BuildingWithSummaryResponse]:
         return await dashboard.get_buildings_with_summary()
 
+    @app.get("/api/dashboard/config")
     @app.get("/api/buildings/dashboardConfig")
-    def get_dashboard_config():
-        configs = services.database.get_dashboard_config()
-
-        def process_config(config):
-            return {"key": config.key, "value": config.value}
-
-        futures = [services.executor.submit(process_config, config) for config in configs]
-        return [f.result() for f in futures]
+    async def get_dashboard_config(
+        dashboard = Injected(DashboardService),
+    ) -> DashboardConfigResponse:
+        configs = await dashboard.get_config()
+        return configs
 
     @app.post("/api/buildings/updateDashboardConfig")
-    def update_dashboard_config(body: List[dict], _=Depends(jwt_required)):
-        if not body or not isinstance(body, list):
-            raise HTTPException(status_code=400, detail="Invalid payload")
-
-        for item in body:
-            key = item.get("key")
-            value = item.get("value")
-            if key is None:
-                continue
-
-            value_str = "true" if isinstance(value, bool) and value else "false" if isinstance(value, bool) else str(value or "")
-            services.database.create_dashboard_config(key, value_str)
-
-        services.database.save_changes()
-        services.events.broadcast_public("dashboard_config_updated")
-
-        configs = services.database.get_dashboard_config()
-        return [{"key": c.key, "value": c.value} for c in configs]
+    async def update_dashboard_config(
+        body: SaveDashboardConfigRequest,
+        _ = Depends(jwt_required),
+        dashboard = Injected(DashboardService),
+    ):
+        return await dashboard.save_config(body)
 
     @app.get("/api/buildings/building/{building_id}")
     def get_building(building_id: int, _=Depends(jwt_required)):

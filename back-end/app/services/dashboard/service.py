@@ -4,12 +4,18 @@ from beanie import PydanticObjectId
 from injector import inject
 
 from shared.models.beanie.building import Building
+from shared.models.beanie.dashboard_config import DashboardConfig
 from shared.models.beanie.ext_data import ExtData
 from shared.services.events.service import EventsService
 from ..base import BaseService
-from ..database import DatabaseService
-from app.repositories import IBuildingsRepository, IExtDataRepository, IStationsDataRepository
-from app.models.api import BuildingResponse, BuildingSummaryResponse, BuildingWithSummaryResponse
+from app.repositories import IDashboardRepository, IExtDataRepository, IStationsDataRepository
+from app.models.api import (
+    BuildingResponse,
+    BuildingSummaryResponse,
+    BuildingWithSummaryResponse,
+    DashboardConfigResponse,
+    SaveDashboardConfigRequest,
+)
 from app.utils import get_average_discharge_time
 
 
@@ -18,21 +24,38 @@ class DashboardService(BaseService):
     def __init__(
         self,
         events: EventsService,
-        buildings: IBuildingsRepository,
+        dashboard: IDashboardRepository,
         ext_data: IExtDataRepository,
         stations_data: IStationsDataRepository,
     ):
         super().__init__(events)
-        self._buildings = buildings
+        self._dashboard = dashboard
         self._ext_data = ext_data
         self._stations_data = stations_data
 
 
-    async def get_config(self) -> None:
-        ...
+    async def get_config(self) -> DashboardConfigResponse:
+        config = await self._dashboard.get_config()
+        return DashboardConfigResponse(
+            title                   = config.title,
+            enable_outages_schedule = config.enable_outages_schedule,
+            outages_schedule_queue  = config.outages_schedule_queue,
+        )
+
+
+    async def save_config(self, config: SaveDashboardConfigRequest) -> DashboardConfigResponse:
+        config = DashboardConfig(
+            title                   = config.title,
+            enable_outages_schedule = config.enable_outages_schedule,
+            outages_schedule_queue  = config.outages_schedule_queue,
+        )
+        await self._dashboard.save_config(config)
+        self.broadcast_public("dashboard_config_updated")
+        return await self.get_config()
+
 
     async def get_buildings(self) -> List[BuildingResponse]:
-        buildings = await self._buildings.get_buildings()
+        buildings = await self._dashboard.get_buildings()
 
         def process_building(building: Building) -> BuildingResponse:
             return BuildingResponse(
@@ -86,13 +109,13 @@ class DashboardService(BaseService):
         return result
 
     async def get_buildings_summary(self, building_ids: List[PydanticObjectId]) -> List[BuildingSummaryResponse]:
-        buildings = await self._buildings.get_buildings(building_ids)
+        buildings = await self._dashboard.get_buildings(building_ids)
         minutes = 25
 
         return [await self._process_building(b, minutes) for b in buildings]
 
     async def get_buildings_with_summary(self) -> List[BuildingWithSummaryResponse]:
-        buildings = await self._buildings.get_buildings()
+        buildings = await self._dashboard.get_buildings()
         minutes = 25
 
         async def process_building(building: Building) -> BuildingWithSummaryResponse:

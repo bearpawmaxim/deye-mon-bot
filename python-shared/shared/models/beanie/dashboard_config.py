@@ -1,9 +1,11 @@
+from typing import Optional
 from beanie import Document
 
 
 class DashboardConfig(Document):
-    id: str
-    values: dict[str, str]
+    title: str
+    enable_outages_schedule: bool = False
+    outages_schedule_queue: Optional[str]
 
     class Settings:
-        name = "dashboard_configs"
+        name = "dashboard_config"

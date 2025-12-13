@@ -1,4 +1,5 @@
 import asyncio
+from typing import List
 from beanie import init_beanie
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -19,7 +20,8 @@ from shared.models.sqlalchemy import (
     ChatRequest as SQLChatRequest,
     Message as SQLMessage,
     VisitCounter as SQLVisitCounter,
-    DailyVisitCounter as SQLDailyVisitCounter
+    DailyVisitCounter as SQLDailyVisitCounter,
+    DashboardConfig as SQLDashboardConfig
 )
 
 from shared.models.beanie import (
@@ -31,6 +33,7 @@ from shared.models.beanie import (
     AllowedChat,
     ChatRequest,
     Message,
+    DashboardConfig,
 )
 
 settings: Settings = get_settings()
@@ -63,7 +66,8 @@ async def init():
             ChatRequest,
             Message,
             VisitCounter,
-            DailyVisitCounter
+            DailyVisitCounter,
+            DashboardConfig,
         ]
     )
 
@@ -280,6 +284,28 @@ async def migrate_daily_visit_counters(session):
     print(f"  Migrated {len(daily_counters)} DailyVisitCounters")
 
 
+async def migrate_dashboard_config(session):
+    print("Migrating DashboardConfig...")
+    rows: List[SQLDashboardConfig] = session.query(SQLDashboardConfig).all()
+
+    config_map = {r.key: r.value for r in rows}
+
+    title = config_map.get("title", "")
+
+    enable_str = config_map.get("enableOutagesSchedule", config_map.get("enable_outages_schedule", "false"))
+    enable_outages = True if str(enable_str).lower() == "true" else False
+
+    outages_queue = config_map.get("outagesScheduleQueue", config_map.get("outages_schedule_queue"))
+
+    m = DashboardConfig(
+        title=title,
+        enable_outages_schedule=enable_outages,
+        outages_schedule_queue=outages_queue,
+    )
+    await m.insert()
+
+    print(f"  Migrated DashboardConfig ({m})")
+
 async def main():
     session = Session()
     await init()
@@ -294,6 +320,7 @@ async def main():
     await migrate_messages(session)
     await migrate_visit_counters(session)
     await migrate_daily_visit_counters(session)
+    await migrate_dashboard_config(session)
 
     print("Migration completed!")
 

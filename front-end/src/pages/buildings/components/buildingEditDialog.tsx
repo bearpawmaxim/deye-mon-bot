@@ -116,7 +116,7 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
         },
         {
           name: "stationId",
-          title: "Station ID",
+          title: "Station",
           render: (context) => {
             return <Controller
               name="stationId"
@@ -131,9 +131,6 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
                   label={context.title}
                   value={field.value?.toString() ?? ''}
                   error={context.helpers.getFieldError('stationId')}
-                  onChange={(value) => {
-                    context.helpers.setControlValue('stationId', value, true, false);
-                  }}
                 />
               )}
             />;
@@ -141,7 +138,7 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
          },
         {
           name: "reportUserId",
-          title: "Report User ID",
+          title: "Report User",
           render: (context) => {
             return <Controller
               name="reportUserId"
@@ -157,8 +154,6 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
                   label={context.title}
                   value={field.value?.toString() ?? ''}
                   error={context.helpers.getFieldError('reportUserId')}
-                  onChange={(value) => context.helpers
-                    .setControlValue('reportUserId', value!, true, false)}
                 />
               )}
             />;
@@ -206,7 +201,7 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
   };
 
   const ConnectedInner = connect(mapStateToProps)(Inner);
-  
+
   const id: string | undefined = modals.open({
     title: title ?? (creating ? "Create building" : "Edit building"),
     size: 'lg',

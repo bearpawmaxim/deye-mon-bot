@@ -3,6 +3,21 @@ from beanie import PydanticObjectId
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class SaveDashboardConfigRequest(BaseModel):
+    title: str
+    enable_outages_schedule: bool = Field(False, alias="enableOutagesSchedule")
+    outages_schedule_queue: Optional[str] = Field(None, alias="outagesScheduleQueue")
+
+    model_config = ConfigDict(
+        populate_by_name = True,
+        from_attributes  = True,
+    )
+
+
+class DashboardConfigResponse(SaveDashboardConfigRequest):
+    ...
+
+
 class SaveBuildingRequest(BaseModel):
     id: Optional[int] = None
     name: str
@@ -57,9 +72,11 @@ class BuildingWithSummaryResponse(BuildingSummaryResponse, BuildingResponse):
 
 
 __all__ = [
+    "DashboardConfigResponse",
     "SaveBuildingRequest",
     "PowerLogsRequest",
     "BuildingResponse",
     "BuildingSummaryResponse",
     "BuildingWithSummaryResponse",
+    "SaveDashboardConfigRequest",
 ]

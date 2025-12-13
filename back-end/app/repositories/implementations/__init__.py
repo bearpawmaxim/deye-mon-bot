@@ -7,9 +7,9 @@ from .bots import BotsRepository
 from .lookups import LookupsRepository
 from .chats import ChatsRepository
 from .ext_data import ExtDataRepository
-from .buildings import BuildingsRepository
+from .dashboard import DashboardRepository
 
 
 __all__ = [UsersRepository, MessagesRepository, BotsRepository, StationsRepository,
            StationsDataRepository, VisitsCounterRepository, LookupsRepository,
-           ChatsRepository, ExtDataRepository, BuildingsRepository]
+           ChatsRepository, ExtDataRepository, DashboardRepository]

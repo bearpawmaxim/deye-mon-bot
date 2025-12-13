@@ -1,8 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { DashboardConfig, DashboardConfigState } from "../types";
-import { KeyValuePair } from "../../types";
 import { fetchDashboardConfig, saveDashboardConfig } from "../thunks/dashboardConfig";
-import { parseBoolean } from "../../utils";
 import { DashboardEditType } from "../../schemas/dashboardEdit";
 
 const initialState: DashboardConfigState = {
@@ -10,15 +8,6 @@ const initialState: DashboardConfigState = {
   error: null,
   changed: false,
 };
-
-const processDashboardConfig = (configs: Array<KeyValuePair>): DashboardConfig => {
-  return {
-    title: configs.find(f => f.key === 'title')?.value ?? '',
-    enableOutagesSchedule:
-      parseBoolean(configs.find(f => f.key === 'enableOutagesSchedule')?.value ?? 'false') ?? false,
-    outagesScheduleQueue: configs.find(f => f.key === 'outagesScheduleQueue')?.value ?? '',
-  };
-}
 
 export const dashboardConfigSlice = createSlice({
   name: 'dashboardConfig',
@@ -42,8 +31,8 @@ export const dashboardConfigSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchDashboardConfig.fulfilled, (state, { payload }: PayloadAction<Array<KeyValuePair>>) => {
-        state.config = processDashboardConfig(payload);
+      .addCase(fetchDashboardConfig.fulfilled, (state, { payload }: PayloadAction<DashboardConfig>) => {
+        state.config = { ...payload };
         state.loading = false;
       })
       .addCase(fetchDashboardConfig.rejected, (state, { payload }: PayloadAction<unknown>) => {
@@ -55,8 +44,8 @@ export const dashboardConfigSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(saveDashboardConfig.fulfilled, (state, { payload }: PayloadAction<Array<KeyValuePair>>) => {
-        state.config = processDashboardConfig(payload);
+      .addCase(saveDashboardConfig.fulfilled, (state, { payload }: PayloadAction<DashboardConfig>) => {
+        state.config = { ...payload };
         state.loading = false;
         state.changed = false;
       })
