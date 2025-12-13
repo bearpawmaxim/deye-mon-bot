@@ -8,7 +8,10 @@
     "dev:frontend": "cd front-end && npm run dev",
     "build:frontend": "cd front-end && npm run build",
     "init:all": "npm install && cd front-end && npm install && cd ../back-end && pip install -r requirements.txt",
-    "kill:all": "taskkill /F /IM node.exe /IM python.exe 2>nul || true"
+    "kill:all": "taskkill /F /IM node.exe /IM python.exe 2>nul || true",
+    "run:docker": "docker compose up -d --build",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
