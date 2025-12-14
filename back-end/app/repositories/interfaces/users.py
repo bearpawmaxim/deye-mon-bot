@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List
 
+from beanie import PydanticObjectId
+
 from shared.models.beanie.user import User
 
 
@@ -56,6 +58,14 @@ class IUsersRepository(ABC):
         password_reset_token: str,
         reset_token_expiration: str,
     ) -> str:
+        ...
+
+    @abstractmethod
+    async def force_create_user(
+        self,
+        user_name: str,
+        password: str,
+    ) -> PydanticObjectId:
         ...
 
     @abstractmethod

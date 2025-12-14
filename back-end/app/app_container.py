@@ -1,13 +1,13 @@
 from aiohttp import ClientSession
 from fastapi import FastAPI
 from fastapi_injector import attach_injector
-from injector import Binder, Injector, Module, noscope, singleton
+from injector import Binder, Injector, Module, singleton
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 
 from app.settings import Settings
 from .repositories import RepositoryContainer
-from .services import Services, ServicesContainer
+from .services import ServicesContainer
 from .services.authorization import AuthorizationService
 from .services.database import DBSession
 
@@ -45,8 +45,6 @@ class AppContainer(Module):
         binder.bind(AuthorizationService, scope=singleton)
 
         binder.bind(ClientSession, to=None)
-
-        binder.bind(Services, scope=noscope)
 
 
 def _create_containers(settings: Settings):

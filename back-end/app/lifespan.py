@@ -6,14 +6,14 @@ from app.app_container import bind_client_session
 from app.settings import Settings
 from app.jobs import register_jobs
 from app.routes import register_routes
-from app.services import Services, BeanieInitializer, BotsService, TelegramService, DeyeApiService
+from app.services import AuthorizationService, BeanieInitializer, BotsService, TelegramService, DeyeApiService
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 
-def create_user(config, services: Services):
-    if config.ADMIN_USER is not None:
-        services.authorization.add_user(config.ADMIN_USER, config.ADMIN_PASSWORD)
-        services.database.save_changes()
+async def create_user(settings: Settings, injector: Injector):
+    if settings.ADMIN_USER is not None:
+        authorization = injector.get(AuthorizationService)
+        await authorization.add_user(settings.ADMIN_USER, settings.ADMIN_PASSWORD)
 
 
 async def setup_bots(injector: Injector):
@@ -23,32 +23,31 @@ async def setup_bots(injector: Injector):
     for bot in bots:
         await telegram_service.add_bot(bot.id, bot.token, bot.hook_enabled)
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     injector: Injector = app.state.injector
     bind_client_session(injector)
     beanie_initializer = injector.get(BeanieInitializer)
     await beanie_initializer.init()
+
     try:
         deye_service = injector.get(DeyeApiService)
         if hasattr(deye_service, "init"):
             await deye_service.init()
     except Exception:
         pass
+
     telegram_service = injector.get(TelegramService)
     scheduler = injector.get(AsyncIOScheduler)
     settings = injector.get(Settings)
     register_jobs(settings, injector)
     scheduler.start()
 
-    services = injector.get(Services)
-    register_routes(app, services)
+    register_routes(app)
 
     await setup_bots(injector)
-    config = injector.get(Settings)
-    if config.ADMIN_USER is not None:
-        services.authorization.add_user(config.ADMIN_USER, config.ADMIN_PASSWORD)
-        services.database.save_changes()
+    await create_user(settings, injector)
     yield
     try:
         scheduler.shutdown(wait=False)

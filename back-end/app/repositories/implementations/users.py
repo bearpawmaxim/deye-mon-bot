@@ -67,7 +67,7 @@ class UsersRepository(IUsersRepository):
         is_reporter: bool,
         password_reset_token: str,
         reset_token_expiration: str,
-    ) -> str:
+    ) -> PydanticObjectId:
         existing_user = await self.get_user(user_name)
         if not existing_user:
             user = User(
@@ -79,6 +79,25 @@ class UsersRepository(IUsersRepository):
                 reset_token_expiration = reset_token_expiration
             )
             await user.insert()
+            return user.id
+        return None
+
+    async def force_create_user(
+        self,
+        user_name: str,
+        password: str,
+    ) -> PydanticObjectId:
+        existing_user = await self.get_user(user_name)
+        if not existing_user:
+            user = User(
+                name        = user_name,
+                is_active   = True,
+                is_reporter = False,
+                password    = password,
+            )
+            await user.insert()
+            return user.id
+        return None
 
     async def update_user(
         self,

@@ -120,7 +120,7 @@ class AuthorizationService:
 
     async def add_user(self, user_name: str, password: str):
         hashed = pwd_context.hash(password)
-        await self._users_repository.create_user(user_name, hashed)
+        await self._users_repository.force_create_user(user_name, hashed)
 
     async def cancel_change_password(self, user_name: str):
         user = await self._users_repository.get_user(user_name)

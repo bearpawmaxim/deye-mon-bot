@@ -4,7 +4,7 @@ from beanie import PydanticObjectId
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi_injector import Injected
 
-from app.services import Services, DashboardService
+from app.services import DashboardService
 from app.utils.jwt_dependencies import jwt_required
 from app.models.api import SaveBuildingRequest, PowerLogsRequest, PowerLogsResponse
 from app.models.api.dashboard import (
@@ -18,7 +18,7 @@ from app.models.api.dashboard import (
 )
 
 
-def register(app: FastAPI, services: Services):
+def register(app: FastAPI):
 
     @app.get("/api/dashboard/buildings")
     async def get_buildings(
@@ -90,7 +90,6 @@ def register(app: FastAPI, services: Services):
         dashboard = Injected(DashboardService),
     ):
         building_id = await dashboard.create_building(body)
-        services.events.broadcast_public("buildings_updated")
         return { "success": True, "id": str(building_id) }
 
 
