@@ -1,6 +1,5 @@
 from .bots import BotsService
 from .beanie_initializer import BeanieInitializer
-from .database import DatabaseService
 from .deye_api import DeyeConfig, DeyeApiService
 from .telegram import TelegramConfig, TelegramService
 from .visit_counter import VisitCounterService
@@ -18,7 +17,7 @@ from .dashboard import DashboardService
 from .maintenance import MaintenanceService
 
 
-__all__ = [BeanieInitializer, DatabaseService, BotsService, DeyeConfig,
+__all__ = [BeanieInitializer, BotsService, DeyeConfig,
            DeyeApiService, TelegramConfig, TelegramService, ServicesContainer,
            AuthorizationService, VisitCounterService, EventsService, EventItem,
            MessagesService, OutagesScheduleService, StationsService, LookupsService,

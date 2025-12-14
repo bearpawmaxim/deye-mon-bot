@@ -5,7 +5,6 @@ from app.settings import Settings
 from shared.services.events import EventsService, EventsServiceConfig
 from .beanie_initializer import BeanieInitializer
 from .authorization import AuthorizationService
-from .database import DatabaseService
 from .bots import BotConfig, BotsService
 from .outages_schedule import OutagesScheduleService
 from .telegram import TelegramConfig, TelegramService
@@ -25,8 +24,6 @@ class ServicesContainer(Module):
         self._settings = settings
 
     def configure(self, binder: Binder):
-        binder.bind(DatabaseService, scope=noscope)
-
         beanie = BeanieInitializer(
             mongo_uri=str(self._settings.MONGO_URI),
             db_name=self._settings.MONGO_DB,

@@ -15,7 +15,6 @@ def register(settings: Settings, injector: Injector):
     scheduler.add_job(
         id      = 'delete_old_data',
         func    = delete_old_data,
-        trigger       = 'interval',
         trigger = 'cron',
         hour    = '0',
         minute  = '10',

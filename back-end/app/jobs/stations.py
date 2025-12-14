@@ -3,7 +3,7 @@ from injector import Injector
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.settings import Settings
-from app.services import DatabaseService, StationsService
+from app.services import StationsService
 
 
 def register(settings: Settings, injector: Injector):

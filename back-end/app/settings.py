@@ -21,14 +21,6 @@ class Settings(BaseSettings, BaseJWTSettings, BaseMongoSettings, BaseRedisSettin
 
     SECRET_KEY: str = Field(default_factory=lambda: generate_secret_key(32))
 
-    # SQLite path
-    @computed_field
-    @property
-    def SQLALCHEMY_DATABASE_URI(self) -> str:
-        basedir = os.path.abspath(os.path.dirname(__file__))
-        sqlite_path = os.path.abspath(os.path.join(basedir, "../", "db.sqlite3"))
-        return f"sqlite:///{sqlite_path}"
-
     # -------------------------
     # Deye
     # -------------------------

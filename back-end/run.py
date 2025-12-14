@@ -9,10 +9,6 @@ settings: Settings = get_settings()
 
 app: FastAPI = create_app(settings)
 
-if settings.DEBUG:
-    print("DEBUG            =", settings.DEBUG)
-    print("DBMS             =", settings.SQLALCHEMY_DATABASE_URI)
-
 if __name__ == "__main__":
     uvicorn.run(
         "run:app",
