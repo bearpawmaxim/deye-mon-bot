@@ -1,18 +1,18 @@
 from datetime import datetime, timezone
 from typing import List
 from beanie import PydanticObjectId
-from fastapi import Body, FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi_injector import Injected
 
 from app.services import Services, DashboardService
 from app.utils.jwt_dependencies import jwt_required
-from app.models import Building
 from app.models.api import SaveBuildingRequest, PowerLogsRequest
 from app.models.api.dashboard import (
     BuildingResponse,
     BuildingSummaryResponse,
     BuildingWithSummaryResponse,
     DashboardConfigResponse,
+    EditBuildingResponse,
     SaveDashboardConfigRequest,
 )
 
@@ -25,18 +25,25 @@ def register(app: FastAPI, services: Services):
     ) -> List[BuildingResponse]:
         return await dashboard.get_buildings()
 
-    @app.get("/api/dashboard/summary")
+
+    @app.get("/api/dashboard/buildings/summary/{building_ids}")
     async def get_buildings_summary(
-        building_ids: List[PydanticObjectId] = Body(...),
+        building_ids: str,
         dashboard = Injected(DashboardService),
     ) -> List[BuildingSummaryResponse]:
-        return await dashboard.get_buildings_summary(building_ids)
+        try:
+            ids = [PydanticObjectId(bid) for bid in building_ids.split(",") if bid]
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid building id(s)")
+        return await dashboard.get_buildings_summary(ids)
+
 
     @app.get("/api/buildings/buildings")
     async def get_buildings_data(
         dashboard = Injected(DashboardService),
     ) -> List[BuildingWithSummaryResponse]:
         return await dashboard.get_buildings_with_summary()
+
 
     @app.get("/api/dashboard/config")
     @app.get("/api/buildings/dashboardConfig")
@@ -46,7 +53,8 @@ def register(app: FastAPI, services: Services):
         configs = await dashboard.get_config()
         return configs
 
-    @app.post("/api/buildings/updateDashboardConfig")
+
+    @app.put("/api/dashboard/config")
     async def update_dashboard_config(
         body: SaveDashboardConfigRequest,
         _ = Depends(jwt_required),
@@ -54,42 +62,53 @@ def register(app: FastAPI, services: Services):
     ):
         return await dashboard.save_config(body)
 
-    @app.get("/api/buildings/building/{building_id}")
-    def get_building(building_id: int, _=Depends(jwt_required)):
-        building = services.database.get_building(building_id)
+
+    @app.get("/api/dashboard/building/{building_id}")
+    async def get_building(
+        building_id: PydanticObjectId,
+        _ = Depends(jwt_required),
+        dashboard = Injected(DashboardService),
+    ) -> EditBuildingResponse:
+        building = await dashboard.get_building(building_id)
         if not building:
             raise HTTPException(status_code=404, detail="Building not found")
-        return {
-            "id": building.id,
-            "name": building.name,
-            "color": building.color,
-            "stationId": building.station_id,
-            "reportUserId": building.report_user_id,
-        }
+        return building
 
-    @app.put("/api/buildings/save")
-    def save_building(body: SaveBuildingRequest, _=Depends(jwt_required)):
-        building = Building(
-            id=body.id,
-            name=body.name,
-            color=body.color,
-            station_id=body.stationId,
-            report_user_id=body.reportUserId,
-        )
-        building_id = services.database.save_building(building)
-        services.database.save_changes()
-        services.events.broadcast_public("buildings_updated")
-        return { "success": True, "id": building_id }
 
-    @app.delete("/api/buildings/delete/{building_id}")
-    def delete_building(building_id: int, _=Depends(jwt_required)):
-        services.database.delete_building(building_id)
-        services.database.save_changes()
+    @app.put("/api/dashboard/building/{building_id}")
+    async def edit_building(
+        building_id: PydanticObjectId,
+        body: SaveBuildingRequest,
+        _ = Depends(jwt_required),
+        dashboard = Injected(DashboardService),
+    ):
+        await dashboard.edit_building(building_id, body)
+        return { "success": True, "id": str(building_id) }
+
+
+    @app.post("/api/dashboard/building")
+    async def create_building(
+        body: SaveBuildingRequest,
+        _ = Depends(jwt_required),
+        dashboard = Injected(DashboardService),
+    ):
+        building_id = await dashboard.create_building(body)
         services.events.broadcast_public("buildings_updated")
-        return { "success": True, "id": building_id }
+        return { "success": True, "id": str(building_id) }
+
+
+    @app.delete("/api/dashboard/building/{building_id}")
+    async def delete_building(
+        building_id: PydanticObjectId,
+        _ = Depends(jwt_required),
+        dashboard = Injected(DashboardService),
+    ):
+        result = await dashboard.delete_building(building_id)
+        return { "success": result, "id": str(building_id) }
+
 
     @app.post("/api/buildings/{building_id}/power-logs")
-    def get_building_power_logs(building_id: int, body: PowerLogsRequest):
+    def get_building_power_logs(building_id: PydanticObjectId, body: PowerLogsRequest):
         building = services.database.get_building(building_id)
         if not building:
             raise HTTPException(status_code=404, detail="Building not found")

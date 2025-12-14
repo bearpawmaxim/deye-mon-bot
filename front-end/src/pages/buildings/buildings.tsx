@@ -6,9 +6,9 @@ import {
   Group,
 } from "@mantine/core";
 import { RootState, useAppDispatch, useAppSelector } from "../../stores/store";
-import { fetchBuildings, fetchDashboardConfig, fetchOutagesSchedule, saveBuildings, saveDashboardConfig } from "../../stores/thunks";
+import { fetchBuildings, fetchBuildingsSummary, fetchDashboardConfig, fetchOutagesSchedule, saveBuildings, saveDashboardConfig } from "../../stores/thunks";
 import { BuildingsView, openDashboardEditDialog, PlannedOutages } from "./components";
-import { BuildingListItem, DashboardConfig, OutagesScheduleData } from "../../stores/types";
+import { BuildingListItem, BuildingSummaryItem, DashboardConfig, OutagesScheduleData } from "../../stores/types";
 import { connect } from "react-redux";
 import { IconButton } from "../../components";
 import { PageHeaderButton, useHeaderContent } from "../../providers";
@@ -18,39 +18,48 @@ import { authDataSelector, createSelectEdittedBuildings } from "../../stores/sel
 type ComponentProps = {
   loadingConfig: boolean;
   loadingBuildings: boolean;
+  loadingSummary: boolean;
+  loadingOutagesSchedule: boolean;
   dashboardConfig?: DashboardConfig;
   buildings: Array<BuildingListItem | BuildingEditType>;
+  buildingsSummary: Array<BuildingSummaryItem>;
   configChanged: boolean;
   buildingsChanged: boolean;
-  loadingOutagesSchedule: boolean;
   outagesScheduleError: string | null;
   outagesSchedule: OutagesScheduleData;
+  buildngsSummaryError: string | null;
 };
 
 const mapStateToProps = (state: RootState): ComponentProps => {
   return {
     loadingConfig: state.dashboardConfig.loading,
+    loadingBuildings: state.buildings.loading,
+    loadingSummary: state.buildingsSummary.loading,
+    loadingOutagesSchedule: state.outagesSchedule.loading,
     configChanged: state.dashboardConfig.changed,
     dashboardConfig: state.dashboardConfig.config,
-    loadingBuildings: state.buildings.loading,
     buildingsChanged: state.buildings.changed,
     buildings: createSelectEdittedBuildings(state),
-    loadingOutagesSchedule: state.outagesSchedule.loading,
+    buildingsSummary: state.buildingsSummary.items,
     outagesSchedule: state.outagesSchedule.outagesSchedule,
     outagesScheduleError: state.outagesSchedule.error,
+    buildngsSummaryError: state.buildingsSummary.error,
   };
 };
 
 const Component: FC<ComponentProps> = ({
-  loadingBuildings,
   loadingConfig,
+  loadingBuildings,
+  loadingSummary,
+  loadingOutagesSchedule,
   buildings,
+  buildingsSummary,
   dashboardConfig,
   configChanged,
   buildingsChanged,
-  loadingOutagesSchedule,
   outagesSchedule,
   outagesScheduleError,
+  buildngsSummaryError,
 }) => {
   const isAuthenticated = Boolean(useAppSelector(authDataSelector)?.accessToken);
   const dispatch = useAppDispatch();
@@ -72,6 +81,17 @@ const Component: FC<ComponentProps> = ({
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const fetchSummary = useCallback(() => {
+    if (buildings && buildings.length > 0 && buildingsSummary.length === 0 && !buildngsSummaryError) {
+      const buildingIds = buildings.map(m => m.id!);
+      dispatch(fetchBuildingsSummary(buildingIds));
+    }
+  }, [buildings, buildingsSummary.length, buildngsSummaryError, dispatch]);
+
+  useEffect(() => {
+    fetchSummary();
+  }, [fetchSummary]);
 
   const fetchOutages = useCallback(
     () => {
@@ -127,6 +147,8 @@ const Component: FC<ComponentProps> = ({
             loading={loadingBuildings}
             isAuthenticated={isAuthenticated}
             buildings={buildings}
+            loadingSummary={loadingSummary}
+            buildingsSummary={buildingsSummary}
           />
 
           { dashboardConfig?.enableOutagesSchedule && <PlannedOutages

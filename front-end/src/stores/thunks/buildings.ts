@@ -7,7 +7,7 @@ import { RootState } from "../store";
 
 export const fetchBuildings = createAsyncThunk('buildings/fetchBuildings', async (_, thunkAPI) => {
   try {
-    const response = await apiClient.get<Array<BuildingListItem>>('/buildings/buildings');
+    const response = await apiClient.get<Array<BuildingListItem>>('/dashboard/buildings');
     return response.data;
   } catch (error: unknown) {
     return thunkAPI.rejectWithValue(getErrorMessage(error) || 'Failed to fetch buildings');
@@ -21,7 +21,7 @@ export const startEditingBuilding = createAsyncThunk('buildings/startEditingBuil
     if (building) {
       return building;
     }
-    const response = await apiClient.get<BuildingEditType>(`/buildings/building/${buildingId}`);
+    const response = await apiClient.get<BuildingEditType>(`/dashboard/building/${buildingId}`);
     return response.data;
   } catch (error: unknown) {
     return thunkAPI.rejectWithValue(getErrorMessage(error) || 'Failed to fetch building edit data');
@@ -34,13 +34,16 @@ export const saveBuildings = createAsyncThunk('buildings/saveBuildings', async (
     const buildingsState = state.buildings;
     const promises = buildingsState.edittedItems.map(async building => {
       const serverDto = {
-        id: building.isNew ? null : building.id,
         name: building.name,
         color: building.color,
         stationId: building.stationId,
         reportUserId: building.reportUserId,
       } as BuildingEditType;
-      await apiClient.put('/buildings/save', serverDto);
+      if (building.isNew) {
+        await apiClient.post('/dashboard/building', serverDto);
+      } else {
+        await apiClient.put(`/dashboard/building/${building.id}`, serverDto);
+      }
     });
     await Promise.all(promises);
     dispatch(fetchBuildings());
@@ -56,7 +59,7 @@ export const deleteBuilding = createAsyncThunk('buildings/deleteBuilding', async
     if (building?.isNew) {
       return buildingId;
     }
-    await apiClient.delete(`/buildings/delete/${buildingId}`);
+    await apiClient.delete(`/dashboard/building/${buildingId}`);
     return buildingId;
   } catch (error: unknown) {
     console.error(error);

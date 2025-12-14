@@ -1,5 +1,5 @@
 import { Action, combineReducers } from "redux";
-import { authReducer, botsReducer, chatsReducer, messagesReducer, stationsReducer, stationsDataReducer, buildingsReducer, usersReducer, extDataReducer, dashboardConfigReducer, visitCounterReducer, outagesScheduleReducer, powerLogsReducer } from "./slices";
+import { authReducer, botsReducer, chatsReducer, messagesReducer, stationsReducer, stationsDataReducer, buildingsReducer, usersReducer, extDataReducer, dashboardConfigReducer, visitCounterReducer, outagesScheduleReducer, powerLogsReducer, buildingsSummaryReducer } from "./slices";
 import { logout } from "./slices";
 import { lookupValuesReducer } from "./slices/lookupValues";
 
@@ -7,6 +7,7 @@ const appReducer = combineReducers({
   ['auth']: authReducer,
   ['bots']: botsReducer,
   ['buildings']: buildingsReducer,
+  ['buildingsSummary']: buildingsSummaryReducer,
   ['extData']: extDataReducer,
   ['chats']: chatsReducer,
   ['dashboardConfig']: dashboardConfigReducer,

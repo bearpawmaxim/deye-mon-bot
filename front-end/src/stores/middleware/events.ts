@@ -9,8 +9,10 @@ import {
   fetchAllowedChats,
   fetchChatRequests,
   fetchDashboardConfig,
-  fetchExtData
+  fetchExtData,
+  fetchBuildingsSummary
 } from "../thunks";
+import { BuildingListItem } from "../types";
 
 export const eventsMiddleware: Middleware<
   object,
@@ -21,7 +23,7 @@ export const eventsMiddleware: Middleware<
   const handleEvent = (event: EventItem) => {
     const state = store.getState();
     const isAuthenticated = Boolean(state.auth?.profile);
-    const userName = isAuthenticated ? state.auth?.profile?.userName : "nobody";
+    const userName = isAuthenticated && event.private ? state.auth?.profile?.userName : "nobody";
 
     if (event.user === userName) {
       return;
@@ -37,18 +39,27 @@ export const eventsMiddleware: Middleware<
         break;
 
       case "station_data_updated":
-      case "buildings_updated":
-        if (event.type === "station_data_updated" && isAuthenticated) {
-          store.dispatch<unknown>(fetchStations());
+        {
+          if (isAuthenticated) {
+            store.dispatch<unknown>(fetchStations());
+          }
+          const buildingIds = (state.buildings.items ?? []).map((m: BuildingListItem) => m.id);
+          store.dispatch<unknown>(fetchBuildingsSummary(buildingIds));
         }
+        break;
+
+      case "buildings_updated":
         store.dispatch<unknown>(fetchBuildings());
         break;
 
       case "ext_data_updated":
-        if (isAuthenticated) {
-          store.dispatch<unknown>(fetchExtData());
+        {
+          if (isAuthenticated) {
+            store.dispatch<unknown>(fetchExtData());
+          }
+          const buildingIds = (state.buildings.items ?? []).map((m: BuildingListItem) => m.id);
+          store.dispatch<unknown>(fetchBuildingsSummary(buildingIds));
         }
-        store.dispatch<unknown>(fetchBuildings());
         break;
 
       case "outages_updated": {

@@ -8,12 +8,20 @@ from shared.models.beanie.dashboard_config import DashboardConfig
 from shared.models.beanie.ext_data import ExtData
 from shared.services.events.service import EventsService
 from ..base import BaseService
-from app.repositories import IDashboardRepository, IExtDataRepository, IStationsDataRepository
+from app.repositories import (
+    IDashboardRepository,
+    IExtDataRepository,
+    IStationsRepository,
+    IStationsDataRepository,
+    IUsersRepository,
+)
 from app.models.api import (
     BuildingResponse,
     BuildingSummaryResponse,
     BuildingWithSummaryResponse,
     DashboardConfigResponse,
+    EditBuildingResponse,
+    SaveBuildingRequest,
     SaveDashboardConfigRequest,
 )
 from app.utils import get_average_discharge_time
@@ -26,12 +34,16 @@ class DashboardService(BaseService):
         events: EventsService,
         dashboard: IDashboardRepository,
         ext_data: IExtDataRepository,
+        stations: IStationsRepository,
         stations_data: IStationsDataRepository,
+        users: IUsersRepository,
     ):
         super().__init__(events)
         self._dashboard = dashboard
         self._ext_data = ext_data
+        self._stations = stations
         self._stations_data = stations_data
+        self._users = users
 
 
     async def get_config(self) -> DashboardConfigResponse:
@@ -54,20 +66,77 @@ class DashboardService(BaseService):
         return await self.get_config()
 
 
-    async def get_buildings(self) -> List[BuildingResponse]:
-        buildings = await self._dashboard.get_buildings()
+    def _process_building(self, building: Building) -> BuildingResponse:
+        return BuildingResponse(
+            id    = building.id,
+            color = building.color,
+            name  = building.name,
+        )
 
-        def process_building(building: Building) -> BuildingResponse:
-            return BuildingResponse(
-                id    = building.id,
-                color = building.color,
-                name  = building.name,
-            )
 
-        return [process_building(building) for building in buildings]
+    async def get_building(self, building_id: PydanticObjectId) -> EditBuildingResponse:
+        building = await self._dashboard.get_building(building_id)
+        response = self._process_building(building)
+        return EditBuildingResponse(
+            **response.model_dump(),
+            report_user_id = building.report_user.id,
+            station_id     = building.station.id
+        )
+
+
+    async def edit_building(
+        self,
+        building_id: PydanticObjectId,
+        request: SaveBuildingRequest,
+    ) -> PydanticObjectId:
+        building = await self._dashboard.get_building(building_id)
+        if building:
+            station = await self._stations.get_station(request.station_id) if request.station_id else None
+            user = await self._users.get_user_by_id(request.report_user_id) if request.report_user_id else None
+
+            building.name = request.name
+            building.color = request.color
+            building.station = station
+            building.report_user = user
+
+            await self._dashboard.edit_building(building)
+            self.broadcast_public("buildings_updated")
+            return building_id
+
+        return None
     
 
-    async def _process_building(self, building: Building, minutes) -> BuildingSummaryResponse:
+    async def create_building(self, request: SaveBuildingRequest) -> PydanticObjectId:
+        station = await self._stations.get_station(request.station_id) if request.station_id else None
+        user = await self._users.get_user_by_id(request.report_user_id) if request.report_user_id else None
+
+        building = Building(
+            name        = request.name,
+            color       = request.color,
+            station     = station,
+            report_user = user,
+        )
+
+        building_id = await self._dashboard.create_building(building)
+        self.broadcast_public("buildings_updated")
+        return building_id
+
+
+    async def delete_building(self, building_id: PydanticObjectId) -> bool:
+        building = await self._dashboard.get_building(building_id)
+        if building:
+            await self._dashboard.delete_building(building)
+            self.broadcast_public("buildings_updated")
+            return True
+        return False
+
+
+    async def get_buildings(self) -> List[BuildingResponse]:
+        buildings = await self._dashboard.get_buildings()
+        return [self._process_building(building) for building in buildings]
+
+
+    async def _process_building_summary(self, building: Building, minutes) -> BuildingSummaryResponse:
         result = BuildingSummaryResponse(
             id    = building.id
         )
@@ -108,18 +177,20 @@ class DashboardService(BaseService):
 
         return result
 
+
     async def get_buildings_summary(self, building_ids: List[PydanticObjectId]) -> List[BuildingSummaryResponse]:
         buildings = await self._dashboard.get_buildings(building_ids)
         minutes = 25
 
-        return [await self._process_building(b, minutes) for b in buildings]
+        return [await self._process_building_summary(b, minutes) for b in buildings]
+
 
     async def get_buildings_with_summary(self) -> List[BuildingWithSummaryResponse]:
         buildings = await self._dashboard.get_buildings()
         minutes = 25
 
         async def process_building(building: Building) -> BuildingWithSummaryResponse:
-            res = await self._process_building(building, minutes)
+            res = await self._process_building_summary(building, minutes)
             
             return BuildingWithSummaryResponse(
                 **res.model_dump(),

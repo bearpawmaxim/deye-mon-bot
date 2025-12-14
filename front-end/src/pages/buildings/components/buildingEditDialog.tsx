@@ -36,15 +36,15 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
     const { colorScheme } = useMantineColorScheme();
 
     const { data: stations, loading: stationsLoading } = useLookup(LookupSchema.Station);
-    const { data: users, loading: usersLoading } = useLookup(LookupSchema.User);
+    const { data: users, loading: usersLoading } = useLookup(LookupSchema.ReporterUser);
     
     const stationOptions = useMemo(() => stationsLoading ? [] : stations.map(station => ({
       label: station.text,
-      value: station.value!.toString(),
+      value: station.value!,
     })), [stations, stationsLoading]);
     const userOptions = useMemo(() => usersLoading ? [] : users.map(user => ({
       label: user.text,
-      value: user.value!.toString(),
+      value: user.value!,
     })), [users, usersLoading])
 
     const {
@@ -129,8 +129,9 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
                   {...field}
                   leftSection={stationsLoading ? <Loader size="xs" /> : null}
                   label={context.title}
-                  value={field.value?.toString() ?? ''}
+                  value={field.value ?? ''}
                   error={context.helpers.getFieldError('stationId')}
+                  onChange={(value) => context.helpers.setControlValue('stationId', value, true)}
                 />
               )}
             />;
@@ -152,8 +153,9 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
                   {...field}
                   leftSection={usersLoading ? <Loader size="xs" /> : null}
                   label={context.title}
-                  value={field.value?.toString() ?? ''}
+                  value={field.value ?? ''}
                   error={context.helpers.getFieldError('reportUserId')}
+                  onChange={(value) => context.helpers.setControlValue('reportUserId', value, true)}
                 />
               )}
             />;

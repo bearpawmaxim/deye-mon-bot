@@ -18,7 +18,7 @@ export const buildingsSlice = createSlice({
   reducers: {
     startCreatingBuilding(state) {
       state.editingItem = {
-        id: (state.globalId + 1).toString(),
+        id: (state.globalId + 1).toString().padStart(24, 'f'),
         name: '',
         color: 'blue.4',
         stationId: null,

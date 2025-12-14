@@ -6,7 +6,7 @@ import { RootState } from "../store";
 
 export const fetchDashboardConfig = createAsyncThunk('dashboardConfig/fetchDashboardConfig', async (_, thunkAPI) => {
   try {
-    const response = await apiClient.get<DashboardConfig>('/buildings/dashboardConfig');
+    const response = await apiClient.get<DashboardConfig>('/dashboard/config');
     return response.data;
   } catch (error: unknown) {
     return thunkAPI.rejectWithValue(getErrorMessage(error) || 'Failed to fetch dashboard config');
@@ -17,7 +17,7 @@ export const saveDashboardConfig = createAsyncThunk('dashboardConfig/updateDashb
   try {
     const state = thunkAPI.getState() as RootState;
     const config = state.dashboardConfig.config as DashboardConfig;
-    const response = await apiClient.post<DashboardConfig>('/buildings/updateDashboardConfig', config);
+    const response = await apiClient.put<DashboardConfig>('/dashboard/config', config);
     thunkAPI.dispatch(fetchDashboardConfig());
     return response.data;
   } catch (error: unknown) {

@@ -1,5 +1,4 @@
 from typing import List
-
 from beanie import PydanticObjectId
 
 from shared.models.beanie.building import Building
@@ -7,10 +6,23 @@ from shared.models.beanie.dashboard_config import DashboardConfig
 from ..interfaces.dashboard import IDashboardRepository
 
 class DashboardRepository(IDashboardRepository):
+
+    async def get_building(self, id: PydanticObjectId) -> Building:
+        return await Building.get(id, fetch_links=True)
     
+    async def edit_building(self, building: Building):
+        await building.save()
+
+    async def create_building(self, building: Building) -> PydanticObjectId:
+        await building.insert()
+        return building.id
+
+    async def delete_building(self, building: Building):
+        await building.delete()
+
     async def get_buildings(self, ids: List[PydanticObjectId] = None) -> List[Building]:
         if ids is not None:
-            return await Building.find(Building.id.in_(ids), fetch_links=True).to_list()
+            return await Building.find({"_id": {"$in": ids}}, fetch_links=True).to_list()
         return await Building.find(fetch_links=True).to_list()
 
     async def get_config(self) -> DashboardConfig:

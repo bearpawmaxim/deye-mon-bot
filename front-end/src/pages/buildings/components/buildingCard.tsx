@@ -1,5 +1,5 @@
 import { FC, ReactNode, useCallback, useMemo } from "react"
-import { BuildingListItem } from "../../../stores/types";
+import { BuildingListItem, BuildingSummaryItem } from "../../../stores/types";
 import { StatsCard } from "../../../components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconName } from "@fortawesome/free-solid-svg-icons";
@@ -8,9 +8,11 @@ import { ProgressProps, useMantineTheme } from "@mantine/core";
 
 export type BuildingCardProps = {
   building: BuildingListItem;
+  loadingSummary: boolean;
+  buildingSummary?: BuildingSummaryItem;
 };
 
-export const BuildingCard: FC<BuildingCardProps> = ({ building }) => {
+export const BuildingCard: FC<BuildingCardProps> = ({ building, buildingSummary, loadingSummary }) => {
   const handleIconClick = useCallback(() => {
     if (building.id) {
       openPowerLogsDialog({
@@ -20,8 +22,8 @@ export const BuildingCard: FC<BuildingCardProps> = ({ building }) => {
     }
   }, [building.id, building.name]);
 
-  const getBatteryIcon = (building: BuildingListItem): ReactNode | null => {
-    const batteryPercent = building.batteryPercent ?? 0;
+  const getBatteryIcon = (summary: BuildingSummaryItem): ReactNode | null => {
+    const batteryPercent = summary.batteryPercent ?? 0;
     let icon: IconName | null = null;
     if (batteryPercent > 75) {
       icon = 'battery-5';
@@ -37,20 +39,20 @@ export const BuildingCard: FC<BuildingCardProps> = ({ building }) => {
     return <FontAwesomeIcon icon={icon} />
   }
 
-  const getGridIcon = (building: BuildingListItem): ReactNode => 
-    building.isGridAvailable
+  const getGridIcon = (summary?: BuildingSummaryItem): ReactNode => 
+    summary?.isGridAvailable
       ? <FontAwesomeIcon icon='lightbulb' />
       : <span className="fa-layers fa-fw">
         <FontAwesomeIcon icon='lightbulb' />
         <FontAwesomeIcon icon='slash' />
       </span>;
     
-  const getOperationText = (building: BuildingListItem) => {
+  const getOperationText = (summary: BuildingSummaryItem) => {
     const statuses: Array<string> = [];
-    if (building.isCharging) {
+    if (summary.isCharging) {
       statuses.push('Charging');
     }
-    if (building.isDischarging) {
+    if (summary.isDischarging) {
       statuses.push('Discharging');
     }
     const joined = statuses.join(', ');
@@ -61,25 +63,27 @@ export const BuildingCard: FC<BuildingCardProps> = ({ building }) => {
   }
 
   const rows = [];
-  rows.push({
-    icon: getGridIcon(building),
-    left: 'Grid:',
-    right: building.isGridAvailable ? 'Available' : 'Unavailable',
-  });
-  if (building.batteryPercent !== undefined && building.batteryPercent !== null) {
+  if (buildingSummary) {
     rows.push({
-      icon: getBatteryIcon(building),
-      left: <>Battery: </>,
-      right: <>
-        {getOperationText(building)}{building.batteryPercent}%
-        {building.batteryDischargeTime && <>, ~{building.batteryDischargeTime} left</>}</>,
+      icon: getGridIcon(buildingSummary),
+      left: 'Grid:',
+      right: buildingSummary.isGridAvailable ? 'Available' : 'Unavailable',
     });
   }
-  if (building.consumptionPower) {
+  if (buildingSummary?.batteryPercent !== undefined && buildingSummary?.batteryPercent !== null) {
+    rows.push({
+      icon: getBatteryIcon(buildingSummary),
+      left: <>Battery: </>,
+      right: <>
+        {getOperationText(buildingSummary)}{buildingSummary.batteryPercent}%
+        {buildingSummary.batteryDischargeTime && <>, ~{buildingSummary.batteryDischargeTime} left</>}</>,
+    });
+  }
+  if (buildingSummary?.consumptionPower) {
     rows.push({
       icon: <FontAwesomeIcon icon='bolt' />,
       left: <>Consumption: </>,
-      right: <>{building.consumptionPower ?? '--'} kW</>
+      right: <>{buildingSummary.consumptionPower ?? '--'} kW</>
     });
   }
 
@@ -126,24 +130,25 @@ export const BuildingCard: FC<BuildingCardProps> = ({ building }) => {
 
 
   const progress: ProgressProps | null = useMemo(() => {
-    if (building.batteryPercent) {
+    if (buildingSummary?.batteryPercent) {
       return {
-        value: building.batteryPercent,
+        value: buildingSummary.batteryPercent,
         striped: true,
-        animated: building.isCharging || building.isDischarging,
-        color: getBatteryColor(building.batteryPercent),
+        animated: buildingSummary.isCharging || buildingSummary.isDischarging,
+        color: getBatteryColor(buildingSummary.batteryPercent),
       } as ProgressProps;
     }
     return null;
-  }, [building.batteryPercent, building.isCharging, building.isDischarging, getBatteryColor]);
+  }, [buildingSummary, getBatteryColor]);
 
   return (
     <StatsCard
+      loading={loadingSummary}
       key={`building_${building.id}`}
       title={building.name}
       bgColor={building.color}
-      icon={getGridIcon(building)}
-      iconColor={building.isGridAvailable ? "green.9" : "red.9"}
+      icon={getGridIcon(buildingSummary)}
+      iconColor={buildingSummary?.isGridAvailable ? "green.9" : "red.9"}
       onClick={handleIconClick}
       rows={rows}
       progress={progress}

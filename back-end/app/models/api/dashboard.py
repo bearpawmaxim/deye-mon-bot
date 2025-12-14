@@ -18,34 +18,37 @@ class DashboardConfigResponse(SaveDashboardConfigRequest):
     ...
 
 
-class SaveBuildingRequest(BaseModel):
-    id: Optional[int] = None
+class BuildingResponse(BaseModel):
+    id: Optional[PydanticObjectId] = None
     name: str
-    color: str = "#FFFFFF"
-    station_id: Optional[int] = Field(None, alias="stationId")
-    report_user_id: Optional[int] = Field(None, alias="reportUserId")
+    color: str
 
     model_config = ConfigDict(
         populate_by_name = True,
         from_attributes  = True,
     )
+
+
+class SaveBuildingRequest(BuildingResponse):
+    name: str
+    color: str = "#FFFFFF"
+    station_id: Optional[PydanticObjectId] = Field(None, alias="stationId")
+    report_user_id: Optional[PydanticObjectId] = Field(None, alias="reportUserId")
+
+    model_config = ConfigDict(
+        populate_by_name = True,
+        from_attributes  = True,
+    )
+
+
+class EditBuildingResponse(SaveBuildingRequest):
+    ...
 
 
 class PowerLogsRequest(BaseModel):
     start_date: str = Field(None, alias="startDate")
     end_date: str = Field(None, alias="endDate")
 
-    model_config = ConfigDict(
-        populate_by_name = True,
-        from_attributes  = True,
-    )
-
-
-class BuildingResponse(BaseModel):
-    id: PydanticObjectId
-    name: str
-    color: str
-    
     model_config = ConfigDict(
         populate_by_name = True,
         from_attributes  = True,
@@ -72,11 +75,12 @@ class BuildingWithSummaryResponse(BuildingSummaryResponse, BuildingResponse):
 
 
 __all__ = [
-    "DashboardConfigResponse",
-    "SaveBuildingRequest",
-    "PowerLogsRequest",
     "BuildingResponse",
     "BuildingSummaryResponse",
     "BuildingWithSummaryResponse",
+    "DashboardConfigResponse",
+    "EditBuildingResponse",
+    "PowerLogsRequest",
+    "SaveBuildingRequest",
     "SaveDashboardConfigRequest",
 ]
