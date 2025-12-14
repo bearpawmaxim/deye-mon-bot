@@ -21,7 +21,7 @@ export const startEditingBuilding = createAsyncThunk('buildings/startEditingBuil
     if (building) {
       return building;
     }
-    const response = await apiClient.get<BuildingEditType>(`/dashboard/building/${buildingId}`);
+    const response = await apiClient.get<BuildingEditType>(`/dashboard/buildings/${buildingId}`);
     return response.data;
   } catch (error: unknown) {
     return thunkAPI.rejectWithValue(getErrorMessage(error) || 'Failed to fetch building edit data');
@@ -40,9 +40,9 @@ export const saveBuildings = createAsyncThunk('buildings/saveBuildings', async (
         reportUserId: building.reportUserId,
       } as BuildingEditType;
       if (building.isNew) {
-        await apiClient.post('/dashboard/building', serverDto);
+        await apiClient.post('/dashboard/buildings', serverDto);
       } else {
-        await apiClient.put(`/dashboard/building/${building.id}`, serverDto);
+        await apiClient.put(`/dashboard/buildings/${building.id}`, serverDto);
       }
     });
     await Promise.all(promises);
@@ -59,7 +59,7 @@ export const deleteBuilding = createAsyncThunk('buildings/deleteBuilding', async
     if (building?.isNew) {
       return buildingId;
     }
-    await apiClient.delete(`/dashboard/building/${buildingId}`);
+    await apiClient.delete(`/dashboard/buildings/${buildingId}`);
     return buildingId;
   } catch (error: unknown) {
     console.error(error);

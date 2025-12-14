@@ -21,6 +21,8 @@ from app.models.api import (
     BuildingWithSummaryResponse,
     DashboardConfigResponse,
     EditBuildingResponse,
+    PeriodResponse,
+    PowerLogsResponse,
     SaveBuildingRequest,
     SaveDashboardConfigRequest,
 )
@@ -199,3 +201,87 @@ class DashboardService(BaseService):
             )
 
         return [await process_building(b) for b in buildings]
+
+
+    async def get_power_logs(
+        self,
+        building_id: PydanticObjectId,
+        start_date: datetime,
+        end_date: datetime,
+    ) -> PowerLogsResponse:
+        building = await self._dashboard.get_building(building_id)
+        if not building:
+            return None
+
+        records = await self._ext_data.get_ext_data_statistics(building.report_user.id, start_date, end_date)
+
+        periods = []
+        total_available_seconds = 0
+        total_unavailable_seconds = 0
+
+        if not records:
+            last_record = await self._ext_data.get_last_ext_data_before_date(building.report_user.id, start_date)
+            duration_seconds = (end_date - start_date).total_seconds()
+            if last_record:
+                total_available_seconds = duration_seconds if last_record.grid_state else 0
+                total_unavailable_seconds = duration_seconds if not last_record.grid_state else 0
+                period = PeriodResponse(
+                    start_time       = start_date.isoformat(),
+                    end_time         = end_date.isoformat(),
+                    is_available     = last_record.grid_state,
+                    duration_seconds = int(duration_seconds)
+                )
+                periods.append(period)
+            total_seconds = int(duration_seconds)
+            return PowerLogsResponse(
+                periods                   = periods,
+                totalAvailableSeconds     = int(total_available_seconds),
+                total_unavailable_seconds = int(total_unavailable_seconds),
+                total_seconds             = total_seconds
+            )
+
+        # Insert synthetic record if needed
+        first_record = records[0]
+        if first_record.received_at.tzinfo is None:
+            first_record.received_at = first_record.received_at.replace(tzinfo=timezone.utc)
+
+        if first_record.received_at > start_date:
+            last_before = await self._ext_data.get_last_ext_data_before_date(building.report_user.id, start_date)
+            if last_before:
+                from app.models import ExtData
+                synthetic_record = ExtData()
+                synthetic_record.received_at = start_date
+                synthetic_record.grid_state = last_before.grid_state
+                synthetic_record.user_id = building.report_user.id
+                records.insert(0, synthetic_record)
+
+        # Calculate periods
+        for i, current in enumerate(records):
+            current_time = current.received_at
+            if current_time.tzinfo is None:
+                current_time = current_time.replace(tzinfo=timezone.utc)
+
+            end_time = records[i + 1].received_at if i < len(records) - 1 else end_date
+            if end_time.tzinfo is None:
+                end_time = end_time.replace(tzinfo=timezone.utc)
+            duration_seconds = (end_time - current_time).total_seconds()
+            if current.grid_state:
+                total_available_seconds += duration_seconds
+            else:
+                total_unavailable_seconds += duration_seconds
+            period = PeriodResponse(
+                start_time       = current_time.isoformat(),
+                end_time         = end_time.isoformat(),
+                is_available     = current.grid_state,
+                duration_seconds = int(duration_seconds),
+            )
+            periods.append(period)
+
+        total_seconds = int(total_available_seconds + total_unavailable_seconds)
+
+        return PowerLogsResponse(
+            periods                   = periods,
+            total_available_seconds   = int(total_available_seconds),
+            total_unavailable_seconds = int(total_unavailable_seconds),
+            total_seconds             = total_seconds,
+        )

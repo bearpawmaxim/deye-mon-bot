@@ -32,3 +32,16 @@ class IExtDataRepository(ABC):
     @abstractmethod
     async def delete(self, ext_data_id: PydanticObjectId) -> bool:
         ...
+
+    @abstractmethod
+    async def get_ext_data_statistics(
+        self,
+        user_id: PydanticObjectId,
+        start_date: datetime,
+        end_date: datetime,
+    ):
+        ...
+
+    @abstractmethod
+    async def get_last_ext_data_before_date(self, user_id: int, before_date: datetime):
+        ...

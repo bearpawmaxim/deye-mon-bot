@@ -44,3 +44,31 @@ class ExtDataRepository(IExtDataRepository):
             return True
         return False
 
+    async def get_ext_data_statistics(
+        self,
+        user_id: PydanticObjectId,
+        start_date: datetime,
+        end_date: datetime,
+    ):
+        ext_data = await ExtData.find(
+            ExtData.user_id == user_id,
+            ExtData.received_at >= start_date,
+            ExtData.received_at <= end_date
+        ).sort(
+            ExtData.received_at
+        ).to_list()
+
+        return ext_data
+    
+    async def get_last_ext_data_before_date(self, user_id: int, before_date: datetime):
+        try:
+            docs = await ExtData.find(
+                ExtData.user_id == user_id,
+                ExtData.received_at < before_date
+            ).sort(
+                -ExtData.received_at
+            ).limit(1).to_list()
+            return docs[0] if docs else None
+        except Exception as e:
+            print(f'Error getting last ext data before date: {e}')
+            return None
