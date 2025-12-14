@@ -1,7 +1,7 @@
 from typing import List
 from typing import TypeGuard
-from shared.models.beanie import Building, Message, Station, User
-from shared.models.beanie.lookup import LookupModel, LookupValue
+from shared.models import Building, Message, Station, User
+from shared.models.lookup import LookupModel, LookupValue
 
 from ..interfaces import LookupDefinition, ILookupsRepository
 

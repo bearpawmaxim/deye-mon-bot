@@ -3,11 +3,11 @@ from typing import List
 
 from beanie import PydanticObjectId
 
-from shared.models.beanie.bot import Bot
-from shared.models.beanie.station import Station
+from shared.models.bot import Bot
+from shared.models.station import Station
 
 from ..interfaces.messages import IMessagesRepository
-from shared.models.beanie.message import Message
+from shared.models.message import Message
 
 
 class MessagesRepository(IMessagesRepository):

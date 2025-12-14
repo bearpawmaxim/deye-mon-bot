@@ -1,7 +1,7 @@
 from typing import List
 from injector import inject
 
-from shared.models.beanie.user import User
+from shared.models.user import User
 from shared.services.events.service import EventsService
 from app.repositories import IUsersRepository
 from app.settings import Settings

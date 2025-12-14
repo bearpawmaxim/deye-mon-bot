@@ -1,7 +1,6 @@
-from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo import AsyncMongoClient
 from beanie import init_beanie
-from app.models.beanie import BEANIE_MODELS
+from shared.models import BEANIE_MODELS
 
 
 class BeanieInitializer:

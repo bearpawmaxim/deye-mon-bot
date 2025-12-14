@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from typing import List
 from beanie import PydanticObjectId
 
-from shared.models.beanie.ext_data import ExtData
+from shared.models.ext_data import ExtData
 from ..interfaces.ext_data import IExtDataRepository
 
 

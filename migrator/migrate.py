@@ -7,8 +7,8 @@ from sqlalchemy.orm import sessionmaker
 from settings import Settings, get_settings
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from shared.models.beanie.station_data import StationData
-from shared.models.beanie.visit_counter import DailyVisitCounter, VisitCounter
+from shared.models.station_data import StationData
+from shared.models.visit_counter import DailyVisitCounter, VisitCounter
 from shared.models.sqlalchemy import (
     User as SQLUser,
     Building as SQLBuilding,
@@ -24,7 +24,7 @@ from shared.models.sqlalchemy import (
     DashboardConfig as SQLDashboardConfig
 )
 
-from shared.models.beanie import (
+from shared.models import (
     User,
     Building,
     ExtData,

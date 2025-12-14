@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import List, Type
 
-from shared.models.beanie.beanie_filter import BeanieFilter
-from shared.models.beanie.lookup import LookupModel, LookupValue
+from shared.models.beanie_filter import BeanieFilter
+from shared.models.lookup import LookupModel, LookupValue
 
 
 class LookupDefinition:

@@ -3,7 +3,7 @@ from typing import List
 from beanie import PydanticObjectId
 
 from ..interfaces.bots import IBotsRepository
-from shared.models.beanie.bot import Bot
+from shared.models.bot import Bot
 
 
 class BotsRepository(IBotsRepository):

@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List
 from beanie import PydanticObjectId
 
-from shared.models.beanie.ext_data import ExtData
+from shared.models.ext_data import ExtData
 
 
 class IExtDataRepository(ABC):

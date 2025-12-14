@@ -13,7 +13,7 @@ from app.models.api import (
 )
 from app.services import MessagesService, BotsService, StationsService, TelegramService
 from app.utils.jwt_dependencies import jwt_required
-from shared.models.beanie.message import Message
+from shared.models.message import Message
 
 
 def register(app: FastAPI):

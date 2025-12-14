@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from beanie import PydanticObjectId
 
-from shared.models.beanie import Station, StationData
+from shared.models import Station, StationData
 from app.models import StationStatisticData
 from app.models.deye import DeyeStationData
 

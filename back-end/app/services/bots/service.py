@@ -10,8 +10,8 @@ from injector import inject
 from app.repositories import IBotsRepository, IChatsRepository, IMessagesRepository, IStationsDataRepository
 from app.services.telegram.service import TelegramService
 from app.models.api import BotResponse, CreateBotRequest, UpdateBotRequest
-from app.models.beanie import Message, Station
-from shared.models.beanie.bot import Bot
+from shared.models import Message, Station
+from shared.models.bot import Bot
 from shared.services import EventsService
 from app.services.base import BaseService
 from app.utils import generate_message, get_send_timeout, get_should_send

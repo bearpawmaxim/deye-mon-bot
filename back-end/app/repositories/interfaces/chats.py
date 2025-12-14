@@ -3,8 +3,8 @@ from typing import List
 
 from beanie import PydanticObjectId
 
-from shared.models.beanie.allowed_chat import AllowedChat
-from shared.models.beanie.chat_request import ChatRequest
+from shared.models.allowed_chat import AllowedChat
+from shared.models.chat_request import ChatRequest
 
 
 class IChatsRepository(ABC):

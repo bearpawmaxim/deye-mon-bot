@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Optional
 from pydantic import Field
-from shared.models.beanie.bot import Bot
+from shared.models.bot import Bot
 from beanie import Document, Link
 
 

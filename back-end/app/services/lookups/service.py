@@ -2,8 +2,7 @@ from typing import List
 
 from injector import inject
 
-from shared.models.beanie.beanie_filter import BeanieFilter
-from shared.models.beanie.lookup import LookupValue
+from shared.models.lookup import LookupValue
 from app.repositories import ILookupsRepository
 
 

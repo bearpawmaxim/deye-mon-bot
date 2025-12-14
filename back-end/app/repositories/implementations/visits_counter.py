@@ -1,7 +1,7 @@
 from datetime import date, datetime
 
 from ..interfaces.visits_counter import IVisitsCounterRepository
-from shared.models.beanie.visit_counter import DailyVisitCounter, VisitCounter
+from shared.models.visit_counter import DailyVisitCounter, VisitCounter
 
 
 class VisitsCounterRepository(IVisitsCounterRepository):

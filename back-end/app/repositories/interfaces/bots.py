@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List
 from beanie import PydanticObjectId
 
-from shared.models.beanie.bot import Bot
+from shared.models.bot import Bot
 
 
 class IBotsRepository(ABC):

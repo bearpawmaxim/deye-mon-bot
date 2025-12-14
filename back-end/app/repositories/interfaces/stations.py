@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from shared.models.beanie.station import Station
+from shared.models.station import Station
 from app.models.deye import DeyeStation
 
 

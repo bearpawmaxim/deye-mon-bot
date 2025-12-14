@@ -3,8 +3,8 @@ from typing import List
 
 from beanie import PydanticObjectId
 
-from shared.models.beanie.building import Building
-from shared.models.beanie.dashboard_config import DashboardConfig
+from shared.models.building import Building
+from shared.models.dashboard_config import DashboardConfig
 
 
 class IDashboardRepository(ABC):

@@ -3,8 +3,8 @@ from typing import List
 from beanie import PydanticObjectId
 from injector import inject
 
-from shared.models.beanie.ext_data import ExtData
-from shared.models.beanie.user import User
+from shared.models.ext_data import ExtData
+from shared.models.user import User
 from ..base import BaseService
 from app.models.api import ExtDataResponse
 from shared.services.events.service import EventsService

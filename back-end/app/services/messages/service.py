@@ -10,7 +10,6 @@ from app.models.api import (
     MessageUpdateRequest,
 )
 from app.repositories import IMessagesRepository
-from shared.models.beanie.message import Message
 from shared.services.events.service import EventsService
 from ..telegram import TelegramService
 from ..base import BaseService

@@ -3,7 +3,7 @@ from typing import List
 from injector import inject
 
 from app.repositories import IStationsRepository, IStationsDataRepository
-from shared.models.beanie import Station, StationData
+from shared.models import Station, StationData
 from shared.services.events.service import EventsService
 from ..base import BaseService
 from ..deye_api import DeyeApiService

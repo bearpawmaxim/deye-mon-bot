@@ -1,6 +1,4 @@
-from datetime import datetime, timezone, timedelta
-import secrets
-from typing import Any, Dict, Optional
+from datetime import datetime, timezone
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from injector import inject
@@ -8,7 +6,7 @@ from jose import jwt, JWTError
 from passlib.context import CryptContext
 
 from app.settings import Settings
-from app.models.beanie import User
+from shared.models import User
 from app.repositories import IUsersRepository
 from shared.utils.jwt_utils import create_access_token, create_refresh_token
 from shared.utils.key_generation import generate_password_reset_token

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List
 
-from shared.models.beanie.visit_counter import VisitCounter, DailyVisitCounter
+from shared.models.visit_counter import VisitCounter, DailyVisitCounter
 
 
 class IVisitsCounterRepository(ABC):

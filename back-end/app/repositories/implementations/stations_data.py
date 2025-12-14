@@ -6,7 +6,7 @@ from beanie import PydanticObjectId
 
 from app.models import StationStatisticData
 from ..interfaces.stations_data import IStationsDataRepository
-from shared.models.beanie import Station, StationData
+from shared.models import Station, StationData
 from app.models.deye import DeyeStationData
 
 

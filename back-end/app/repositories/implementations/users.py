@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List
 
 from beanie import PydanticObjectId
-from shared.models.beanie.user import User
+from shared.models.user import User
 from ..interfaces.users import IUsersRepository
 
 

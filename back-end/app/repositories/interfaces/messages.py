@@ -3,7 +3,7 @@ from typing import List
 
 from beanie import PydanticObjectId
 
-from shared.models.beanie.message import Message
+from shared.models.message import Message
 
 
 class IMessagesRepository(ABC):

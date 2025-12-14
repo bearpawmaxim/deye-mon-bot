@@ -3,7 +3,7 @@ from typing import Optional, List
 from beanie import Document, Link
 from pydantic import Field
 
-from shared.models.beanie.beanie_filter import BeanieFilter
+from shared.models.beanie_filter import BeanieFilter
 
 from .lookup import LookupModel, LookupValue
 from .bot import Bot

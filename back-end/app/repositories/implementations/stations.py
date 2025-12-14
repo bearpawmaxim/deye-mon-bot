@@ -5,7 +5,7 @@ from typing import List
 from beanie import PydanticObjectId
 
 from ..interfaces.stations import IStationsRepository
-from shared.models.beanie.station import Station
+from shared.models.station import Station
 from app.models.deye import DeyeStation
 
 

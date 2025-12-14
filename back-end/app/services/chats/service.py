@@ -5,8 +5,8 @@ from injector import inject
 
 from app.models.api import ChatIdRequest, AllowedChatResponse, ChatRequestResponse
 from app.repositories import IChatsRepository
-from shared.models.beanie.allowed_chat import AllowedChat
-from shared.models.beanie.chat_request import ChatRequest
+from shared.models.allowed_chat import AllowedChat
+from shared.models.chat_request import ChatRequest
 from shared.services.events.service import EventsService
 from ..base import BaseService
 from ..telegram import TelegramService

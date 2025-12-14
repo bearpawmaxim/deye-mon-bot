@@ -3,9 +3,9 @@ from typing import List
 from beanie import PydanticObjectId
 from injector import inject
 
-from shared.models.beanie.building import Building
-from shared.models.beanie.dashboard_config import DashboardConfig
-from shared.models.beanie.ext_data import ExtData
+from shared.models.building import Building
+from shared.models.dashboard_config import DashboardConfig
+from shared.models.ext_data import ExtData
 from shared.services.events.service import EventsService
 from ..base import BaseService
 from app.repositories import (
