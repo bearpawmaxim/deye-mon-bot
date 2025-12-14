@@ -17,6 +17,7 @@ from .lookups import LookupsService
 from .ext_data import ExtDataService
 from .dashboard import DashboardService
 from .maintenance import MaintenanceService
+from .message_generator import MessageGeneratorService, MessageGeneratorConfig
 
 
 class ServicesContainer(Module):
@@ -47,6 +48,9 @@ class ServicesContainer(Module):
 
         binder.bind(BotConfig, scope=noscope)
         binder.bind(BotsService, scope=singleton)
+
+        binder.bind(MessageGeneratorConfig, scope=noscope)
+        binder.bind(MessageGeneratorService, scope=noscope)
 
         binder.bind(VisitCounterService, scope=noscope)
 

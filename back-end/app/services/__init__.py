@@ -15,11 +15,12 @@ from .chats import ChatsService
 from .ext_data import ExtDataService
 from .dashboard import DashboardService
 from .maintenance import MaintenanceService
+from .message_generator import MessageGeneratorService, MessageItem
 
 
-__all__ = [BeanieInitializer, BotsService, DeyeConfig,
-           DeyeApiService, TelegramConfig, TelegramService, ServicesContainer,
+__all__ = [BeanieInitializer, BotsService, DeyeConfig, DeyeApiService,
+           TelegramConfig, TelegramService, ServicesContainer,
            AuthorizationService, VisitCounterService, EventsService, EventItem,
            MessagesService, OutagesScheduleService, StationsService, LookupsService,
            ChatsService, ExtDataService, DashboardService, UsersService,
-           MaintenanceService]
+           MaintenanceService, MessageGeneratorService, MessageItem]
