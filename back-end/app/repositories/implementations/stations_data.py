@@ -147,3 +147,11 @@ class StationsDataRepository(IStationsDataRepository):
         except Exception as e:
             print(f"Error fetching station data tuple: {e}")
             return None
+
+    async def delete_old_data(self, keep_days: int):
+        timeout = datetime.now(timezone.utc) - timedelta(days = keep_days)
+        print(f"removing stations data older than {timeout}")
+
+        await StationData.find(
+            StationData.last_update_time < timeout
+        ).delete()

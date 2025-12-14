@@ -45,3 +45,7 @@ class IExtDataRepository(ABC):
     @abstractmethod
     async def get_last_ext_data_before_date(self, user_id: int, before_date: datetime):
         ...
+
+    @abstractmethod
+    async def delete_old_data(self, keep_days: int):
+        ...

@@ -1,6 +1,5 @@
 import asyncio
 from datetime import datetime, timedelta, timezone
-from functools import partial
 from typing import List
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import io
@@ -9,7 +8,6 @@ from beanie import PydanticObjectId
 from injector import inject
 
 from app.repositories import IBotsRepository, IChatsRepository, IMessagesRepository, IStationsDataRepository
-from app.services.database.service import DatabaseService
 from app.services.telegram.service import TelegramService
 from app.models.api import BotResponse, CreateBotRequest, UpdateBotRequest
 from app.models.beanie import Message, Station
@@ -44,7 +42,6 @@ class BotsService(BaseService):
         self,
         config: BotConfig,
         telegram: TelegramService,
-        database: DatabaseService,
         messages: IMessagesRepository,
         bots: IBotsRepository,
         chats: IChatsRepository,
@@ -54,7 +51,6 @@ class BotsService(BaseService):
         super().__init__(events)
         self._message_timezone = self._try_get_timezone(config.timezone)
         self._telegram = telegram
-        self._database = database
         self._messages = messages
         self._bots = bots
         self._chats = chats

@@ -1,6 +1,5 @@
 from injector import Binder, Module, singleton, noscope
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from concurrent.futures import ThreadPoolExecutor
 
 from app.settings import Settings
 from shared.services.events import EventsService, EventsServiceConfig
@@ -18,6 +17,7 @@ from .messages import MessagesService
 from .lookups import LookupsService
 from .ext_data import ExtDataService
 from .dashboard import DashboardService
+from .maintenance import MaintenanceService
 
 
 class ServicesContainer(Module):
@@ -63,5 +63,5 @@ class ServicesContainer(Module):
 
         scheduler = AsyncIOScheduler()
         binder.bind(AsyncIOScheduler, to=scheduler, scope=singleton)
-        executor = ThreadPoolExecutor()
-        binder.bind(ThreadPoolExecutor, to=executor, scope=singleton)
+
+        binder.bind(MaintenanceService, scope=noscope)

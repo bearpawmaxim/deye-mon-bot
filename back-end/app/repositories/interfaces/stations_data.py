@@ -36,3 +36,7 @@ class IStationsDataRepository(ABC):
     @abstractmethod
     async def get_station_data_tuple(station_id: str) -> Optional[StationStatisticData]:
         ...
+
+    @abstractmethod
+    async def delete_old_data(self, keep_days: int):
+        ...

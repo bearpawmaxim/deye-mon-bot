@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import List
 from beanie import PydanticObjectId
 
@@ -72,3 +72,11 @@ class ExtDataRepository(IExtDataRepository):
         except Exception as e:
             print(f'Error getting last ext data before date: {e}')
             return None
+
+    async def delete_old_data(self, keep_days: int):
+        timeout = datetime.now(timezone.utc) - timedelta(days = keep_days)
+        print(f"removing ext data older than {timeout}")
+
+        await ExtData.find(
+            ExtData.received_at < timeout
+        ).delete()

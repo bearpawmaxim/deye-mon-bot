@@ -3,7 +3,7 @@ from injector import Injector
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.settings import Settings
-from app.services import DeyeApiService, DatabaseService, StationsService
+from app.services import DatabaseService, StationsService
 
 
 def register(settings: Settings, injector: Injector):
@@ -33,16 +33,6 @@ def register(settings: Settings, injector: Injector):
 
         await sync_stations_data()
 
-    # def refresh_deye_token():
-    #     deye_api: DeyeApiService = injector.get(DeyeApiService)
-    #     deye_api.refresh_token()
-
-    def remove_old_data():
-        database: DatabaseService = injector.get(DatabaseService)
-        database.delete_old_station_data()
-        database.delete_old_ext_data()
-        database.save_changes()
-
     scheduler.add_job(
         id            = 'check_deye_status',
         func          = check_deye_status,
@@ -60,19 +50,3 @@ def register(settings: Settings, injector: Injector):
             second        = '0',
             next_run_time = datetime.now()
         )
-    # scheduler.add_job(
-    #     id      = 'refresh_deye_token',
-    #     func    = refresh_deye_token,
-    #     trigger = 'cron',
-    #     hour    = '0',
-    #     minute  = '0',
-    #     second  = '0',
-    # )
-    scheduler.add_job(
-        id      = 'remove_old_data',
-        func    = remove_old_data,
-        trigger = 'cron',
-        hour    = '0',
-        minute  = '10',
-        second  = '0',
-    )
