@@ -1,18 +1,24 @@
 import asyncio
+from contextlib import redirect_stdout
+import io
 from typing import List
-
 from beanie import PydanticObjectId
 from injector import inject
+
 from app.models.api import (
     MessageListResponseModel,
     MessageEditResponseModel,
     MessageCreateRequest,
+    MessagePreviewRequest,
+    MessagePreviewResponse,
     MessageUpdateRequest,
 )
-from app.repositories import IMessagesRepository
+from app.repositories import IMessagesRepository, IStationsRepository
+from shared.models.message import Message
 from shared.services.events.service import EventsService
 from ..telegram import TelegramService
 from ..base import BaseService
+from ..interfaces import IMessageGeneratorService
 
 
 @inject
@@ -21,11 +27,15 @@ class MessagesService(BaseService):
         self,
         events: EventsService,
         messages: IMessagesRepository,
+        stations: IStationsRepository,
+        message_generator: IMessageGeneratorService,
         telegram: TelegramService,
     ):
         super().__init__(events)
         self._messages = messages
+        self._stations = stations
         self._telegram = telegram
+        self._message_generator = message_generator
 
 
     async def _get_bot_name(self, bot_id: str):
@@ -109,3 +119,37 @@ class MessagesService(BaseService):
         message = await self._messages.update(id, dto.model_dump())
         self.broadcast_private("messages_updated")
         return message.id
+    
+    async def get_message_preview(self, message_preview: MessagePreviewRequest) -> MessagePreviewResponse:
+        server_stations = await self._stations.get_stations(True)
+        id_set = set(message_preview.stations)
+        stations = [s for s in server_stations if s.id in id_set]
+
+        message = Message(
+            name                 = message_preview.name,
+            message_template     = message_preview.message_template,
+            timeout_template     = message_preview.timeout_template,
+            should_send_template = message_preview.should_send_template,
+            stations             = stations,
+        )
+
+        stdout_buffer = io.StringIO()
+
+        try:
+            info = None
+            with redirect_stdout(stdout_buffer):
+                info = await self._message_generator.generate_message(message, True)
+
+            if info is None:
+                captured_output = stdout_buffer.getvalue()
+                raise Exception(captured_output)
+
+            return MessagePreviewResponse(
+                success        = True,
+                message        = info.message,
+                should_send    = info.should_send,
+                timeout        = info.timeout,
+                next_send_time = info.next_send_time
+            )
+        except Exception as e:
+            raise e

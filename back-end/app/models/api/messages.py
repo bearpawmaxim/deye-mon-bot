@@ -68,10 +68,19 @@ class MessagePreviewRequest(BaseModel):
     timeout_template: str = Field(alias="timeoutTemplate")
     should_send_template: Optional[str] = Field(None, alias="shouldSendTemplate")
     stations: List[PydanticObjectId]
+
     model_config = {
         "populate_by_name": True,
         "from_attributes": True,
     }
+
+
+class MessagePreviewResponse(BaseModel):
+    success: bool
+    message: str
+    should_send: bool = Field(alias="shouldSend")
+    timeout: int
+    next_send_time: datetime = Field(alias="nextSendTime")
 
 
 class SaveMessageStateRequest(BaseModel):
@@ -82,6 +91,7 @@ __all__ = [
     "MessageListResponseModel",
     "MessageEditResponseModel",
     "MessagePreviewRequest",
+    "MessagePreviewResponse",
     "SaveMessageStateRequest",
     "MessageCreateRequest",
     "MessageUpdateRequest",

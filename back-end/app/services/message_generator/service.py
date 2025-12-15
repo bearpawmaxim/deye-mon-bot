@@ -1,15 +1,18 @@
 from datetime import datetime, timedelta, timezone
 from typing import List
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+from injector import inject
 
 from shared.models import Message
 from shared.models.station import Station
-from .models import MessageGeneratorConfig, MessageItem
+from .models import MessageGeneratorConfig
 from app.utils import generate_message, get_send_timeout, get_should_send
 from app.repositories import IMessagesRepository, IStationsDataRepository
+from ..interfaces import IMessageGeneratorService, MessageItem
 
 
-class MessageGeneratorService():
+@inject
+class MessageGeneratorService(IMessageGeneratorService):
     def _try_get_timezone(self, timezone: str):
         try:
             return ZoneInfo(timezone)

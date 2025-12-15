@@ -15,7 +15,8 @@ from .chats import ChatsService
 from .ext_data import ExtDataService
 from .dashboard import DashboardService
 from .maintenance import MaintenanceService
-from .message_generator import MessageGeneratorService, MessageItem
+from .message_processor import MessageProcessorService
+from .interfaces import IMessageGeneratorService, MessageItem
 
 
 __all__ = [BeanieInitializer, BotsService, DeyeConfig, DeyeApiService,
@@ -23,4 +24,5 @@ __all__ = [BeanieInitializer, BotsService, DeyeConfig, DeyeApiService,
            AuthorizationService, VisitCounterService, EventsService, EventItem,
            MessagesService, OutagesScheduleService, StationsService, LookupsService,
            ChatsService, ExtDataService, DashboardService, UsersService,
-           MaintenanceService, MessageGeneratorService, MessageItem]
+           MaintenanceService, IMessageGeneratorService, MessageItem,
+           MessageProcessorService]

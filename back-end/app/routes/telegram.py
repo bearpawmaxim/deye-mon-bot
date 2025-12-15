@@ -1,7 +1,7 @@
 from beanie import PydanticObjectId
 from fastapi import FastAPI, Request
 from fastapi_injector import Injected
-from app.services import BotsService
+from app.services import MessageProcessorService
 
 
 def register(app: FastAPI):
@@ -15,11 +15,11 @@ def register(app: FastAPI):
     async def tg_callback_post(
         bot_id: PydanticObjectId,
         request: Request,
-        bots = Injected(BotsService)
+        message_processor = Injected(MessageProcessorService)
     ):
         try:
             data = await request.json()
-            await bots.update(bot_id, data)
+            await message_processor.handle_incoming_message(bot_id, data)
         except Exception as e:
             print(f"Error processing request: {e}")
         finally:

@@ -9,11 +9,14 @@ from app.models.api import (
     MessageUpdateRequest,
     MessageCreateRequest,
     MessagePreviewRequest,
+    MessagePreviewResponse,
     SaveMessageStateRequest,
 )
-from app.services import MessagesService, BotsService, StationsService, TelegramService
+from app.services import (
+    MessagesService,
+    TelegramService,
+)
 from app.utils.jwt_dependencies import jwt_required
-from shared.models.message import Message
 
 
 def register(app: FastAPI):
@@ -61,32 +64,10 @@ def register(app: FastAPI):
     async def get_message_preview(
         body: MessagePreviewRequest,
         _ = Depends(jwt_required),
-        bots = Injected(BotsService),
-        stations_service = Injected(StationsService),
-    ):
-        server_stations = await stations_service.get_stations()
-        id_set = set(body.stations)
-        stations = [s for s in server_stations if s.id in id_set]
-
-        message = Message(
-            name                 = body.name,
-            message_template     = body.message_template,
-            timeout_template     = body.timeout_template,
-            should_send_template = body.should_send_template,
-            stations             = stations,
-        )
-
+        messages = Injected(MessagesService)
+    ) -> MessagePreviewResponse:
         try:
-            info = await bots.get_message(message)
-            if info is None:
-                raise HTTPException(status_code=500, detail="Failed to generate preview")
-            return {
-                'success': True,
-                'message': info.message,
-                'shouldSend': info.should_send,
-                'timeout': info.timeout,
-                'nextSendTime': info.next_send_time,
-            }
+            return await messages.get_message_preview(body)
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 

@@ -6,7 +6,7 @@ from app.settings import Settings
 from app.services import OutagesScheduleService
 
 
-def register(settings: Settings, injector: Injector):
+def register(_: Settings, injector: Injector):
     scheduler = injector.get(AsyncIOScheduler)
 
     async def update_outages_schedule():

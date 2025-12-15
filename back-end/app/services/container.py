@@ -18,6 +18,8 @@ from .ext_data import ExtDataService
 from .dashboard import DashboardService
 from .maintenance import MaintenanceService
 from .message_generator import MessageGeneratorService, MessageGeneratorConfig
+from .message_processor import MessageProcessorService
+from .interfaces import IMessageGeneratorService
 
 
 class ServicesContainer(Module):
@@ -50,7 +52,9 @@ class ServicesContainer(Module):
         binder.bind(BotsService, scope=singleton)
 
         binder.bind(MessageGeneratorConfig, scope=noscope)
-        binder.bind(MessageGeneratorService, scope=noscope)
+        binder.bind(IMessageGeneratorService, to=MessageGeneratorService, scope=noscope)
+
+        binder.bind(MessageProcessorService, scope=noscope)
 
         binder.bind(VisitCounterService, scope=noscope)
 

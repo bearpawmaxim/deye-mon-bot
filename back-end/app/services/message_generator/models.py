@@ -15,11 +15,3 @@ class MessageGeneratorConfig:
 
     def __str__(self):
         return (f'MessageGeneratorConfig(timezone={self.timezone})')
-
-
-@dataclass
-class MessageItem:
-    message: str
-    timeout: int
-    should_send: bool
-    next_send_time: datetime
