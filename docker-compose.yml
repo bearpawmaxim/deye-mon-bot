@@ -1,5 +1,5 @@
 services:
-  nginx:
+  deye-mon-bot-front-end:
     build: front-end/.
     image: deye-mon-bot-ui
     restart: always
@@ -10,9 +10,9 @@ services:
     labels:
       io.hass.type: "addon"
     depends_on:
-      back-end:
+      deye-mon-bot-back-end:
         condition: service_healthy
-      sse-back-end:
+      deye-mon-bot-sse-back-end:
         condition: service_healthy
 
   deye-mon-bot-rds:
@@ -33,7 +33,7 @@ services:
       timeout: 3s
       retries: 5
 
-  mongo:
+  deye-mon-bot-mongo:
     image: mongo:7
     container_name: deye-mon-bot-mongo
     restart: always
@@ -54,7 +54,7 @@ services:
       retries: 5
       start_period: 40s
 
-  back-end:
+  deye-mon-bot-back-end:
     build:
       context: .
       dockerfile: back-end/Dockerfile
@@ -78,12 +78,12 @@ services:
       retries: 5
       start_period: 30s
     depends_on:
-      mongo:
+      deye-mon-bot-mongo:
         condition: service_healthy
       deye-mon-bot-rds:
         condition: service_healthy
 
-  sse-back-end:
+  deye-mon-bot-sse-back-end:
     build:
       context: .
       dockerfile: sse-back-end/Dockerfile

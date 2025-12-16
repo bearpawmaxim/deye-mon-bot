@@ -9,7 +9,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 from shared.models.station_data import StationData
 from shared.models.visit_counter import DailyVisitCounter, VisitCounter
-from shared.models.sqlalchemy import (
+from models import (
     User as SQLUser,
     Building as SQLBuilding,
     ExtData as SQLExtData,
