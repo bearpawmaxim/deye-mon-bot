@@ -248,10 +248,11 @@ class DashboardService(BaseService):
         if first_record.received_at > start_date:
             last_before = await self._ext_data.get_last_ext_data_before_date(building.report_user.id, start_date)
             if last_before:
-                synthetic_record = ExtData()
-                synthetic_record.received_at = start_date
-                synthetic_record.grid_state = last_before.grid_state
-                synthetic_record.user_id = building.report_user.id
+                synthetic_record = ExtData(
+                    user_id = building.report_user.id,
+                    grid_state = last_before.grid_state,
+                    received_at = start_date,
+                )
                 records.insert(0, synthetic_record)
 
         # Calculate periods
