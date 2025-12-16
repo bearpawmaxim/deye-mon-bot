@@ -248,7 +248,6 @@ class DashboardService(BaseService):
         if first_record.received_at > start_date:
             last_before = await self._ext_data.get_last_ext_data_before_date(building.report_user.id, start_date)
             if last_before:
-                from app.models import ExtData
                 synthetic_record = ExtData()
                 synthetic_record.received_at = start_date
                 synthetic_record.grid_state = last_before.grid_state
