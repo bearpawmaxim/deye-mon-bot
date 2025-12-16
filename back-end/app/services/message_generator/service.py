@@ -5,7 +5,7 @@ from injector import Injector, inject
 
 from shared.models import Message
 from shared.models.station import Station
-from .models import MessageGeneratorConfig, NumericTemplateRequest
+from .models import MessageGeneratorConfig
 from .context import TemplateRequestContext
 from app.utils import generate_message, get_send_timeout, get_should_send
 from app.repositories import IMessagesRepository, IStationsDataRepository
@@ -13,8 +13,8 @@ from ..interfaces import IMessageGeneratorService, MessageItem
 from .requests import (
     AverageMinutesRequest,
     AverageRequest,
-    EstimateDischargeTimeRequest,
 )
+from .template_method import TemplateMethod, TemplateMethodMode
 
 
 @inject
@@ -61,133 +61,32 @@ class MessageGeneratorService(IMessageGeneratorService):
 
         return message_station
 
-    def _get_average_method_request(
-        self,
-        context: TemplateRequestContext,
-        station_id,
-        start_date = None,
-    ):
-        def wrapped(column):
-            return context.add_request(
-                AverageRequest(
-                    station_id = station_id,
-                    column     = column,
-                    start_date = start_date,
-                )
-            )
-        return wrapped
-
-    def _get_average_minutes_method_request(
-        self,
-        context: TemplateRequestContext,
-        station_id,
-    ):
-        def wrapped(column, minutes):
-            return context.add_request(
-                AverageMinutesRequest(
-                    station_id = station_id,
-                    column     = column,
-                    minutes    = minutes,
-                )
-            )
-        return wrapped
-    
-    def _get_estimate_discharge_time_method_request(
-        self,
-        context: TemplateRequestContext,
-    ):
-        def wrapped(
-            batt_capacity_kwh: float,
-            batt_soc: int,
-            average_consumption_kwh: float,
-        ):
-            return context.add_request(
-                EstimateDischargeTimeRequest(
-                    batt_capacity_kwh = batt_capacity_kwh,
-                    batt_soc = batt_soc,
-                    average_consumption_kwh = average_consumption_kwh,
-                )
-            )
-        return wrapped
-    
-    def _get_average_method_resolver(
-        self,
-        context: TemplateRequestContext,
-        station_id,
-        start_date = None,
-    ):
-        def wrapped(column):
-            request = AverageRequest(
-                station_id = station_id,
-                column     = column,
-                start_date = start_date,
-            )
-            v = context.get_resolved_value(request)
-            return v
-        return wrapped
-    
-    def _get_average_minutes_method_resolver(
-        self,
-        context: TemplateRequestContext,
-        station_id,
-    ):
-        def wrapped(column, minutes):
-            request = AverageMinutesRequest(
-                station_id = station_id,
-                column     = column,
-                minutes = minutes,
-            )
-            return context.get_resolved_value(request)
-        return wrapped
-    
-    def _get_estimate_discharge_time_method_resolver(
-        self,
-        context: TemplateRequestContext,
-    ):
-        def wrapped(
-            batt_capacity_kwh: float,
-            batt_soc: int,
-            average_consumption_kwh: float,
-        ):
-            request = EstimateDischargeTimeRequest(
-                batt_capacity_kwh = batt_capacity_kwh,
-                batt_soc = batt_soc,
-                average_consumption_kwh = average_consumption_kwh,
-            )
-            return context.get_resolved_value(request)
-        return wrapped
-
     def _add_methods(
             self,
             template_data,
             last_sent_time,
-            collect,
+            mode: TemplateMethodMode,
             context: TemplateRequestContext):
-        average_method_factory = None
-        average_minutes_method_factory = None
-        estimate_discharge_time_method_factory = None
-        if collect:
-            average_method_factory = self._get_average_method_request
-            average_minutes_method_factory = self._get_average_minutes_method_request
-            estimate_discharge_time_method_factory = self._get_estimate_discharge_time_method_request
-        else:
-            average_method_factory = self._get_average_method_resolver
-            average_minutes_method_factory = self._get_average_minutes_method_resolver
-            estimate_discharge_time_method_factory = self._get_estimate_discharge_time_method_resolver
 
         for station_data in template_data['stations']:
             if 'current' in station_data:
                 station_id = station_data['current']['station_id']
-                station_data['get_average'] = average_method_factory(context, station_id, last_sent_time)
-                station_data['get_average_all'] = average_method_factory(context, station_id)
-                station_data['get_average_minutes'] = average_minutes_method_factory(context, station_id)
-                station_data['get_discharge_time'] = estimate_discharge_time_method_factory(context)
+                station_data['get_average'] = TemplateMethod(
+                    AverageRequest,
+                    station_id=station_id,
+                    start_date=last_sent_time,
+                ).bind(context, mode)
+                station_data['get_average_all'] = TemplateMethod(AverageRequest, station_id=station_id).bind(context, mode)
+                station_data['get_average_minutes'] = TemplateMethod(AverageMinutesRequest, station_id=station_id).bind(context, mode)
         if 'station' in template_data and template_data['station'] is not None and 'current' in template_data['station']:
             station_id = template_data['station']['current']['station_id']
-            template_data['station']['get_average'] = average_method_factory(context, station_id, last_sent_time)
-            template_data['station']['get_average_all'] = average_method_factory(context, station_id)
-            template_data['station']['get_average_minutes'] = average_minutes_method_factory(context, station_id)
-            template_data['station']['get_discharge_time'] = estimate_discharge_time_method_factory(context)
+            template_data['station']['get_average'] = TemplateMethod(
+                AverageRequest,
+                station_id=station_id,
+                start_date=last_sent_time,
+            ).bind(context, mode)
+            template_data['station']['get_average_all'] = TemplateMethod(AverageRequest, station_id=station_id).bind(context, mode)
+            template_data['station']['get_average_minutes'] = TemplateMethod(AverageMinutesRequest, station_id=station_id).bind(context, mode)
 
 
     async def generate_message(self, message: Message, force = False, include_data = False) -> MessageItem | None:
@@ -207,7 +106,7 @@ class MessageGeneratorService(IMessageGeneratorService):
             return None
 
         context = TemplateRequestContext()
-        self._add_methods(template_data, message.last_sent_time, True, context)
+        self._add_methods(template_data, message.last_sent_time, TemplateMethodMode.Collect, context)
 
         timeout = await get_send_timeout(message.timeout_template, template_data)
         template_data['timeout'] = timeout
@@ -218,7 +117,7 @@ class MessageGeneratorService(IMessageGeneratorService):
 
         _ = await generate_message(message.message_template, template_data)
         await context.resolve_requests(self._injector)
-        self._add_methods(template_data, message.last_sent_time, False, context)
+        self._add_methods(template_data, message.last_sent_time, TemplateMethodMode.Resolve, context)
         message_content = await generate_message(message.message_template, template_data)
 
         return MessageItem(
