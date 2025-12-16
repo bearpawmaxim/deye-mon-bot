@@ -26,7 +26,7 @@ from app.models.api import (
     SaveBuildingRequest,
     SaveDashboardConfigRequest,
 )
-from app.utils import get_average_discharge_time
+from app.utils import get_estimate_discharge_time
 
 
 @inject
@@ -172,7 +172,7 @@ class DashboardService(BaseService):
             if is_discharging and average_consumption_w > 0:
                 batt_capacity = building.station.battery_capacity
                 soc = station_data.battery_soc
-                estimate_discharge_time = get_average_discharge_time(
+                estimate_discharge_time = get_estimate_discharge_time(
                     batt_capacity, soc, average_consumption_w / 1000
                 )
                 result.battery_discharge_time = estimate_discharge_time

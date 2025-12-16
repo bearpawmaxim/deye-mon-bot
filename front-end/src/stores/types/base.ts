@@ -12,6 +12,7 @@ export type BaseEditableState = BaseState & {
 export type BaseResponse = {
   success: boolean;
   error?: string;
+  detail?: string;
 }
 
 export type BaseSaveDataResponse = BaseResponse & {

@@ -82,6 +82,11 @@ class MessagePreviewResponse(BaseModel):
     timeout: int
     next_send_time: datetime = Field(alias="nextSendTime")
 
+    model_config = {
+        "populate_by_name": True,
+        "from_attributes": True,
+    }
+
 
 class SaveMessageStateRequest(BaseModel):
     enabled: bool = False

@@ -46,7 +46,7 @@ class MessageProcessorService(BaseService):
                 if info is None:
                     continue
                 if info.should_send and info.next_send_time <= datetime.now(timezone.utc):
-                    await self._send_message(info, info.message)
+                    await self._send_message(message, info.message)
             except Exception as e:
                 print(f"Error sending message '{message.name}': {e}")
 

@@ -71,7 +71,7 @@ export const getTemplatePreview = createAsyncThunk<TemplatePreviewResponse, Temp
     if (response.data.success) {
       return fulfillWithValue(response.data);
     } else {
-      return rejectWithValue(response.data.error);
+      return rejectWithValue(response.data);
     }
   } catch (error: unknown) {
     return rejectWithValue(getErrorMessage(error) || 'Failed to generate template preview');
