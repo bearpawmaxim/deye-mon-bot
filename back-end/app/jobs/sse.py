@@ -8,8 +8,9 @@ from shared.services.events.service import EventsService
 def register(settings: Settings, injector: Injector):
     scheduler = injector.get(AsyncIOScheduler)
 
-    def send_ping():
-        injector.get(EventsService).broadcast_public("ping")
+    async def send_ping():
+        events = injector.get(EventsService)
+        await events.broadcast_public("ping")
 
     if settings.SSE_PING_INTERVAL > 0:
         scheduler.add_job(

@@ -76,4 +76,4 @@ class StationsService(BaseService):
                 continue
 
             await self._stations_data.add_station_data(station, station_data)
-        self.broadcast_public("station_data_updated")
+        await self.broadcast_public("station_data_updated")

@@ -1,9 +1,10 @@
-import threading
-from queue import Queue
 from typing import Set
+import asyncio
 
 from .models import EventItem, EventsServiceConfig
-from .events_transport import EventsTransport, RedisTransport, LocalTransport
+from .events_transport import EventsTransport, LocalTransport
+from .redis_transport import RedisTransport
+from ...bounded_queue import BoundedQueue
 
 
 class EventsService:
@@ -17,62 +18,58 @@ class EventsService:
             self.transport: EventsTransport = RedisTransport(
                 config.redis_uri,
                 self.REDIS_PUBLIC_CHANNEL,
-                self.REDIS_PRIVATE_CHANNEL
+                self.REDIS_PRIVATE_CHANNEL,
             )
 
-        self._public_clients: Set[Queue] = set()
-        self._private_clients: Set[Queue] = set()
-        self._lock = threading.RLock()
+        self._public_clients: Set[BoundedQueue] = set()
+        self._private_clients: Set[BoundedQueue] = set()
 
-        self.transport.start_subscriber(self._handle_incoming_event)
+        asyncio.create_task(self.transport.start_subscriber(self._handle_incoming_event))
 
-    def add_public_client(self, q: Queue):
-        with self._lock:
-            self._public_clients.add(q)
+    def add_public_client(self, q: BoundedQueue):
+        self._public_clients.add(q)
 
-    def add_private_client(self, q: Queue):
-        with self._lock:
-            self._private_clients.add(q)
+    def add_private_client(self, q: BoundedQueue):
+        self._private_clients.add(q)
 
-    def remove_client(self, q: Queue):
-        with self._lock:
-            self._public_clients.discard(q)
-            self._private_clients.discard(q)
+    def remove_client(self, q: BoundedQueue):
+        self._public_clients.discard(q)
+        self._private_clients.discard(q)
 
-    def broadcast_public(self, type: str, data: dict = None):
+    async def broadcast_public(self, type: str, data: dict = None):
         evt = EventItem(type, data, False)
-        self.transport.publish(self.REDIS_PUBLIC_CHANNEL, evt)
+        await self.transport.publish(self.REDIS_PUBLIC_CHANNEL, evt)
 
-    def broadcast_private(self, type: str, data: dict = None):
+    async def broadcast_private(self, type: str, data: dict = None):
         evt = EventItem(type, data, True)
-        self.transport.publish(self.REDIS_PRIVATE_CHANNEL, evt)
+        await self.transport.publish(self.REDIS_PRIVATE_CHANNEL, evt)
 
-    def _broadcast_to_local(self, clients: Set[Queue], event: EventItem):
+    async def _broadcast_to_local(self, clients: Set[BoundedQueue], event: EventItem):
         dead = set()
-        with self._lock:
+        for q in clients:
+            try:
+                q.put_nowait(event)
+            except Exception:
+                dead.add(q)
+
+        for q in dead:
+            clients.discard(q)
+
+
+    async def _handle_incoming_event(self, channel: str, event: EventItem):
+        if channel == self.REDIS_PUBLIC_CHANNEL:
+            await self._broadcast_to_local(self._public_clients, event)
+        elif channel == self.REDIS_PRIVATE_CHANNEL:
+            await self._broadcast_to_local(self._private_clients, event)
+
+
+    async def cleanup_all(self):
+        for clients in (self._public_clients, self._private_clients):
+            dead = set()
             for q in clients:
                 try:
-                    q.put_nowait(event)
+                    q.put_nowait(None)
                 except:
                     dead.add(q)
-
             for q in dead:
                 clients.discard(q)
-
-    def _handle_incoming_event(self, channel: str, event: EventItem):
-        if channel == self.REDIS_PUBLIC_CHANNEL:
-            self._broadcast_to_local(self._public_clients, event)
-        elif channel == self.REDIS_PRIVATE_CHANNEL:
-            self._broadcast_to_local(self._private_clients, event)
-
-    def cleanup_all(self):
-        with self._lock:
-            for clients in (self._public_clients, self._private_clients):
-                dead = set()
-                for q in clients:
-                    try:
-                        q.put_nowait(None)
-                    except:
-                        dead.add(q)
-                for q in dead:
-                    clients.discard(q)

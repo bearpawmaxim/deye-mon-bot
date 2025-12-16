@@ -66,7 +66,7 @@ class OutagesScheduleService(BaseService):
                         day.status = DayStatus.WaitingForSchedule
 
             self._cache = parsed
-            self.broadcast_public("outages_updated")
+            await self.broadcast_public("outages_updated")
 
         except aiohttp.ClientConnectionError as e:
             print(f"YASNO connection error: {e}")

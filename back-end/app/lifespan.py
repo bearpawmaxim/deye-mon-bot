@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from injector import Injector
 from contextlib import asynccontextmanager
 
-from app.app_container import bind_client_session
+from app.app_container import bind_client_session, init_container
 from app.settings import Settings
 from app.jobs import register_jobs
 from app.routes import register_routes
@@ -26,7 +26,10 @@ async def setup_bots(injector: Injector):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    injector: Injector = app.state.injector
+    settings: Settings = app.state.settings
+    injector = init_container(app, settings)
+    app.state.injector = injector
+
     bind_client_session(injector)
     beanie_initializer = injector.get(BeanieInitializer)
     await beanie_initializer.init()
@@ -40,7 +43,6 @@ async def lifespan(app: FastAPI):
 
     telegram_service = injector.get(TelegramService)
     scheduler = injector.get(AsyncIOScheduler)
-    settings = injector.get(Settings)
     register_jobs(settings, injector)
     scheduler.start()
 

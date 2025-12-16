@@ -35,7 +35,7 @@ class ExtDataService(BaseService):
 
     async def _add_ext_data(self, user: User, grid_state: bool, date: datetime) -> PydanticObjectId:
         id = await self._ext_data.add_ext_data(user.id, grid_state, date)
-        self.broadcast_public("ext_data_updated")
+        await self.broadcast_public("ext_data_updated")
         return id
 
 
@@ -76,6 +76,6 @@ class ExtDataService(BaseService):
 
     async def delete_ext_data(self, ext_data_id: PydanticObjectId):
         if await self._ext_data.delete(ext_data_id):
-            self.broadcast_public("ext_data_updated")
+            await self.broadcast_public("ext_data_updated")
             return True
         return False

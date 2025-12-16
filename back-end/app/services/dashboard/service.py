@@ -64,7 +64,7 @@ class DashboardService(BaseService):
             outages_schedule_queue  = config.outages_schedule_queue,
         )
         await self._dashboard.save_config(config)
-        self.broadcast_public("dashboard_config_updated")
+        await self.broadcast_public("dashboard_config_updated")
         return await self.get_config()
 
 
@@ -102,7 +102,7 @@ class DashboardService(BaseService):
             building.report_user = user
 
             await self._dashboard.edit_building(building)
-            self.broadcast_public("buildings_updated")
+            await self.broadcast_public("buildings_updated")
             return building_id
 
         return None
@@ -120,7 +120,7 @@ class DashboardService(BaseService):
         )
 
         building_id = await self._dashboard.create_building(building)
-        self.broadcast_public("buildings_updated")
+        await self.broadcast_public("buildings_updated")
         return building_id
 
 
@@ -128,7 +128,7 @@ class DashboardService(BaseService):
         building = await self._dashboard.get_building(building_id)
         if building:
             await self._dashboard.delete_building(building)
-            self.broadcast_public("buildings_updated")
+            await self.broadcast_public("buildings_updated")
             return True
         return False
 

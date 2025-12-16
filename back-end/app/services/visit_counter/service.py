@@ -28,7 +28,7 @@ class VisitCounterService(BaseService):
                 visit_date = date.today()
             await self._visits_counter.increase_daily_visits_counter(visit_date)
 
-        self.broadcast_public("visits_updated")
+        await self.broadcast_public("visits_updated")
 
     async def get_today_stats(self) -> Dict[str, Any]:
         total_count, daily_count = await self._visits_counter.get_today_stats()
