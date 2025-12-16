@@ -34,8 +34,12 @@ class UsersService(BaseService):
 
             if not user:
                 """ User creation path """
+                password_reset_token = None
+                reset_token_expiration = None
+
                 if not is_reporter:
                     password_reset_token, reset_token_expiration = generate_password_reset_token(3)
+
                 user_id = await self._users_repository.create_user(
                     name, is_active, is_reporter, password_reset_token, reset_token_expiration
                 )

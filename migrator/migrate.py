@@ -77,13 +77,13 @@ async def migrate_users(session):
     users = session.query(SQLUser).all()
     for u in users:
         m = User(
-            name=u.name,
-            password=u.password,
-            is_active=u.is_active,
-            is_reporter=u.is_reporter,
-            api_key=u.api_key,
-            password_reset_token=u.password_reset_token,
-            reset_token_expiration=u.reset_token_expiration,
+            name                   = u.name,
+            password               = u.password,
+            is_active              = u.is_active,
+            is_reporter            = u.is_reporter,
+            api_key                = u.api_key,
+            password_reset_token   = u.password_reset_token,
+            reset_token_expiration = u.reset_token_expiration,
         )
         await m.insert()
         id_maps["users"][u.id] = m.id
@@ -98,9 +98,9 @@ async def migrate_ext_data(session):
         if user_id is None:
             print("  !! Missing User {e.user}, skipping ExtData {e.id}")
         m = ExtData(
-            grid_state=row.grid_state,
-            user_id=user_id,
-            received_at=row.received_at
+            grid_state  = row.grid_state,
+            user_id     = user_id,
+            received_at = row.received_at
         )
         await m.insert()
     print(f"  Migrated {len(ext_data)} ExtData records")
@@ -110,25 +110,25 @@ async def migrate_stations(session):
     stations = session.query(SQLStation).all()
     for s in stations:
         m = Station(
-            station_id=s.station_id,
-            station_name=s.station_name,
-            location_lat=s.location_lat,
-            location_lng=s.location_lng,
-            location_address=s.location_address,
-            region_nation_id=s.region_nation_id,
-            region_timezone=s.region_timezone,
-            grid_interconnection_type=s.grid_interconnection_type,
-            installed_capacity=s.installed_capacity,
-            start_operating_time=s.start_operating_time,
-            created_date=s.created_date,
-            last_update_time=s.last_update_time,
-            connection_status=s.connection_status,
-            contact_phone=s.contact_phone,
-            owner_name=s.owner_name,
-            generation_power=s.generation_power,
-            battery_capacity=s.battery_capacity,
-            order=s.order,
-            enabled=s.enabled,
+            station_id                = s.station_id,
+            station_name              = s.station_name,
+            location_lat              = s.location_lat,
+            location_lng              = s.location_lng,
+            location_address          = s.location_address,
+            region_nation_id          = s.region_nation_id,
+            region_timezone           = s.region_timezone,
+            grid_interconnection_type = s.grid_interconnection_type,
+            installed_capacity        = s.installed_capacity,
+            start_operating_time      = s.start_operating_time,
+            created_date              = s.created_date,
+            last_update_time          = s.last_update_time,
+            connection_status         = s.connection_status,
+            contact_phone             = s.contact_phone,
+            owner_name                = s.owner_name,
+            generation_power          = s.generation_power,
+            battery_capacity          = s.battery_capacity,
+            order                     = s.order,
+            enabled                   = s.enabled,
         )
         await m.insert()
         id_maps["stations"][s.id] = m.id
@@ -145,21 +145,21 @@ async def migrate_station_data(session):
             continue
 
         m = StationData(
-            station_id=station_id,
-            battery_power=row.battery_power,
-            battery_soc=row.battery_soc,
-            charge_power=row.charge_power,
-            code=row.code,
-            consumption_power=row.consumption_power,
-            discharge_power=row.discharge_power,
-            generation_power=row.generation_power,
-            grid_power=row.grid_power,
-            irradiate_intensity=row.irradiate_intensity,
-            last_update_time=row.last_update_time,
-            msg=row.msg,
-            purchase_power=row.purchase_power,
-            request_id=row.request_id,
-            wire_power=row.wire_power,
+            station_id          = station_id,
+            battery_power       = row.battery_power,
+            battery_soc         = row.battery_soc,
+            charge_power        = row.charge_power,
+            code                = row.code,
+            consumption_power   = row.consumption_power,
+            discharge_power     = row.discharge_power,
+            generation_power    = row.generation_power,
+            grid_power          = row.grid_power,
+            irradiate_intensity = row.irradiate_intensity,
+            last_update_time    = row.last_update_time,
+            msg                 = row.msg,
+            purchase_power      = row.purchase_power,
+            request_id          = row.request_id,
+            wire_power          = row.wire_power,
         )
         await m.insert()
     print(f"  Migrated {len(station_data)} StationData records")
@@ -183,10 +183,10 @@ async def migrate_buildings(session):
             continue
 
         m = Building(
-            name=row.name,
-            color=row.color,
-            station=station,
-            report_user=report_user,
+            name        = row.name,
+            color       = row.color,
+            station     = station,
+            report_user = report_user,
         )
         await m.insert()
         print(f"  Migrated building {row.id}")
@@ -198,9 +198,9 @@ async def migrate_bots(session):
     bots = session.query(SQLBot).all()
     for b in bots:
         m = Bot(
-            token=b.bot_token,
-            enabled=b.enabled,
-            hook_enabled=b.hook_enabled,
+            token        = b.bot_token,
+            enabled      = b.enabled,
+            hook_enabled = False,
         )
         await m.insert()
         id_maps["bots"][b.id] = m.id
@@ -214,9 +214,9 @@ async def migrate_allowed_chats(session):
     for c in chats:
         bot = mongo_bots.get(str(id_maps["bots"][c.bot_id]))
         m = AllowedChat(
-            chat_id=c.chat_id,
-            bot=bot,
-            approve_date=c.approve_date,
+            chat_id      = c.chat_id,
+            bot          = bot,
+            approve_date = c.approve_date,
         )
         await m.insert()
     print(f"  Migrated {len(chats)} allowed chats")
@@ -229,9 +229,9 @@ async def migrate_chat_requests(session):
     for r in requests:
         bot = mongo_bots.get(str(id_maps["bots"][r.bot_id]))
         m = ChatRequest(
-            chat_id=r.chat_id,
-            bot=bot,
-            request_date=r.request_date,
+            chat_id      = r.chat_id,
+            bot          = bot,
+            request_date = r.request_date,
         )
         await m.insert()
     print(f"  Migrated {len(requests)} chat requests")
@@ -246,15 +246,15 @@ async def migrate_messages(session):
         bot = mongo_bots.get(str(id_maps["bots"][msg.bot_id]))
         msg_stations = [mongo_stations.get(str(id_maps["stations"][s.id])) for s in msg.stations]
         m = Message(
-            channel_id=msg.channel_id,
-            name=msg.name,
-            message_template=msg.message_template,
-            should_send_template=msg.should_send_template,
-            timeout_template=msg.timeout_template,
-            bot=bot,
-            last_sent_time=msg.last_sent_time,
-            enabled=msg.enabled,
-            stations=msg_stations,
+            channel_id           = msg.channel_id,
+            name                 = msg.name,
+            message_template     = msg.message_template,
+            should_send_template = msg.should_send_template,
+            timeout_template     = msg.timeout_template,
+            bot                  = bot,
+            last_sent_time       = msg.last_sent_time,
+            enabled              = False,
+            stations             = msg_stations,
         )
         await m.insert()
         id_maps["messages"][msg.id] = m.id
@@ -266,7 +266,7 @@ async def migrate_visit_counters(session):
     counters = session.query(SQLVisitCounter).all()
     for c in counters:
         m = VisitCounter(
-            visits_count=c.count
+            visits_count = c.count
         )
         await m.insert()
     print(f"  Migrated {len(counters)} VisitCounters")
@@ -277,8 +277,8 @@ async def migrate_daily_visit_counters(session):
     daily_counters = session.query(SQLDailyVisitCounter).all()
     for c in daily_counters:
         m = DailyVisitCounter(
-            date=c.date,
-            visits_count=c.count
+            date         = c.date,
+            visits_count = c.count
         )
         await m.insert()
     print(f"  Migrated {len(daily_counters)} DailyVisitCounters")
@@ -298,9 +298,9 @@ async def migrate_dashboard_config(session):
     outages_queue = config_map.get("outagesScheduleQueue", config_map.get("outages_schedule_queue"))
 
     m = DashboardConfig(
-        title=title,
-        enable_outages_schedule=enable_outages,
-        outages_schedule_queue=outages_queue,
+        title                   = title,
+        enable_outages_schedule = enable_outages,
+        outages_schedule_queue  = outages_queue,
     )
     await m.insert()
 
