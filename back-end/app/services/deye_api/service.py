@@ -1,149 +1,110 @@
 import hashlib
-from typing import List
-import requests
+from injector import inject
+import aiohttp
+from aiohttp import ClientSession
 
-from app.models.deye import DeyeStation, DeyeStationData, DeyeStationList
+from app.models.deye import DeyeStationList, DeyeStationData
 from .models import DeyeApiTokenResponse, DeyeConfig
 
 
+@inject
 class DeyeApiService:
-    def __init__(self, config: DeyeConfig):
+    def __init__(self, config: DeyeConfig, session: ClientSession | None = None):
         self._app_id = config.app_id
         self._app_secret = config.app_secret
         self._email = config.email
         self._password = config.password
         self._base_url = config.base_url
-        self._token = self._get_token()
 
-    def _get_token(self):
-        url = self._base_url + '/account/token?appId=' + self._app_id
-        headers = {
-            'Content-Type': 'application/json'
-        }
-        sha256_hash = hashlib.sha256()
-        sha256_hash.update(self._password.encode('utf-8'))
-        passwordWith256 = sha256_hash.hexdigest()
-        data = {
+        self._session = session or aiohttp.ClientSession()
+        self._token = None
+
+    async def init(self):
+        self._token = await self._get_token()
+
+    async def shutdown(self):
+        await self._session.close()
+
+    async def _get_token(self) -> str | None:
+        url = f"{self._base_url}/account/token?appId={self._app_id}"
+        password_hash = hashlib.sha256(self._password.encode("utf-8")).hexdigest()
+
+        payload = {
             "appSecret": self._app_secret,
             "email": self._email,
             "companyId": "0",
-            "password": passwordWith256
-        }
-        try:
-            response = requests.post(url, headers=headers, json=data)
-            response.raise_for_status()
-
-            data = response.json()
-            data = DeyeApiTokenResponse(**data)
-            return data.accessToken
-
-        except requests.exceptions.HTTPError as err:
-            print(f"HTTP error occurred during the token retrieval: {err}")
-            return None
-        except Exception as err:
-            print(f"Other error occurred during the token retrieval: {err}")
-            return None
-
-    def refresh_token(self):
-        self._token = self.refresh_token()
-
-    def get_station_list(self):
-        url = self._base_url + '/station/list'
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': 'bearer ' + (self._token or '')
-        }
-        data = {
-            "page": 1,
-            "size": 30
+            "password": password_hash,
         }
 
         try:
-            response = requests.post(url, headers=headers, json=data)
-            response.raise_for_status()
-
-            data = response.json()
-            if not data['success']:
-                raise AssertionError(data['msg'])
-            response = DeyeStationList(
-                code=data['code'],
-                msg=data['msg'],
-                request_id=data['requestId'],
-                station_list=list(),
-                success=data['success'],
-                total=data['total']
-            )
-
-            if data['stationList'] is None:
-                return response
-
-            for station in data['stationList']:
-                station_item = DeyeStation(
-                    battery_soc = station['batterySOC'],
-                    connection_status = station['connectionStatus'],
-                    contact_phone = station['contactPhone'],
-                    created_date = station['createdDate'],
-                    generation_power = station['generationPower'],
-                    grid_interconnection_type = station['gridInterconnectionType'],
-                    id = station['id'],
-                    installed_capacity = station['installedCapacity'],
-                    last_update_time = station['lastUpdateTime'],
-                    location_address = station['locationAddress'],
-                    location_lat = station['locationLat'],
-                    location_lng = station['locationLng'],
-                    name = station['name'],
-                    owner_name = station['ownerName'],
-                    region_nation_id = station['regionNationId'],
-                    region_timezone = station['regionTimezone'],
-                    start_operating_time = station['startOperatingTime']
-                )
-                response.station_list.append(station_item)
-            return response
-        except requests.exceptions.HTTPError as err:
-            print(f"HTTP error occurred while fetching the stations list: {err}")
-            return None
+            async with self._session.post(url, json=payload) as resp:
+                resp.raise_for_status()
+                data = await resp.json()
+                token = DeyeApiTokenResponse.model_validate(data).access_token
+                return token
+        except aiohttp.ClientResponseError as err:
+            print(f"HTTP error during token retrieval: {err}")
         except Exception as err:
-            print(f"Other error occurred while fetching the stations list: {err}")
+            print(f"Other error during token retrieval: {err}")
+
+        return None
+
+    async def refresh_token(self):
+        self._token = await self._get_token()
+
+    async def _request_with_auto_refresh(self, method: str, endpoint: str, json: dict):
+        url = f"{self._base_url}{endpoint}"
+        headers = {"Authorization": f"Bearer {self._token or ''}"}
+
+        for attempt in range(2):
+            try:
+                async with self._session.request(method, url, json=json, headers=headers) as resp:
+                    if resp.status == 401 and attempt == 0:
+                        await self.refresh_token()
+                        headers["Authorization"] = f"Bearer {self._token or ''}"
+                        continue
+
+                    resp.raise_for_status()
+                    data = await resp.json()
+
+                if (
+                    not data.get("success", True)
+                    and "token" in data.get("msg", "").lower()
+                    and attempt == 0
+                ):
+                    await self.refresh_token()
+                    headers["Authorization"] = f"Bearer {self._token or ''}"
+                    continue
+
+                return data
+
+            except aiohttp.ClientResponseError as err:
+                print(f"HTTP error for {endpoint}: {err}")
+                return None
+            except Exception as err:
+                print(f"Other error for {endpoint}: {err}")
+                return None
+
+        return None
+
+    async def get_station_list(self) -> DeyeStationList | None:
+        data = await self._request_with_auto_refresh(
+            "POST",
+            "/station/list",
+            {"page": 1, "size": 30},
+        )
+        if data is None or not data.get("success", False):
+            print(f"API error: {data.get('msg') if data else 'No data'}")
             return None
+        return DeyeStationList.model_validate(data)
 
-    def get_station_data(self, station_id):
-        url = self._base_url + '/station/latest'
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': 'bearer ' + (self._token or '')
-        }
-        data = {
-            "stationId": station_id
-        }
-
-        try:
-            response = requests.post(url, headers=headers, json=data)
-            response.raise_for_status()
-
-            data = response.json()
-            if not data['success']:
-                raise AssertionError(data['msg'])
-
-            return DeyeStationData(
-                battery_power = data['batteryPower'],
-                battery_soc = data['batterySOC'],
-                charge_power = data['chargePower'],
-                code = data['code'],
-                consumption_power = data['consumptionPower'],
-                discharge_power = data['dischargePower'],
-                generation_power = data['generationPower'],
-                grid_power = data['gridPower'],
-                irradiate_intensity = data['irradiateIntensity'],
-                last_update_time = data['lastUpdateTime'],
-                msg = data['msg'],
-                purchase_power = data['purchasePower'],
-                request_id = data['requestId'],
-                success = data['success'],
-                wire_power = data['wirePower']
-            )
-        except requests.exceptions.HTTPError as err:
-            print(f"HTTP error occurred while fetching the stations data: {err}")
+    async def get_station_data(self, station_id: int) -> DeyeStationData | None:
+        data = await self._request_with_auto_refresh(
+            "POST",
+            "/station/latest",
+            {"stationId": station_id},
+        )
+        if data is None or not data.get("success", False):
+            print(f"API error: {data.get('msg') if data else 'No data'}")
             return None
-        except Exception as err:
-            print(f"Other error occurred while fetching the stations data: {err}")
-            return None
+        return DeyeStationData.model_validate(data)

@@ -1,3 +1,4 @@
+import { ObjectId } from "../../schemas";
 import { BaseState } from "./base";
 
 export type StationDataRecord = {
@@ -9,13 +10,13 @@ export type StationDataRecord = {
 };
 
 export type StationDataItem = {
-  id: number;
+  id: ObjectId;
   name: string;
   data: Array<StationDataRecord>;
 };
 
 export type StationDetailsDataPoint = {
-  id: number;
+  id: ObjectId;
   stationId: string;
   batteryPower: number | null;
   batterySoc: number | null;
@@ -34,7 +35,7 @@ export type StationDetailsDataPoint = {
 };
 
 export type StationInfo = {
-  id: number;
+  id: ObjectId;
   stationId: string;
   stationName: string;
   connectionStatus: string;

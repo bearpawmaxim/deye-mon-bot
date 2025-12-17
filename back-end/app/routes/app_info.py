@@ -1,40 +1,35 @@
-from flask import Blueprint, jsonify
-import requests
-
-blueprint = Blueprint('app_info', __name__, url_prefix='/api/app')
+import httpx
+from fastapi import HTTPException
 
 FIRESTORE_URL = 'https://firestore.googleapis.com/v1/projects/svitlo-power/databases/(default)/documents/sites/app'
 
-@blueprint.route('/info', methods=['GET'])
-def get_app_info():
-    try:
-        response = requests.get(FIRESTORE_URL, timeout=10)
-        response.raise_for_status()
-        
-        data = response.json()
-        
-        fields = data.get('fields', {})
-        
-        update_url = fields.get('updateUrl', {}).get('stringValue', '')
-        version = fields.get('ver', {}).get('stringValue', '')
-        
-        return jsonify({
-            'updateUrl': update_url,
-            'version': version
-        }), 200
-        
-    except requests.exceptions.RequestException as e:
-        return jsonify({
-            'error': 'Failed to fetch app information',
-            'message': str(e)
-        }), 500
-    except Exception as e:
-        return jsonify({
-            'error': 'Internal server error',
-            'message': str(e)
-        }), 500
+def register(app):
+    @app.get("/api/app/info")
+    async def get_app_info():
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                response = await client.get(FIRESTORE_URL)
+                response.raise_for_status()
 
+            data = response.json()
+            fields = data.get("fields", {})
 
-def register(app, services):
-    app.register_blueprint(blueprint)
+            update_url = fields.get("updateUrl", {}).get("stringValue", "")
+            version = fields.get("ver", {}).get("stringValue", "")
 
+            return {
+                "updateUrl": update_url,
+                "version": version
+            }
+
+        except httpx.RequestError as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to fetch app information: {e}"
+            )
+
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Internal server error: {e}"
+            )

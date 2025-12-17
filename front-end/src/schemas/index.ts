@@ -1,3 +1,4 @@
+export * from './base';
 export * from './buildingEdit';
 export * from './dashboardEdit';
 export * from './login';

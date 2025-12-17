@@ -6,6 +6,7 @@ import { approveChatRequest, disallowChat, fetchAllowedChats, fetchChatRequests,
 import { DataTable, ErrorMessage, Page } from "../../components";
 import { Title } from "@mantine/core";
 import { ColumnDataType } from "../../types";
+import { ObjectId } from "../../schemas";
 
 type ComponentProps = {
   allowedChats: AllowedChatListItem[];
@@ -38,15 +39,15 @@ const Component: FC<ComponentProps> = ({ allowedChats, chatRequests, loading, er
     fetchRequests();
   }, [dispatch, fetchChats, fetchRequests]);
 
-  const approveClick = (id: number) => {
+  const approveClick = (id: ObjectId) => {
     dispatch(approveChatRequest(id));
   }
 
-  const rejectClick = (id: number) => {
+  const rejectClick = (id: ObjectId) => {
     dispatch(rejectChatRequest(id));
   }
 
-  const disallowClick = (id: number) => {
+  const disallowClick = (id: ObjectId) => {
     dispatch(disallowChat(id));
   }
 

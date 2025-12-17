@@ -1,8 +1,9 @@
 import * as v from 'valibot';
+import { objectIdSchema } from './base';
 
 export const buildingEditSchema = v.object({
   id: v.nullish(
-    v.number(),
+    objectIdSchema,
   ),
   name: v.pipe(
     v.string(),
@@ -14,14 +15,14 @@ export const buildingEditSchema = v.object({
   ),
   stationId: v.nullable(
     v.pipe(
-      v.number(),
-      v.minValue(0, 'Station is required'),
-      v.transform((x) => x === 0 ? null : x),
+      objectIdSchema,
+      v.nonEmpty('Station is required'),
+      v.transform((x) => x === '0' ? null : x),
     ),
   ),
   reportUserId: v.pipe(
-    v.number(),
-    v.minValue(1, 'Report User is required'),
+    objectIdSchema,
+    v.nonEmpty('Report User is required'),
   ),
 });
 

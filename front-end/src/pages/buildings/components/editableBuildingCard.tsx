@@ -9,7 +9,11 @@ import { modals } from "@mantine/modals";
 import { BuildingListItem } from "../../../stores/types";
 import { deleteBuilding } from "../../../stores/thunks";
 
-export const EditableBuildingCard: FC<BuildingCardProps> = ({ building }) => {
+export const EditableBuildingCard: FC<BuildingCardProps> = ({
+  building,
+  buildingSummary,
+  loadingSummary,
+}) => {
   const dispatch = useAppDispatch();
   const onDeleteBuilding = useCallback((building: BuildingListItem) => {
     modals.openConfirmModal({
@@ -22,7 +26,11 @@ export const EditableBuildingCard: FC<BuildingCardProps> = ({ building }) => {
   }, [dispatch]);
 
   return <Box className={classes.buildingCard}>
-    <BuildingCard building={building} />
+    <BuildingCard
+      building={building}
+      buildingSummary={buildingSummary}
+      loadingSummary={loadingSummary}
+    />
     <Group justify="flex-end" pt='xs' gap='xs' className={classes.buildingCardActions}>
       <IconButton
         icon="edit"

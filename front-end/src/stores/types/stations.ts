@@ -1,7 +1,8 @@
+import { ObjectId } from "../../schemas";
 import { BaseState } from "./base";
 
 export type BaseServerStationItem = {
-  id: number;
+  id: ObjectId;
   enabled: boolean;
   order: number;
   batteryCapacity: number;

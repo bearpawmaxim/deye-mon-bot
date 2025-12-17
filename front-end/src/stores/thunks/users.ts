@@ -4,6 +4,7 @@ import { userSaved, CreateUserPayload } from "../slices";
 import { RootState } from "../store";
 import apiClient from "../../utils/apiClient";
 import { getErrorMessage } from "../../utils";
+import { ObjectId } from "../../schemas";
 
 
 export const fetchUsers = createAsyncThunk('users/fetchUsers', async (_, thunkAPI) => {
@@ -37,7 +38,7 @@ export const saveUsers = createAsyncThunk('users/saveUsers', async (_, { getStat
   }
 });
 
-export const deleteUser = createAsyncThunk('users/deleteUser', async (userId: number, { dispatch }) => {
+export const deleteUser = createAsyncThunk('users/deleteUser', async (userId: ObjectId, { dispatch }) => {
   try {
     await apiClient.delete(`/users/delete/${userId}`);
     dispatch(fetchUsers());
@@ -51,7 +52,7 @@ export const cancelUsersEditing = createAsyncThunk('users/cancelEditing', async 
   dispatch(fetchUsers());
 });
 
-export const generateUserToken = createAsyncThunk<GenerateTokenResponse, number>(
+export const generateUserToken = createAsyncThunk<GenerateTokenResponse, ObjectId>(
   'users/generateToken', 
   async (userId, thunkAPI) => {
     try {
@@ -63,7 +64,7 @@ export const generateUserToken = createAsyncThunk<GenerateTokenResponse, number>
   }
 );
 
-export const deleteUserToken = createAsyncThunk<void, number>(
+export const deleteUserToken = createAsyncThunk<void, ObjectId>(
   'users/deleteToken',
   async (userId, thunkAPI) => {
     try {

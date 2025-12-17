@@ -1,10 +1,14 @@
-import string
-from app.services import Services
+from fastapi import FastAPI, HTTPException, Path
+from fastapi_injector import Injected
+from app.services import OutagesScheduleService
 
-
-def register(app, services: Services):
-
-    @app.route('/api/outagesSchedule/outagesSchedule/<queue>', methods=['GET'])
-    def get_outages_schedule(queue: string):
-        sched = services.outages_scgedule.get_schedule(queue)
-        return sched.model_dump_json()
+def register(app: FastAPI):
+    @app.get("/api/outagesSchedule/outagesSchedule/{queue}")
+    def get_outages_schedule(
+        queue: str = Path(..., description="Queue name"),
+        outages_schedule = Injected(OutagesScheduleService),    
+    ):
+        sched = outages_schedule.get_schedule(queue)
+        if sched is None:
+            raise HTTPException(status_code=404, detail=f"No schedule found for queue {queue}")
+        return sched.model_dump()

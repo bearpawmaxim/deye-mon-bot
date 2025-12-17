@@ -3,7 +3,7 @@ import { modals } from "@mantine/modals";
 import { Button, ColorInput, Group, Loader, parseThemeColor, Select, Stack, TextInput, useMantineColorScheme, useMantineTheme } from "@mantine/core";
 import { useFormHandler, useLookup } from "../../../hooks";
 import { RootState, useAppDispatch } from "../../../stores/store";
-import { buildingEditSchema, BuildingEditType } from "../../../schemas";
+import { buildingEditSchema, BuildingEditType, ObjectId } from "../../../schemas";
 import { startEditingBuilding } from "../../../stores/thunks";
 import { cancelEditingOrCreatingBuilding, finishCreatingBuilding, finishEditingBuilding, startCreatingBuilding } from "../../../stores/slices";
 import { connect } from "react-redux";
@@ -12,7 +12,7 @@ import { LookupSchema } from "../../../types";
 
 type OpenBuildingEditOptions = {
   creating?: boolean;
-  buildingId?: number;
+  buildingId?: ObjectId;
   title?: string;
 };
 
@@ -20,7 +20,7 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
   type InnerProps = {
     building: BuildingEditType;
     loading: boolean;
-    buildingId?: number;
+    buildingId?: ObjectId;
   };
 
   const mapStateToProps = (state: RootState): InnerProps => ({
@@ -36,15 +36,15 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
     const { colorScheme } = useMantineColorScheme();
 
     const { data: stations, loading: stationsLoading } = useLookup(LookupSchema.Station);
-    const { data: users, loading: usersLoading } = useLookup(LookupSchema.User);
+    const { data: users, loading: usersLoading } = useLookup(LookupSchema.ReporterUser);
     
     const stationOptions = useMemo(() => stationsLoading ? [] : stations.map(station => ({
       label: station.text,
-      value: station.value!.toString(),
+      value: station.value!,
     })), [stations, stationsLoading]);
     const userOptions = useMemo(() => usersLoading ? [] : users.map(user => ({
       label: user.text,
-      value: user.value!.toString(),
+      value: user.value!,
     })), [users, usersLoading])
 
     const {
@@ -116,12 +116,12 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
         },
         {
           name: "stationId",
-          title: "Station ID",
+          title: "Station",
           render: (context) => {
             return <Controller
               name="stationId"
               control={context.helpers.control}
-              defaultValue={0}
+              defaultValue={'0'}
               render={({ field }) => (
                 <Select
                   clearable
@@ -129,12 +129,9 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
                   {...field}
                   leftSection={stationsLoading ? <Loader size="xs" /> : null}
                   label={context.title}
-                  value={field.value?.toString() ?? ''}
+                  value={field.value ?? ''}
                   error={context.helpers.getFieldError('stationId')}
-                  onChange={(value) => {
-                    const convertedValue = value ? parseInt(value) : null;
-                    context.helpers.setControlValue('stationId', convertedValue, true, false);
-                  }}
+                  onChange={(value) => context.helpers.setControlValue('stationId', value, true)}
                 />
               )}
             />;
@@ -142,12 +139,12 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
          },
         {
           name: "reportUserId",
-          title: "Report User ID",
+          title: "Report User",
           render: (context) => {
             return <Controller
               name="reportUserId"
               control={context.helpers.control}
-              defaultValue={0}
+              defaultValue={'0'}
               render={({ field }) => (
                 <Select
                   required
@@ -156,10 +153,9 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
                   {...field}
                   leftSection={usersLoading ? <Loader size="xs" /> : null}
                   label={context.title}
-                  value={field.value?.toString() ?? ''}
+                  value={field.value ?? ''}
                   error={context.helpers.getFieldError('reportUserId')}
-                  onChange={(value) => context.helpers
-                    .setControlValue('reportUserId', parseInt(value!), true, false)}
+                  onChange={(value) => context.helpers.setControlValue('reportUserId', value, true)}
                 />
               )}
             />;
@@ -207,7 +203,7 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
   };
 
   const ConnectedInner = connect(mapStateToProps)(Inner);
-  
+
   const id: string | undefined = modals.open({
     title: title ?? (creating ? "Create building" : "Edit building"),
     size: 'lg',

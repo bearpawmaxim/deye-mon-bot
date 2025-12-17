@@ -1,17 +1,21 @@
-from app import Config
-from app.services import Services
+from injector import Injector
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+from app.settings import Settings
+from shared.services.events.service import EventsService
 
 
-def register(config: Config, services: Services):
-    scheduler = services.scheduler
-    if config.SSE_PING_INTERVAL > 0:
+def register(settings: Settings, injector: Injector):
+    scheduler = injector.get(AsyncIOScheduler)
+
+    async def send_ping():
+        events = injector.get(EventsService)
+        await events.broadcast_public("ping")
+
+    if settings.SSE_PING_INTERVAL > 0:
         scheduler.add_job(
-            'send_ping',
-            send_ping,
+            id      = 'send_ping',
+            func    = send_ping,
             trigger = 'interval',
-            seconds = config.SSE_PING_INTERVAL,
-            args    = [services]
+            seconds = settings.SSE_PING_INTERVAL,
         )
-
-def send_ping(services: Services):
-    services.events.broadcast_public("ping")

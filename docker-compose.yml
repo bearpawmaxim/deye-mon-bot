@@ -1,5 +1,5 @@
 services:
-  nginx:
+  deye-mon-bot-front-end:
     build: front-end/.
     image: deye-mon-bot-ui
     restart: always
@@ -10,12 +10,10 @@ services:
     labels:
       io.hass.type: "addon"
     depends_on:
-      back-end:
-        condition: service_started
-        restart: true
-      sse-back-end:
-        condition: service_started
-        restart: true
+      deye-mon-bot-back-end:
+        condition: service_healthy
+      deye-mon-bot-sse-back-end:
+        condition: service_healthy
 
   deye-mon-bot-rds:
     image: redis:7
@@ -29,6 +27,11 @@ services:
       - web_network
     labels:
       io.hass.type: "addon"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   deye-mon-bot-mongo:
     image: mongo:7
@@ -40,11 +43,18 @@ services:
       - mongo_data:/data/db
     networks:
       - web_network
+    env_file: .env
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
-  back-end:
+  deye-mon-bot-back-end:
     build:
       context: .
       dockerfile: back-end/Dockerfile
@@ -54,7 +64,6 @@ services:
     environment:
       - DEBUG=False
     volumes:
-      - ./back-end/.env:/.env
       - ./back-end/db.sqlite3:/deye-mon-bot-api/db.sqlite3
     expose:
       - "5005"
@@ -62,15 +71,19 @@ services:
       - web_network
     labels:
       io.hass.type: "addon"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.settimeout(1); result=s.connect_ex(('localhost', 5005)); s.close(); exit(0 if result==0 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     depends_on:
       deye-mon-bot-mongo:
-        condition: service_started
-        restart: true
+        condition: service_healthy
       deye-mon-bot-rds:
-        condition: service_started
-        restart: true
+        condition: service_healthy
 
-  sse-back-end:
+  deye-mon-bot-sse-back-end:
     build:
       context: .
       dockerfile: sse-back-end/Dockerfile
@@ -79,18 +92,21 @@ services:
     env_file: .env
     environment:
       - DEBUG=False
-    volumes:
-      - ./back-end/.env:/.env
     expose:
       - "5005"
     networks:
       - web_network
     labels:
       io.hass.type: "addon"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.settimeout(1); result=s.connect_ex(('localhost', 5005)); s.close(); exit(0 if result==0 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     depends_on:
       deye-mon-bot-rds:
-        condition: service_started
-        restart: true
+        condition: service_healthy
 
 volumes:
   rds_data:

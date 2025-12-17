@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { BuildingListItem, BuildingsState } from "../types";
 import { startEditingBuilding, fetchBuildings, deleteBuilding } from "../thunks";
-import { BuildingEditType } from "../../schemas";
+import { BuildingEditType, ObjectId } from "../../schemas";
 
 const initialState: BuildingsState = {
   items: [],
@@ -18,11 +18,11 @@ export const buildingsSlice = createSlice({
   reducers: {
     startCreatingBuilding(state) {
       state.editingItem = {
-        id: state.globalId + 1,
+        id: (state.globalId + 1).toString().padStart(24, 'f'),
         name: '',
         color: 'blue.4',
         stationId: null,
-        reportUserId: 0,
+        reportUserId: '0',
       };
     },
     finishCreatingBuilding(state, { payload }: PayloadAction<BuildingEditType>) {
@@ -32,7 +32,6 @@ export const buildingsSlice = createSlice({
       });
       delete state.editingItem;
       state.changed = true;
-      state.globalId = payload.id!;
     },
     finishEditingBuilding(state, { payload }: PayloadAction<BuildingEditType>) {
       const itemIndex = state.items.findIndex(i => i.id === payload.id);
@@ -74,7 +73,7 @@ export const buildingsSlice = createSlice({
         state.edittedItems = [];
         state.loading = false;
         state.changed = false;
-        state.globalId = action.payload.reduce((maxId, item) => item.id && item.id > maxId ? item.id : maxId, 0);
+        state.globalId = state.items.length + state.edittedItems.length;
       })
       .addCase(fetchBuildings.rejected, (state, action: PayloadAction<unknown>) => {
         state.loading = false;
@@ -98,7 +97,7 @@ export const buildingsSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(deleteBuilding.fulfilled, (state, { payload }: PayloadAction<number>) => {
+      .addCase(deleteBuilding.fulfilled, (state, { payload }: PayloadAction<ObjectId>) => {
         const edittedItemIndex = state.edittedItems.findIndex(i => i.id === payload);
         if (edittedItemIndex >= 0) {
           state.edittedItems.splice(edittedItemIndex, 1);

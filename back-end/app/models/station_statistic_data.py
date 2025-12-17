@@ -1,5 +1,5 @@
 from datetime import timezone
-from .station_data import StationData
+from shared.models import StationData
 
 class StationStatisticData:
     _previous: StationData

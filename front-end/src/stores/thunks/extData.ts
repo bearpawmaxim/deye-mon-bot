@@ -2,6 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import apiClient from "../../utils/apiClient";
 import { ExtDataItem } from "../types";
 import { getErrorMessage } from "../../utils";
+import { ObjectId } from "../../schemas";
 
 export const fetchExtData = createAsyncThunk('extData/fetchExtData', async (_, thunkAPI) => {
   try {
@@ -14,9 +15,9 @@ export const fetchExtData = createAsyncThunk('extData/fetchExtData', async (_, t
 
 export const createExtData = createAsyncThunk(
   'extData/createExtData', 
-  async (data: { user_id: number; grid_state: boolean; received_at?: string }, thunkAPI) => {
+  async (data: { user_id: ObjectId; grid_state: boolean; received_at?: string }, thunkAPI) => {
     try {
-      const response = await apiClient.post<{ status: string; id: number }>('/ext-data/create', data);
+      const response = await apiClient.post<{ status: string; id: ObjectId }>('/ext-data/create', data);
       return response.data;
     } catch (error: unknown) {
       return thunkAPI.rejectWithValue(getErrorMessage(error) || 'Failed to create ext data');
@@ -26,7 +27,7 @@ export const createExtData = createAsyncThunk(
 
 export const deleteExtData = createAsyncThunk(
   'extData/deleteExtData',
-  async (id: number, thunkAPI) => {
+  async (id: ObjectId, thunkAPI) => {
     try {
       await apiClient.delete(`/ext-data/delete/${id}`);
       return id;

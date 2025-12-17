@@ -2,6 +2,7 @@ export * from './auth';
 export * from './base';
 export * from './bots';
 export * from './buildings';
+export * from './buildingsSummary';
 export * from './chats';
 export * from './extData';
 export * from './dashboardConfig';

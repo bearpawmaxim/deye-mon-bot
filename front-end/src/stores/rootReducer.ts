@@ -1,12 +1,13 @@
 import { Action, combineReducers } from "redux";
-import { authReducer, botsReducer, chatsReducer, messagesReducer, stationsReducer, stationsDataReducer, buildingsReducer, usersReducer, extDataReducer, dashboardConfigReducer, visitCounterReducer, outagesScheduleReducer, powerLogsReducer } from "./slices";
-import { logout } from "./thunks";
+import { authReducer, botsReducer, chatsReducer, messagesReducer, stationsReducer, stationsDataReducer, buildingsReducer, usersReducer, extDataReducer, dashboardConfigReducer, visitCounterReducer, outagesScheduleReducer, powerLogsReducer, buildingsSummaryReducer } from "./slices";
+import { logout } from "./slices";
 import { lookupValuesReducer } from "./slices/lookupValues";
 
 const appReducer = combineReducers({
   ['auth']: authReducer,
   ['bots']: botsReducer,
   ['buildings']: buildingsReducer,
+  ['buildingsSummary']: buildingsSummaryReducer,
   ['extData']: extDataReducer,
   ['chats']: chatsReducer,
   ['dashboardConfig']: dashboardConfigReducer,
@@ -23,7 +24,7 @@ const appReducer = combineReducers({
 type RootState = ReturnType<typeof appReducer>;
 
 export const rootReducer = (state: RootState | undefined, action: Action) => {
-  if (action.type === logout.fulfilled.type) {
+  if (action.type === logout.type) {
     state = undefined;
   }
   return appReducer(state, action);

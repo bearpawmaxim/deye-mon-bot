@@ -1,11 +1,11 @@
+import { ObjectId } from "../../schemas";
 import { BaseState } from "./base";
 
 export type ExtDataItem = {
-  id?: number;
-  user: string | null;
-  user_id?: number;
-  grid_state: boolean;
-  received_at: string | null;
+  id?: ObjectId;
+  userId?: ObjectId;
+  gridState: boolean;
+  receivedAt: string | null;
 };
 
 export type ExtDataState = BaseState & {

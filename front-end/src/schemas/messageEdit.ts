@@ -1,8 +1,9 @@
 import * as v from 'valibot';
+import { objectIdSchema } from './base';
 
 export const messageEditSchema = v.object({
-  id: v.nullable(
-    v.number(),
+  id: v.nullish(
+    objectIdSchema,
   ),
   name: v.pipe(
     v.string(),
@@ -34,12 +35,14 @@ export const messageEditSchema = v.object({
   ),
   stations: v.pipe(
     v.array(
-      v.number(),
+      objectIdSchema,
     ),
     v.minLength(1, 'At least one station should be specified'),
   ),
   botId: v.pipe(
-    v.number('Bot is required'),
+    objectIdSchema,
+    v.trim(),
+    v.nonEmpty('Bot is required'),
   ),
 });
 

@@ -1,8 +1,8 @@
-import { ProfileEdit } from "../../schemas";
+import { ObjectId, ProfileEdit } from "../../schemas";
 import { AuthData } from "../../types";
 
 export type ProfileData = {
-  userId: number;
+  userId: ObjectId;
   userName: string;
 };
 

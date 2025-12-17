@@ -1,6 +1,18 @@
 from dataclasses import dataclass
 
 
+class EventsServiceConfig:
+    redis_uri: str
+    is_debug: bool
+
+    def __init__(self, redis_uri: str, is_debug: bool):
+        self.redis_uri = redis_uri
+        self.is_debug = is_debug
+
+    def __str__(self):
+        return (f'EventsServiceConfig(redis={self.redis_uri}, debug={self.is_debug})')
+
+
 @dataclass
 class EventItem:
     type: str
@@ -15,4 +27,3 @@ class EventItem:
             "private": self.private,
             "user": self.user
         }
-    

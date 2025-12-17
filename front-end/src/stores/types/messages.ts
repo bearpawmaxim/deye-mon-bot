@@ -1,10 +1,10 @@
-import { MessageEdit } from "../../schemas";
+import { MessageEdit, ObjectId } from "../../schemas";
 import { BaseEditableState, BaseResponse } from "./base";
 
 export type BaseServerMessageListItem = {
-  id?: number;
+  id?: ObjectId;
   name: string;
-  stations: number[];
+  stations: ObjectId[];
   lastSentTime: Date;
   enabled: boolean;
 };
@@ -14,7 +14,7 @@ export type BaseServerMessageItem = BaseServerMessageListItem & {
   messageTemplate: string;
   shouldSendTemplate: string;
   timeoutTemplate: string;
-  botId: number;
+  botId: ObjectId;
 };
 
 type MessageDetailsItem = {

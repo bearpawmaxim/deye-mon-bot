@@ -1,4 +1,4 @@
-import { Box, Card, Flex, Group, MantineColor, Text, ThemeIcon, useMantineTheme, useMantineColorScheme, getContrastColor, Title, alpha, lighten, parseThemeColor, Progress, ProgressProps } from "@mantine/core"
+import { Box, Card, Flex, Group, MantineColor, Text, ThemeIcon, useMantineTheme, useMantineColorScheme, getContrastColor, Title, alpha, lighten, parseThemeColor, Progress, ProgressProps, LoadingOverlay } from "@mantine/core"
 import { FC, ReactNode, useMemo } from "react"
 import classes from './styles/statCard.module.css';
 
@@ -16,6 +16,7 @@ type StatsCardProps = {
   progress: ProgressProps | null;
   onClick?: () => void;
   rows?: Row[];
+  loading: boolean;
 };
 
 export const StatsCard: FC<StatsCardProps> = ({
@@ -26,6 +27,7 @@ export const StatsCard: FC<StatsCardProps> = ({
   onClick,
   rows,
   progress,
+  loading,
 }) => {
   const theme = useMantineTheme();
   const { colorScheme } = useMantineColorScheme();
@@ -106,9 +108,15 @@ export const StatsCard: FC<StatsCardProps> = ({
           }}
           {...progress}
         />}
-        <Flex w="100%" bg={resolvedStatBgColor} p={20} gap={10} direction="column" align="start">
+        <Flex mt="sm" w="100%" bg={resolvedStatBgColor} p={20} gap={10} direction="column" align="start">
+          <LoadingOverlay
+            visible={loading}
+            zIndex={1000}
+            overlayProps={{ radius: 'sm', blur: 2 }}
+            loaderProps={{ type: 'bars' }}
+          />
           {rows?.map((row, i) => (
-            <Group key={i} w="100%" p="apart" align="center" gap="sm">
+            <Group key={i} w="100%" p="apart" align="center" gap="sm" >
               <Group align="center" gap="xs">
                 {row.icon && (
                   <ThemeIcon

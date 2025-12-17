@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { PowerLogsData, PowerLogsState } from "../types";
 import { fetchPowerLogs } from "../thunks";
+import { ObjectId } from "../../schemas";
 
 const initialState: PowerLogsState = {
   data: null,
@@ -25,7 +26,7 @@ export const powerLogsSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchPowerLogs.fulfilled, (state, action: PayloadAction<{ buildingId: number; data: PowerLogsData }>) => {
+      .addCase(fetchPowerLogs.fulfilled, (state, action: PayloadAction<{ buildingId: ObjectId; data: PowerLogsData }>) => {
         state.data = action.payload.data;
         state.buildingId = action.payload.buildingId;
         state.loading = false;

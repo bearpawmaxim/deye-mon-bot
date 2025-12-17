@@ -12,6 +12,7 @@ import { ActionIcon, Anchor, Button, Group, Text, Tooltip } from "@mantine/core"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { openBatteryCapacityEditDialog } from "./components";
 import { useNavigate } from "react-router-dom";
+import { ObjectId } from "../../schemas";
 
 
 type ComponentProps = {
@@ -66,13 +67,13 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
     return <ErrorMessage content={error} />;
   }
 
-  const onStationEnableChange = (id: number, enabled: boolean) => {
+  const onStationEnableChange = (id: ObjectId, enabled: boolean) => {
     dispatch(updateStationState({ id, enabled }));
   };
-  const onStationOrderChange = (id: number, currentOrder: number, delta: number) => {
+  const onStationOrderChange = (id: ObjectId, currentOrder: number, delta: number) => {
     dispatch(updateStationOrder({ id, currentOrder, delta }));
   };
-  const onSetBatteryCapacity = (id: number, batteryCapacity: number) => {
+  const onSetBatteryCapacity = (id: ObjectId, batteryCapacity: number) => {
     dispatch(updateStationBatteryCapacity({ id, batteryCapacity }));
   }
 

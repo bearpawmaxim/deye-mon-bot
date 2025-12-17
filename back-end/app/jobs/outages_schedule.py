@@ -1,22 +1,24 @@
 from datetime import datetime
-from app import Config
-from app.services import Services
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from injector import Injector
+
+from app.settings import Settings
+from app.services import OutagesScheduleService
 
 
-def register(config: Config, services: Services):
-    scheduler = services.scheduler
+def register(_: Settings, injector: Injector):
+    scheduler = injector.get(AsyncIOScheduler)
+
+    async def update_outages_schedule():
+        # TODO: fetch from config
+        service = injector.get(OutagesScheduleService)
+        await service.update(25, 902)
+
     scheduler.add_job(
-        'update_outages_schedule',
-        update_outages_schedule,
+        id            = 'update_outages_schedule',
+        func          = update_outages_schedule,
         trigger       = 'interval',
         minutes       = 5,
-        args          = [services],
         next_run_time = datetime.now(),
         max_instances = 1
     )
-
-def update_outages_schedule(services: Services):
-    with services.scheduler.app.app_context():
-
-        # TODO: fetch from config
-        services.outages_scgedule.update(25, 902)

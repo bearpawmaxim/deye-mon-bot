@@ -1,9 +1,10 @@
+import { ObjectId } from "../../schemas";
 import { BaseState } from "./base";
 
 type BaseServerChat = {
-  id: number;
+  id: ObjectId;
   chatId: string;
-  botId: number;
+  botId: ObjectId;
 };
 
 type BaseServerChatListItem = {
