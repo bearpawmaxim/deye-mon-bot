@@ -23,8 +23,20 @@ class EventsService:
 
         self._public_clients: Set[BoundedQueue] = set()
         self._private_clients: Set[BoundedQueue] = set()
+        self._subscriber_task: asyncio.Task | None = None
 
-        asyncio.create_task(self.transport.start_subscriber(self._handle_incoming_event))
+    async def start(self):
+        if self._subscriber_task:
+            return
+
+        self._subscriber_task = asyncio.create_task(
+            self.transport.start_subscriber(self._handle_incoming_event)
+        )
+
+    async def shutdown(self):
+        if hasattr(self.transport, "stop"):
+            await self.transport.stop()
+        await self.cleanup_all()
 
     def add_public_client(self, q: BoundedQueue):
         self._public_clients.add(q)

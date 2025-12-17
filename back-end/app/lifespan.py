@@ -2,12 +2,16 @@ from fastapi import FastAPI
 from injector import Injector
 from contextlib import asynccontextmanager
 
+import injector
+
 from app.app_container import bind_client_session, init_container
 from app.settings import Settings
 from app.jobs import register_jobs
 from app.routes import register_routes
 from app.services import AuthorizationService, BeanieInitializer, BotsService, TelegramService, DeyeApiService
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+from shared.services.events.service import EventsService
 
 
 async def create_user(settings: Settings, injector: Injector):
@@ -34,14 +38,14 @@ async def lifespan(app: FastAPI):
     beanie_initializer = injector.get(BeanieInitializer)
     await beanie_initializer.init()
 
-    try:
-        deye_service = injector.get(DeyeApiService)
-        if hasattr(deye_service, "init"):
-            await deye_service.init()
-    except Exception:
-        pass
+    deye_service = injector.get(DeyeApiService)
+    await deye_service.init()
 
     telegram_service = injector.get(TelegramService)
+
+    events: EventsService = injector.get(EventsService)
+    await events.start()
+
     scheduler = injector.get(AsyncIOScheduler)
     register_jobs(settings, injector)
     scheduler.start()
@@ -50,12 +54,14 @@ async def lifespan(app: FastAPI):
 
     await setup_bots(injector)
     await create_user(settings, injector)
+
     yield
+
     try:
         scheduler.shutdown(wait=False)
     except Exception:
         pass
-    if hasattr(telegram_service, "shutdown"):
-        await telegram_service.shutdown()
-    if 'deye_service' in locals() and hasattr(deye_service, "shutdown"):
-        await deye_service.shutdown()
+
+    await events.shutdown()
+    await telegram_service.shutdown()
+    await deye_service.shutdown()
