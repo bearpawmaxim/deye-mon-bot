@@ -235,7 +235,7 @@ class DashboardService(BaseService):
             total_seconds = int(duration_seconds)
             return PowerLogsResponse(
                 periods                   = periods,
-                totalAvailableSeconds     = int(total_available_seconds),
+                total_available_seconds   = int(total_available_seconds),
                 total_unavailable_seconds = int(total_unavailable_seconds),
                 total_seconds             = total_seconds
             )

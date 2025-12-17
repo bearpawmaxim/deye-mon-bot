@@ -67,7 +67,7 @@ class StationsDataRepository(IStationsDataRepository):
             StationData.find(
                 StationData.station_id == station_id,
             )
-            .sort(StationData.last_update_time)
+            .sort(-StationData.last_update_time)
             .first_or_none()
         )
         return station
