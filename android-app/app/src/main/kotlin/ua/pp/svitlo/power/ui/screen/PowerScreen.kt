@@ -32,7 +32,7 @@ import ua.pp.svitlo.power.ui.viewmodel.UiState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PowerScreen(
-    onBuildingClick: (Int, String) -> Unit,
+    onBuildingClick: (String, String) -> Unit,
     viewModel: PowerViewModel = viewModel()
 ) {
     val buildingsState by viewModel.buildingsState.collectAsState()
@@ -96,7 +96,7 @@ fun PowerScreen(
 @Composable
 fun BuildingsList(
     buildings: List<Building>,
-    onBuildingClick: (Int, String) -> Unit,
+    onBuildingClick: (String, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(

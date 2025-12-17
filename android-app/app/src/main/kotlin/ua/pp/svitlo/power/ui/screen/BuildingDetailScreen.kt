@@ -37,7 +37,7 @@ enum class DateSelection {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BuildingDetailScreen(
-    buildingId: Int,
+    buildingId: String,
     buildingName: String,
     onNavigateBack: () -> Unit,
     viewModel: BuildingDetailViewModel = viewModel()

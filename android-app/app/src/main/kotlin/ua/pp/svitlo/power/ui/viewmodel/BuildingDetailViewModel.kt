@@ -19,7 +19,7 @@ class BuildingDetailViewModel : ViewModel() {
     private val _selectedDate = MutableStateFlow(LocalDate.now())
     val selectedDate: StateFlow<LocalDate> = _selectedDate.asStateFlow()
     
-    fun loadPowerLogs(buildingId: Int, silent: Boolean = false, date: LocalDate = _selectedDate.value) {
+    fun loadPowerLogs(buildingId: String, silent: Boolean = false, date: LocalDate = _selectedDate.value) {
         _selectedDate.value = date
         viewModelScope.launch {
             // Only show loading state if we don't have data yet (initial load)

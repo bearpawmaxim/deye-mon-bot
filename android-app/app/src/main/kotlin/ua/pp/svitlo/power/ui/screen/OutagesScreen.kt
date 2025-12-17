@@ -427,6 +427,23 @@ fun getRemainingTime(slot: TimeSlot): String {
     }
 }
 
+fun getFormattedDuration(durationInMinutes: Int): String {
+    if (durationInMinutes <= 0) return "0 minutes"
+
+    val hours = durationInMinutes / 60
+    val minutes = durationInMinutes % 60
+
+    return buildString {
+        if (hours > 0) {
+            append(if (hours > 1) "$hours hours" else "$hours hour")
+        }
+        if (minutes > 0) {
+            if (isNotEmpty()) append(" ")
+            append(if (minutes > 1) "$minutes minutes" else "$minutes minute")
+        }
+    }
+}
+
 @Composable
 fun TimeSlotRow(slot: TimeSlot, isToday: Boolean, currentTime: Long) {
     val status = getSlotStatus(slot, isToday)
@@ -515,7 +532,7 @@ fun TimeSlotRow(slot: TimeSlot, isToday: Boolean, currentTime: Long) {
                 
                 when (status) {
                     SlotStatus.PASSED -> Text(
-                        text = "Completed • ${slot.end - slot.start} minutes",
+                        text = "Completed • ${getFormattedDuration(slot.end - slot.start)}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                     )
@@ -526,7 +543,7 @@ fun TimeSlotRow(slot: TimeSlot, isToday: Boolean, currentTime: Long) {
                         color = Color.White
                     )
                     SlotStatus.UPCOMING -> Text(
-                        text = "Duration: ${slot.end - slot.start} minutes",
+                        text = "Duration: ${getFormattedDuration(slot.end - slot.start)}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -601,5 +618,3 @@ fun formatUpdateTime(isoTime: String): String {
         isoTime
     }
 }
-
-

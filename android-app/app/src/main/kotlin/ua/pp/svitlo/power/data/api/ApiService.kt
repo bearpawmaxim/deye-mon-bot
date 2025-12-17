@@ -22,7 +22,7 @@ interface ApiService {
     
     @POST("buildings/{buildingId}/power-logs")
     suspend fun getPowerLogs(
-        @Path("buildingId") buildingId: Int,
+        @Path("buildingId") buildingId: String,
         @Body request: PowerLogRequest
     ): PowerLogResponse
 }

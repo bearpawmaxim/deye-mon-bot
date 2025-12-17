@@ -5,7 +5,7 @@ sealed class Screen(val route: String) {
     object Outages : Screen("outages")
     object Settings : Screen("settings")
     object BuildingDetail : Screen("building_detail/{buildingId}/{buildingName}") {
-        fun createRoute(buildingId: Int, buildingName: String): String {
+        fun createRoute(buildingId: String, buildingName: String): String {
             return "building_detail/$buildingId/$buildingName"
         }
     }

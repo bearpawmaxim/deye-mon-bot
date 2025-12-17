@@ -108,6 +108,14 @@ object RetrofitClient {
             Log.d(TAG, "Already initialized, skipping")
             return
         }
+
+
+        // 🔧 TEST SOLUTION
+        //currentBaseUrl = "http://localhost:5050/api/"
+        //availableBaseUrls = listOf("http://localhost:5050/api/")
+        //createRetrofitWithCurrentUrl()
+        //isInitialized = true
+        //return
         
         try {
             Log.d(TAG, "Loading configuration from Firebase...")

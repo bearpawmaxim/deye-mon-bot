@@ -39,7 +39,7 @@ class PowerRepository {
         }
     }
     
-    suspend fun getPowerLogs(buildingId: Int, startDate: String, endDate: String): Result<PowerLogResponse> {
+    suspend fun getPowerLogs(buildingId: String, startDate: String, endDate: String): Result<PowerLogResponse> {
         return try {
             val request = PowerLogRequest(startDate, endDate)
             val response = apiService.getPowerLogs(buildingId, request)

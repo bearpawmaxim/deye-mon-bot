@@ -1,7 +1,7 @@
 package ua.pp.svitlo.power.data.model
 
 data class Building(
-    val id: Int,
+    val id: String,
     val name: String,
     val batteryPercent: Double,
     val color: String,

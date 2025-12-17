@@ -371,11 +371,11 @@ fun MainScreen(
                 composable(
                     route = Screen.BuildingDetail.route,
                     arguments = listOf(
-                        navArgument("buildingId") { type = NavType.IntType },
+                        navArgument("buildingId") { type = NavType.StringType },
                         navArgument("buildingName") { type = NavType.StringType }
                     )
                 ) { backStackEntry ->
-                    val buildingId = backStackEntry.arguments?.getInt("buildingId") ?: 0
+                    val buildingId = backStackEntry.arguments?.getString("buildingId") ?: ""
                     val buildingName = backStackEntry.arguments?.getString("buildingName") ?: ""
                     BuildingDetailScreen(
                         buildingId = buildingId,
