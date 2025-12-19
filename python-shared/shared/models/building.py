@@ -12,7 +12,7 @@ class Building(Document, LookupModel):
     color: str
 
     station: Optional[Link[Station]] = None
-    report_user: Link[User]
+    report_users: List[Link[User]] = []
 
     class Settings:
         name = "buildings"

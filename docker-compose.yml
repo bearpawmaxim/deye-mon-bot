@@ -54,6 +54,26 @@ services:
       retries: 5
       start_period: 40s
 
+  deye-mon-bot-migrate:
+    image: deye-mon-bot-api
+    container_name: deye-mon-bot-migrate
+    env_file: .env
+    command:
+      [
+        "beanie",
+        "migrate",
+        "-uri", "${MONGO_URI}",
+        "-db", "${MONGO_DB}",
+        "-p", "migrations/",
+        "--no-use-transaction"
+      ]
+    depends_on:
+      deye-mon-bot-mongo:
+        condition: service_healthy
+    networks:
+      - web_network
+    restart: "no"
+
   deye-mon-bot-back-end:
     build:
       context: .
@@ -80,6 +100,8 @@ services:
     depends_on:
       deye-mon-bot-mongo:
         condition: service_healthy
+      deye-mon-bot-migrate:
+        condition: service_completed_successfully
       deye-mon-bot-rds:
         condition: service_healthy
 
