@@ -13,7 +13,7 @@ class ExtDataRepository(IExtDataRepository):
     
     async def get_ext_data_by_id(self, ext_data_id: PydanticObjectId) -> ExtData:
         return await ExtData.get(ext_data_id)
-    
+
     async def get_last_ext_data_by_user_id(self, user_id: PydanticObjectId) -> ExtData:
         documents = await ExtData.find(
             ExtData.user_id == user_id,

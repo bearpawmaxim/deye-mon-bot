@@ -20,9 +20,9 @@ export const buildingEditSchema = v.object({
       v.transform((x) => x === '0' ? null : x),
     ),
   ),
-  reportUserId: v.pipe(
-    objectIdSchema,
-    v.nonEmpty('Report User is required'),
+  reportUserIds: v.pipe(
+    v.array(objectIdSchema),
+    v.nonEmpty('At least one report user is required'),
   ),
 });
 

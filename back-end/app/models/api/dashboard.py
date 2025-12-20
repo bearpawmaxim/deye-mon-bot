@@ -33,7 +33,7 @@ class SaveBuildingRequest(BuildingResponse):
     name: str
     color: str = "#FFFFFF"
     station_id: Optional[PydanticObjectId] = Field(None, alias="stationId")
-    report_user_id: Optional[PydanticObjectId] = Field(None, alias="reportUserId")
+    report_user_ids: List[PydanticObjectId] = Field(None, alias="reportUserIds")
 
     model_config = ConfigDict(
         populate_by_name = True,
@@ -67,6 +67,7 @@ class BuildingsSummaryRequest(BaseModel):
 class BuildingSummaryResponse(BaseModel):
     id: PydanticObjectId
     is_grid_available: Optional[bool] = Field(None, alias="isGridAvailable")
+    grid_availability_pct: Optional[int] = Field(None, alias="gridAvailabilityPct")
     is_charging: Optional[bool] = Field(None, alias="isCharging")
     is_discharging: Optional[bool] = Field(None, alias="isDischarging")
     battery_percent: Optional[float] = Field(None, alias="batteryPercent")

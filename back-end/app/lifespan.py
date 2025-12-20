@@ -2,8 +2,6 @@ from fastapi import FastAPI
 from injector import Injector
 from contextlib import asynccontextmanager
 
-import injector
-
 from app.app_container import bind_client_session, init_container
 from app.settings import Settings
 from app.jobs import register_jobs

@@ -64,10 +64,16 @@ export const BuildingCard: FC<BuildingCardProps> = ({ building, buildingSummary,
 
   const rows = [];
   if (buildingSummary) {
+    let availabilityText = '';
+    switch (buildingSummary.gridAvailabilityPct) {
+      case 0: availabilityText = 'Unavailable'; break;
+      case 100: availabilityText = 'Available'; break;
+      default: availabilityText = 'Partially available'; break;
+    }
     rows.push({
       icon: getGridIcon(buildingSummary),
       left: 'Grid:',
-      right: buildingSummary.isGridAvailable ? 'Available' : 'Unavailable',
+      right: availabilityText,
     });
   }
   if (buildingSummary?.batteryPercent !== undefined && buildingSummary?.batteryPercent !== null) {

@@ -172,7 +172,7 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, message, loading, station
                 data={getStationOptions()}
                 {...field}
                 label={context.title}
-                value={field.value?.map(m => m.toString()) ?? []}
+                value={field.value ?? []}
                 error={context.helpers.getFieldError('stations')}
                 styles={{
                   pill: {

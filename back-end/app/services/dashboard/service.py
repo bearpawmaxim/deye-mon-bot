@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timedelta, timezone
 from typing import List
 from beanie import PydanticObjectId
@@ -81,8 +82,8 @@ class DashboardService(BaseService):
         response = self._process_building(building)
         return EditBuildingResponse(
             **response.model_dump(),
-            report_user_id = building.report_user.id,
-            station_id     = building.station.id
+            report_user_ids = [user.id for user in building.report_users],
+            station_id      = building.station.id
         )
 
 
@@ -94,29 +95,33 @@ class DashboardService(BaseService):
         building = await self._dashboard.get_building(building_id)
         if building:
             station = await self._stations.get_station(request.station_id) if request.station_id else None
-            user = await self._users.get_user_by_id(request.report_user_id) if request.report_user_id else None
+            users = await asyncio.gather(
+                *[self._users.get_user_by_id(user_id) for user_id in request.report_user_ids]
+            ) if request.report_user_ids else None
 
             building.name = request.name
             building.color = request.color
             building.station = station
-            building.report_user = user
+            building.report_users = users
 
             await self._dashboard.edit_building(building)
             await self.broadcast_public("buildings_updated")
             return building_id
 
         return None
-    
+
 
     async def create_building(self, request: SaveBuildingRequest) -> PydanticObjectId:
         station = await self._stations.get_station(request.station_id) if request.station_id else None
-        user = await self._users.get_user_by_id(request.report_user_id) if request.report_user_id else None
+        users = await asyncio.gather(
+            *[self._users.get_user_by_id(user_id) for user_id in request.report_user_ids]
+        ) if request.report_user_ids else None
 
         building = Building(
-            name        = request.name,
-            color       = request.color,
-            station     = station,
-            report_user = user,
+            name         = request.name,
+            color        = request.color,
+            station      = station,
+            report_users = users,
         )
 
         building_id = await self._dashboard.create_building(building)
@@ -143,9 +148,14 @@ class DashboardService(BaseService):
             id    = building.id
         )
 
-        ext_data: ExtData = await self._ext_data.get_last_ext_data_by_user_id(building.report_user.id)
-        if ext_data:
-            result.is_grid_available = ext_data.grid_state
+        ext_datas: List[ExtData] = await asyncio.gather(
+            *(self._ext_data.get_last_ext_data_by_user_id(report_user.id)
+                for report_user in building.report_users)
+        )
+        if ext_datas and len(ext_datas) > 0:
+            result.is_grid_available = ext_datas.count(lambda x: x and x.grid_state) == len(ext_datas)
+            true_count = sum(x.grid_state for x in ext_datas if x)
+            result.grid_availability_pct = int((true_count / len(ext_datas)) * 100)
 
         if building.station:
             station_id = building.station.id
@@ -184,7 +194,9 @@ class DashboardService(BaseService):
         buildings = await self._dashboard.get_buildings(building_ids)
         minutes = 25
 
-        return [await self._process_building_summary(b, minutes) for b in buildings]
+        return await asyncio.gather(
+            *(self._process_building_summary(b, minutes) for b in buildings)
+        )
 
 
     async def get_buildings_with_summary(self) -> List[BuildingWithSummaryResponse]:
