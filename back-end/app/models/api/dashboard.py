@@ -68,6 +68,7 @@ class BuildingSummaryResponse(BaseModel):
     id: PydanticObjectId
     is_grid_available: Optional[bool] = Field(None, alias="isGridAvailable")
     grid_availability_pct: Optional[int] = Field(None, alias="gridAvailabilityPct")
+    has_mixed_reporter_states: Optional[bool] = Field(None, alias="hasMixedReporterStates")
     is_charging: Optional[bool] = Field(None, alias="isCharging")
     is_discharging: Optional[bool] = Field(None, alias="isDischarging")
     battery_percent: Optional[float] = Field(None, alias="batteryPercent")

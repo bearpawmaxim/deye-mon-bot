@@ -39,13 +39,31 @@ export const BuildingCard: FC<BuildingCardProps> = ({ building, buildingSummary,
     return <FontAwesomeIcon icon={icon} />
   }
 
-  const getGridIcon = (summary?: BuildingSummaryItem): ReactNode => 
-    summary?.isGridAvailable
+  const getGridIcon = (summary?: BuildingSummaryItem): ReactNode => {
+    if (!summary) return <FontAwesomeIcon icon='lightbulb' />;
+    
+    return summary.isGridAvailable
       ? <FontAwesomeIcon icon='lightbulb' />
       : <span className="fa-layers fa-fw">
         <FontAwesomeIcon icon='lightbulb' />
         <FontAwesomeIcon icon='slash' />
       </span>;
+  }
+
+  const getHeaderGridIcon = (summary?: BuildingSummaryItem): ReactNode => {
+    if (!summary) return <FontAwesomeIcon icon='lightbulb' />;
+    
+    if (summary.hasMixedReporterStates) {
+      return <FontAwesomeIcon icon='lightbulb' style={{ color: 'white' }} />;
+    }
+    
+    return summary.isGridAvailable
+      ? <FontAwesomeIcon icon='lightbulb' />
+      : <span className="fa-layers fa-fw">
+        <FontAwesomeIcon icon='lightbulb' />
+        <FontAwesomeIcon icon='slash' />
+      </span>;
+  }
     
   const getOperationText = (summary: BuildingSummaryItem) => {
     const statuses: Array<string> = [];
@@ -68,7 +86,11 @@ export const BuildingCard: FC<BuildingCardProps> = ({ building, buildingSummary,
     switch (buildingSummary.gridAvailabilityPct) {
       case 0: availabilityText = 'Unavailable'; break;
       case 100: availabilityText = 'Available'; break;
-      default: availabilityText = 'Partially available'; break;
+      default: 
+        availabilityText = buildingSummary.hasMixedReporterStates 
+          ? `Partially available (${buildingSummary.gridAvailabilityPct}%)`
+          : 'Partially available';
+        break;
     }
     rows.push({
       icon: getGridIcon(buildingSummary),
@@ -153,8 +175,14 @@ export const BuildingCard: FC<BuildingCardProps> = ({ building, buildingSummary,
       key={`building_${building.id}`}
       title={building.name}
       bgColor={building.color}
-      icon={getGridIcon(buildingSummary)}
-      iconColor={buildingSummary?.isGridAvailable ? "green.9" : "red.9"}
+      icon={getHeaderGridIcon(buildingSummary)}
+      iconColor={
+        buildingSummary?.hasMixedReporterStates 
+          ? "yellow.6" 
+          : buildingSummary?.isGridAvailable 
+            ? "green.9" 
+            : "red.9"
+      }
       onClick={handleIconClick}
       rows={rows}
       progress={progress}

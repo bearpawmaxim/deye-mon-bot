@@ -9,7 +9,8 @@ data class Building(
     val isCharging: Boolean,
     val isDischarging: Boolean,
     val isGridAvailable: Boolean? = null,
-    val batteryDischargeTime: String? = null
+    val batteryDischargeTime: String? = null,
+    val hasMixedReporterStates: Boolean? = null
 ) {
     fun getBatteryLevel(): Int = batteryPercent.toInt()
     

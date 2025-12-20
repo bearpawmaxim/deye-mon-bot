@@ -111,11 +111,11 @@ object RetrofitClient {
 
 
         // 🔧 TEST SOLUTION
-        //currentBaseUrl = "http://localhost:5050/api/"
-        //availableBaseUrls = listOf("http://localhost:5050/api/")
-        //createRetrofitWithCurrentUrl()
-        //isInitialized = true
-        //return
+//        currentBaseUrl = "http://192.168.1.76:5005/api/"
+//        availableBaseUrls = listOf("http://192.168.1.76:5005/api/")
+//        createRetrofitWithCurrentUrl()
+//        isInitialized = true
+//        return
         
         try {
             Log.d(TAG, "Loading configuration from Firebase...")

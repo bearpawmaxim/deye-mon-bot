@@ -153,9 +153,12 @@ class DashboardService(BaseService):
                 for report_user in building.report_users)
         )
         if ext_datas and len(ext_datas) > 0:
-            result.is_grid_available = ext_datas.count(lambda x: x and x.grid_state) == len(ext_datas)
+            result.is_grid_available = any(x and x.grid_state for x in ext_datas)
             true_count = sum(x.grid_state for x in ext_datas if x)
             result.grid_availability_pct = int((true_count / len(ext_datas)) * 100)
+            result.has_mixed_reporter_states = (
+                true_count > 0 and true_count < len(ext_datas)
+            )
 
         if building.station:
             station_id = building.station.id
@@ -225,75 +228,112 @@ class DashboardService(BaseService):
         if not building:
             return None
 
-        # Use the first report user for power logs (backward compatibility)
         if not building.report_users or len(building.report_users) == 0:
             return None
         
-        report_user = building.report_users[0]
-        records = await self._ext_data.get_ext_data_statistics(report_user.id, start_date, end_date)
+        all_records_by_user = await asyncio.gather(
+            *(self._ext_data.get_ext_data_statistics(report_user.id, start_date, end_date)
+              for report_user in building.report_users)
+        )
+        
+        last_before_by_user = await asyncio.gather(
+            *(self._ext_data.get_last_ext_data_before_date(report_user.id, start_date)
+              for report_user in building.report_users)
+        )
+        
+        all_events = []
+        
+        for user_idx, records in enumerate(all_records_by_user):
+            if records:
+                for record in records:
+                    all_events.append({
+                        'timestamp': record.received_at.replace(tzinfo=timezone.utc) if record.received_at.tzinfo is None else record.received_at,
+                        'user_idx': user_idx,
+                        'grid_state': record.grid_state
+                    })
+        
+        if not all_events:
+            initial_state = any(last and last.grid_state for last in last_before_by_user if last)
+            duration_seconds = (end_date - start_date).total_seconds()
+            
+            return PowerLogsResponse(
+                periods = [PeriodResponse(
+                    start_time       = start_date.isoformat(),
+                    end_time         = end_date.isoformat(),
+                    is_available     = initial_state,
+                    duration_seconds = int(duration_seconds)
+                )],
+                total_available_seconds   = int(duration_seconds) if initial_state else 0,
+                total_unavailable_seconds = int(duration_seconds) if not initial_state else 0,
+                total_seconds             = int(duration_seconds)
+            )
+        
 
+        all_events.sort(key=lambda e: e['timestamp'])
+
+        reporter_states = [
+            (last.grid_state if last else False) 
+            for last in last_before_by_user
+        ]
+        
+        if all_events[0]['timestamp'] > start_date:
+            initial_aggregate_state = any(reporter_states)
+            all_events.insert(0, {
+                'timestamp': start_date,
+                'user_idx': -1, 
+                'grid_state': initial_aggregate_state,
+                'is_synthetic': True
+            })
+        
         periods = []
         total_available_seconds = 0
         total_unavailable_seconds = 0
-
-        if not records:
-            last_record = await self._ext_data.get_last_ext_data_before_date(report_user.id, start_date)
-            duration_seconds = (end_date - start_date).total_seconds()
-            if last_record:
-                total_available_seconds = duration_seconds if last_record.grid_state else 0
-                total_unavailable_seconds = duration_seconds if not last_record.grid_state else 0
-                period = PeriodResponse(
-                    start_time       = start_date.isoformat(),
-                    end_time         = end_date.isoformat(),
-                    is_available     = last_record.grid_state,
-                    duration_seconds = int(duration_seconds)
-                )
-                periods.append(period)
-            total_seconds = int(duration_seconds)
-            return PowerLogsResponse(
-                periods                   = periods,
-                total_available_seconds   = int(total_available_seconds),
-                total_unavailable_seconds = int(total_unavailable_seconds),
-                total_seconds             = total_seconds
-            )
-
-        # Insert synthetic record if needed
-        first_record = records[0]
-        if first_record.received_at.tzinfo is None:
-            first_record.received_at = first_record.received_at.replace(tzinfo=timezone.utc)
-
-        if first_record.received_at > start_date:
-            last_before = await self._ext_data.get_last_ext_data_before_date(report_user.id, start_date)
-            if last_before:
-                synthetic_record = ExtData(
-                    user_id = report_user.id,
-                    grid_state = last_before.grid_state,
-                    received_at = start_date,
-                )
-                records.insert(0, synthetic_record)
-
-        # Calculate periods
-        for i, current in enumerate(records):
-            current_time = current.received_at
-            if current_time.tzinfo is None:
-                current_time = current_time.replace(tzinfo=timezone.utc)
-
-            end_time = records[i + 1].received_at if i < len(records) - 1 else end_date
-            if end_time.tzinfo is None:
-                end_time = end_time.replace(tzinfo=timezone.utc)
-            duration_seconds = (end_time - current_time).total_seconds()
-            if current.grid_state:
+        
+        current_time = start_date
+        current_aggregate_state = any(reporter_states)  # OR logic (pessimistic strategy)
+        
+        for event in all_events:
+            event_time = event['timestamp']
+            
+            if event['user_idx'] >= 0:
+                reporter_states[event['user_idx']] = event['grid_state']
+            
+            new_aggregate_state = any(reporter_states)
+            
+            if new_aggregate_state != current_aggregate_state or event_time == start_date:
+                if event_time > current_time:
+                    duration_seconds = (event_time - current_time).total_seconds()
+                    
+                    periods.append(PeriodResponse(
+                        start_time       = current_time.isoformat(),
+                        end_time         = event_time.isoformat(),
+                        is_available     = current_aggregate_state,
+                        duration_seconds = int(duration_seconds)
+                    ))
+                    
+                    if current_aggregate_state:
+                        total_available_seconds += duration_seconds
+                    else:
+                        total_unavailable_seconds += duration_seconds
+                
+                current_time = event_time
+                current_aggregate_state = new_aggregate_state
+        
+        if current_time < end_date:
+            duration_seconds = (end_date - current_time).total_seconds()
+            
+            periods.append(PeriodResponse(
+                start_time       = current_time.isoformat(),
+                end_time         = end_date.isoformat(),
+                is_available     = current_aggregate_state,
+                duration_seconds = int(duration_seconds)
+            ))
+            
+            if current_aggregate_state:
                 total_available_seconds += duration_seconds
             else:
                 total_unavailable_seconds += duration_seconds
-            period = PeriodResponse(
-                start_time       = current_time.isoformat(),
-                end_time         = end_time.isoformat(),
-                is_available     = current.grid_state,
-                duration_seconds = int(duration_seconds),
-            )
-            periods.append(period)
-
+        
         total_seconds = int(total_available_seconds + total_unavailable_seconds)
 
         return PowerLogsResponse(

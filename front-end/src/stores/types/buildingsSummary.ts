@@ -8,6 +8,7 @@ export type BuildingSummaryItem = {
   consumptionPower: number;
   isGridAvailable: boolean;
   gridAvailabilityPct?: number;
+  hasMixedReporterStates?: boolean;
   isDischarging: boolean;
   isCharging: boolean;
 };
