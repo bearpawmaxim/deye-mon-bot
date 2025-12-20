@@ -225,14 +225,19 @@ class DashboardService(BaseService):
         if not building:
             return None
 
-        records = await self._ext_data.get_ext_data_statistics(building.report_user.id, start_date, end_date)
+        # Use the first report user for power logs (backward compatibility)
+        if not building.report_users or len(building.report_users) == 0:
+            return None
+        
+        report_user = building.report_users[0]
+        records = await self._ext_data.get_ext_data_statistics(report_user.id, start_date, end_date)
 
         periods = []
         total_available_seconds = 0
         total_unavailable_seconds = 0
 
         if not records:
-            last_record = await self._ext_data.get_last_ext_data_before_date(building.report_user.id, start_date)
+            last_record = await self._ext_data.get_last_ext_data_before_date(report_user.id, start_date)
             duration_seconds = (end_date - start_date).total_seconds()
             if last_record:
                 total_available_seconds = duration_seconds if last_record.grid_state else 0
@@ -258,10 +263,10 @@ class DashboardService(BaseService):
             first_record.received_at = first_record.received_at.replace(tzinfo=timezone.utc)
 
         if first_record.received_at > start_date:
-            last_before = await self._ext_data.get_last_ext_data_before_date(building.report_user.id, start_date)
+            last_before = await self._ext_data.get_last_ext_data_before_date(report_user.id, start_date)
             if last_before:
                 synthetic_record = ExtData(
-                    user_id = building.report_user.id,
+                    user_id = report_user.id,
                     grid_state = last_before.grid_state,
                     received_at = start_date,
                 )

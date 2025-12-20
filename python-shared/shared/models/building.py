@@ -23,7 +23,7 @@ class Building(Document, LookupModel):
             "name": self.name,
             "color": self.color,
             "station_id": str(self.station.id) if self.station else None,
-            "report_user_id": str(self.report_user.id) if self.report_user else None,
+            "report_user_ids": [str(user.id) for user in self.report_users] if self.report_users else [],
         }
 
     @classmethod
