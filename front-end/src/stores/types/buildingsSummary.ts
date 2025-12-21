@@ -7,6 +7,8 @@ export type BuildingSummaryItem = {
   batteryDischargeTime?: string;
   consumptionPower: number;
   isGridAvailable: boolean;
+  gridAvailabilityPct?: number;
+  hasMixedReporterStates?: boolean;
   isDischarging: boolean;
   isCharging: boolean;
 };

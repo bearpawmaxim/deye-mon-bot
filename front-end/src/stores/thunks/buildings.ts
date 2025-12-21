@@ -37,7 +37,7 @@ export const saveBuildings = createAsyncThunk('buildings/saveBuildings', async (
         name: building.name,
         color: building.color,
         stationId: building.stationId,
-        reportUserId: building.reportUserId,
+        reportUserIds: building.reportUserIds,
       } as BuildingEditType;
       if (building.isNew) {
         await apiClient.post('/dashboard/buildings', serverDto);

@@ -26,6 +26,7 @@ import ua.pp.svitlo.power.ui.components.ErrorContent
 import ua.pp.svitlo.power.ui.theme.PowerGreen
 import ua.pp.svitlo.power.ui.theme.PowerRed
 import ua.pp.svitlo.power.ui.theme.PowerYellow
+import ua.pp.svitlo.power.ui.theme.PowerOrange
 import ua.pp.svitlo.power.ui.viewmodel.PowerViewModel
 import ua.pp.svitlo.power.ui.viewmodel.UiState
 
@@ -118,16 +119,18 @@ fun BuildingCard(
     building: Building,
     onClick: () -> Unit
 ) {
+    val hasMixedStates = building.hasMixedReporterStates == true
     val isGridOff = building.isGridAvailable == false
     
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isGridOff) 
-                PowerRed.copy(alpha = 0.1f) 
-            else 
-                MaterialTheme.colorScheme.surface
+            containerColor = when {
+                isGridOff -> PowerRed.copy(alpha = 0.1f)
+                hasMixedStates -> PowerOrange.copy(alpha = 0.1f)
+                else -> MaterialTheme.colorScheme.surface
+            }
         ),
         onClick = onClick
     ) {
@@ -188,11 +191,30 @@ fun BuildingCard(
                 
                 // Grid Status
                 if (building.isGridAvailable != null) {
+                    val hasMixedStates = building.hasMixedReporterStates == true
+                    val (icon, label, iconTint) = when {
+                        hasMixedStates -> Triple(
+                            Icons.Default.PowerInput,
+                            "Partially Available",
+                            PowerOrange
+                        )
+                        building.isGridAvailable == true -> Triple(
+                            Icons.Default.PowerInput,
+                            "Available",
+                            PowerGreen
+                        )
+                        else -> Triple(
+                            Icons.Default.PowerOff,
+                            "Unavailable",
+                            PowerRed
+                        )
+                    }
+                    
                     CompactStatItem(
-                        icon = if (building.isGridAvailable == true) Icons.Default.PowerInput else Icons.Default.PowerOff,
+                        icon = icon,
                         label = "Apartment grid",
-                        value = if (building.isGridAvailable == true) "Available" else "Unavailable",
-                        iconTint = if (building.isGridAvailable == true) PowerGreen else PowerRed
+                        value = label,
+                        iconTint = iconTint
                     )
                 }
             }

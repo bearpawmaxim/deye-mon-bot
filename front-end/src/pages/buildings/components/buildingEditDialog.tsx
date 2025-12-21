@@ -1,6 +1,6 @@
 import { FC, useMemo } from "react";
 import { modals } from "@mantine/modals";
-import { Button, ColorInput, Group, Loader, parseThemeColor, Select, Stack, TextInput, useMantineColorScheme, useMantineTheme } from "@mantine/core";
+import { Button, ColorInput, Group, Loader, MultiSelect, parseThemeColor, Select, Stack, TextInput, useMantineColorScheme, useMantineTheme } from "@mantine/core";
 import { useFormHandler, useLookup } from "../../../hooks";
 import { RootState, useAppDispatch } from "../../../stores/store";
 import { buildingEditSchema, BuildingEditType, ObjectId } from "../../../schemas";
@@ -138,24 +138,24 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
           },
          },
         {
-          name: "reportUserId",
-          title: "Report User",
+          name: "reportUserIds",
+          title: "Report Users",
           render: (context) => {
             return <Controller
-              name="reportUserId"
+              name="reportUserIds"
               control={context.helpers.control}
-              defaultValue={'0'}
+              defaultValue={[]}
               render={({ field }) => (
-                <Select
+                <MultiSelect
                   required
-                  allowDeselect={false}
                   data={userOptions}
                   {...field}
                   leftSection={usersLoading ? <Loader size="xs" /> : null}
                   label={context.title}
-                  value={field.value ?? ''}
-                  error={context.helpers.getFieldError('reportUserId')}
-                  onChange={(value) => context.helpers.setControlValue('reportUserId', value, true)}
+                  value={field.value ?? []}
+                  error={context.helpers.getFieldError('reportUserIds')}
+                  onChange={(value) =>
+                    context.helpers.setControlValue('reportUserIds', value, true, false)}
                 />
               )}
             />;
@@ -183,7 +183,7 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
         {renderField('name')}
         {renderField('color')}
         {renderField('stationId')}
-        {renderField('reportUserId')}
+        {renderField('reportUserIds')}
         <Group justify="flex-end">
           <Button
             onClick={handleSave}

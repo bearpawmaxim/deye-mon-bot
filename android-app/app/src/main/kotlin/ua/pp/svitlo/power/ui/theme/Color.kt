@@ -13,5 +13,5 @@ val Pink40 = Color(0xFF7D5260)
 val PowerGreen = Color(0xFF4CAF50)
 val PowerRed = Color(0xFFF44336)
 val PowerYellow = Color(0xFFFFC107)
-val PowerOrange = Color(0xFFFF9800)
+val PowerOrange = Color(0xFFF59E0B)
 
