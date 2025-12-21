@@ -2,15 +2,15 @@ from functools import lru_cache
 import os
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from shared.settings.base import BaseJWTSettings, BaseRedisSettings
+from shared.settings.base import BaseAppSettings, BaseJWTSettings, BaseRedisSettings
 
 
-class Settings(BaseSettings, BaseJWTSettings, BaseRedisSettings):
+class Settings(BaseSettings, BaseAppSettings, BaseJWTSettings, BaseRedisSettings):
     model_config = SettingsConfigDict(
-        env_file="../.env",
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-        extra="ignore"
+        env_file          = "../.env",
+        env_file_encoding = "utf-8",
+        case_sensitive    = False,
+        extra             = "ignore"
     )
 
 

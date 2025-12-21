@@ -1,13 +1,13 @@
 from functools import lru_cache
 import os
 
-from pydantic import Field, computed_field
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from shared.settings.base import BaseJWTSettings, BaseMongoSettings, BaseRedisSettings
+from shared.settings.base import BaseAppSettings, BaseJWTSettings, BaseMongoSettings, BaseRedisSettings
 from shared.utils import generate_secret_key
 
 
-class Settings(BaseSettings, BaseJWTSettings, BaseMongoSettings, BaseRedisSettings):
+class Settings(BaseSettings, BaseAppSettings, BaseJWTSettings, BaseMongoSettings, BaseRedisSettings):
     model_config = SettingsConfigDict(
         env_file="../.env",
         env_file_encoding="utf-8",

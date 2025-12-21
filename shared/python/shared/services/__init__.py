@@ -1,3 +1,4 @@
-from .events import EventsService, EventItem
+from .events import EventsService, EventItem, EventsServiceConfig
+from .translation import TranslationService
 
-__all__ = [EventsService, EventItem]
+__all__ = [EventsService, EventItem, EventsServiceConfig, TranslationService]

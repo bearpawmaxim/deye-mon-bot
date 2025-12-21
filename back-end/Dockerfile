@@ -9,6 +9,7 @@ ENV DEBUG True
 
 COPY back-end/requirements.txt /deye-mon-bot-api/
 COPY shared/python /shared/python
+COPY shared/i18n /shared/i18n
 
 # install python dependencies
 RUN pip install --upgrade pip

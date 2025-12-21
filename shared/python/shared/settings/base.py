@@ -5,6 +5,15 @@ from pydantic.networks import RedisDsn
 from shared.utils import generate_secret_key
 
 
+class BaseAppSettings(BaseModel):
+    DEBUG: bool = Field(default=False)
+
+    @computed_field
+    @property
+    def I18N_PATH(self) -> str:
+        return "../shared/i18n"
+
+
 class BaseJWTSettings(BaseModel):
     JWT_SECRET_KEY: str = Field(
         default_factory=lambda: generate_secret_key(64),
@@ -30,8 +39,6 @@ class BaseJWTSettings(BaseModel):
     @property
     def JWT_REFRESH_TOKEN_EXPIRES(self) -> timedelta:
         return timedelta(minutes=self.JWT_REFRESH_TOKEN_EXPIRES_MIN)
-    
-    DEBUG: bool = Field(default=False)
 
 
 class BaseRedisSettings(BaseModel):
