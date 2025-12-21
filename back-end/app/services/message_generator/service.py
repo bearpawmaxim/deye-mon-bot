@@ -96,12 +96,14 @@ class MessageGeneratorService(IMessageGeneratorService):
             'timedelta': timedelta,
         }
 
-        if not any(station.enabled for station in message.stations):
+        stations = sorted(message.stations, key=lambda s: s.order)
+
+        if not any(station.enabled for station in stations):
             print(f"All stations for message '{message.name}' are disabled")
             return None
 
-        message_station = await self._populate_stations_data(template_data, message.stations, force)
-        if len(message.stations) == 1 and message_station is None:
+        message_station = await self._populate_stations_data(template_data, stations, force)
+        if len(stations) == 1 and message_station is None:
             print(f"The station for message '{message.name}' is disabled")
             return None
 
