@@ -22,7 +22,7 @@ export const buildingsSlice = createSlice({
         name: '',
         color: 'blue.4',
         stationId: null,
-        reportUserId: '0',
+        reportUserIds: [],
       };
     },
     finishCreatingBuilding(state, { payload }: PayloadAction<BuildingEditType>) {
