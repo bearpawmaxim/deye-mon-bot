@@ -8,7 +8,7 @@ ENV PYTHONUNBUFFERED=1
 ENV DEBUG True
 
 COPY back-end/requirements.txt /deye-mon-bot-api/
-COPY python-shared /python-shared
+COPY shared/python /shared/python
 
 # install python dependencies
 RUN pip install --upgrade pip
