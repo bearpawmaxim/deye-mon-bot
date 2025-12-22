@@ -1,0 +1,29 @@
+{
+  "buildings": {
+    "loading": "Loading buildings...",
+    "edit": "Edit building",
+    "add": "Add new building",
+    "delete": "Delete building"
+  },
+  "outages": {
+    "title": "Planned Power Outages Schedule (Queue {{outageQueue}})",
+    "lastUpdated": "Last updated {{time}}",
+    "loading": "Loading planned outages from YASNO...",
+    "error": "Unable to fetch data from YASNO API. Please try again later."
+  },
+  "grid": {
+    "title": "Grid",
+    "available": "Available",
+    "partiallyAvailable": "Partially Available",
+    "unavailable": "Unavailable"
+  },
+  "battery": {
+    "title": "Battery",
+    "charging": "Charging",
+    "discharging": "Discharging"
+  },
+  "consumption": {
+    "title": "Consumption",
+    "valueLabel": "{{value}} kW"
+  }
+}

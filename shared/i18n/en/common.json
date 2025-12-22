@@ -4,5 +4,9 @@
   "lang": {
     "en": "English",
     "uk": "Ukrainian"
+  },
+  "day": {
+    "today": "Today",
+    "tomorrow": "Tomorrow"
   }
 }

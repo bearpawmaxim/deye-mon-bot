@@ -8,12 +8,14 @@ import { useAppDispatch } from "../../../stores/store";
 import { modals } from "@mantine/modals";
 import { BuildingListItem } from "../../../stores/types";
 import { deleteBuilding } from "../../../stores/thunks";
+import { usePageTranslation } from "../../../utils";
 
 export const EditableBuildingCard: FC<BuildingCardProps> = ({
   building,
   buildingSummary,
   loadingSummary,
 }) => {
+  const t = usePageTranslation('dashboard');
   const dispatch = useAppDispatch();
   const onDeleteBuilding = useCallback((building: BuildingListItem) => {
     modals.openConfirmModal({
@@ -35,7 +37,7 @@ export const EditableBuildingCard: FC<BuildingCardProps> = ({
       <IconButton
         icon="edit"
         color="blue"
-        text="Edit building"
+        text={t('buildings.edit')}
         key='btn_edit'
         onClick={() => openBuildingEditDialog({
           creating: false,
@@ -46,7 +48,7 @@ export const EditableBuildingCard: FC<BuildingCardProps> = ({
       <IconButton
         icon="trash"
         color="red"
-        text="Delete building"
+        text={t('buildings.delete')}
         key='btn_delete'
         onClick={() => onDeleteBuilding(building)}
       />

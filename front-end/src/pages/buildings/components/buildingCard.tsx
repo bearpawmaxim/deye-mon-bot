@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconName } from "@fortawesome/free-solid-svg-icons";
 import { openPowerLogsDialog } from "../../../dialogs";
 import { ProgressProps, useMantineTheme } from "@mantine/core";
+import { usePageTranslation } from "../../../utils";
 
 export type BuildingCardProps = {
   building: BuildingListItem;
@@ -21,6 +22,8 @@ export const BuildingCard: FC<BuildingCardProps> = ({ building, buildingSummary,
       });
     }
   }, [building.id, building.name]);
+
+  const t = usePageTranslation('dashboard');
 
   const getBatteryIcon = (summary: BuildingSummaryItem): ReactNode | null => {
     const batteryPercent = summary.batteryPercent ?? 0;
@@ -68,10 +71,10 @@ export const BuildingCard: FC<BuildingCardProps> = ({ building, buildingSummary,
   const getOperationText = (summary: BuildingSummaryItem) => {
     const statuses: Array<string> = [];
     if (summary.isCharging) {
-      statuses.push('Charging');
+      statuses.push(t('battery.charging'));
     }
     if (summary.isDischarging) {
-      statuses.push('Discharging');
+      statuses.push(t('battery.discharging'));
     }
     const joined = statuses.join(', ');
     if (joined.length > 0) {
@@ -84,24 +87,24 @@ export const BuildingCard: FC<BuildingCardProps> = ({ building, buildingSummary,
   if (buildingSummary) {
     let availabilityText = '';
     switch (buildingSummary.gridAvailabilityPct) {
-      case 0: availabilityText = 'Unavailable'; break;
-      case 100: availabilityText = 'Available'; break;
+      case 0: availabilityText = t('grid.unavailable'); break;
+      case 100: availabilityText = t('grid.available'); break;
       default: 
         availabilityText = buildingSummary.hasMixedReporterStates 
-          ? `Partially available (${buildingSummary.gridAvailabilityPct}%)`
-          : 'Partially available';
+          ? `${t('grid.partiallyAvailable')} (${buildingSummary.gridAvailabilityPct}%)`
+          : t('grid.partiallyAvailable');
         break;
     }
     rows.push({
       icon: getGridIcon(buildingSummary),
-      left: 'Grid:',
+      left: t('grid.title') + ': ',
       right: availabilityText,
     });
   }
   if (buildingSummary?.batteryPercent !== undefined && buildingSummary?.batteryPercent !== null) {
     rows.push({
       icon: getBatteryIcon(buildingSummary),
-      left: <>Battery: </>,
+      left: <>{t('battery.title')}: </>,
       right: <>
         {getOperationText(buildingSummary)}{buildingSummary.batteryPercent}%
         {buildingSummary.batteryDischargeTime && <>, ~{buildingSummary.batteryDischargeTime} left</>}</>,
@@ -110,8 +113,8 @@ export const BuildingCard: FC<BuildingCardProps> = ({ building, buildingSummary,
   if (buildingSummary?.consumptionPower) {
     rows.push({
       icon: <FontAwesomeIcon icon='bolt' />,
-      left: <>Consumption: </>,
-      right: <>{buildingSummary.consumptionPower ?? '--'} kW</>
+      left: <>{t('consumption.title')}: </>,
+      right: <>{t('consumption.valueLabel', { value: buildingSummary.consumptionPower ?? '--' })}</>
     });
   }
 

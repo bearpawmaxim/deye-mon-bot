@@ -203,22 +203,24 @@ export const Navbar: FC<NavbarProps> = ({ user, isNavbarCollapsed, toggleNavbar,
             <Stack>
               <Menu shadow="md" trigger="click" position="top">
                 <Menu.Target>
-                  {isNavbarCollapsed
-                    ? <Tooltip
-                        position="right"
-                        label={
-                          <Text fw={500} fz={13}>
-                            {t('title.language')}
-                          </Text>
-                        }
-                      >
-                        <Link to="#" className={classes.navlink}>
-                          <CountryFlag />
-                        </Link>
-                      </Tooltip>
-                    : <Button variant="subtle" size="md" leftSection={<CountryFlag />}>
-                        {t('title.language')}
-                      </Button>}
+                  {
+                    isNavbarCollapsed
+                      ? <Tooltip
+                          position="right"
+                          label={
+                            <Text fw={500} fz={13}>
+                              {t('title.language')}
+                            </Text>
+                          }
+                        >
+                          <Link to="#" className={classes.navlink}>
+                            <CountryFlag />
+                          </Link>
+                        </Tooltip>
+                      : <Button variant="subtle" size="md" leftSection={<CountryFlag />}>
+                          {t('title.language')}
+                        </Button>
+                  }
                 </Menu.Target>
                 <Menu.Dropdown>
                   <LangPicker />

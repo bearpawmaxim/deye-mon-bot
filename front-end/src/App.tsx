@@ -5,7 +5,7 @@ import { store } from './stores/store';
 import { AuthHeaderInjector } from './components';
 import { MantineProvider } from '@mantine/core';
 import theme from './theme';
-import { LoadingProvider } from './providers';
+import { DatesProviderWrapper, LoadingProvider } from './providers';
 import { ModalsProvider } from '@mantine/modals';
 import { setLanguageHeader } from './utils';
 import { useEffect } from 'react';
@@ -28,10 +28,12 @@ function App() {
     <Provider store={store}>
       <MantineProvider defaultColorScheme="dark" theme={theme}>
         <ModalsProvider>
-          <LoadingProvider>
-            <AuthHeaderInjector />
-            <Routes />
-          </LoadingProvider>
+          <DatesProviderWrapper>
+            <LoadingProvider>
+              <AuthHeaderInjector />
+              <Routes />
+            </LoadingProvider>
+          </DatesProviderWrapper>
         </ModalsProvider>
       </MantineProvider>
     </Provider>

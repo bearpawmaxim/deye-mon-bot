@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ActionIcon, Alert, Box, Group, Loader, SimpleGrid, Stack, Text, Title, useMantineColorScheme } from "@mantine/core";
 import { FC, useMemo } from "react";
-import { toLocalDateTime } from "../../../utils";
+import { toLocalDateTime, usePageTranslation } from "../../../utils";
 import { DayOutageSchedule } from "./dayOutageSchedule";
 import { OutagesScheduleData } from "../../../stores/types";
 import dayjs from "dayjs";
@@ -18,6 +18,8 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue, data, loa
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === "dark";
 
+  const t = usePageTranslation('dashboard');
+
   const days = useMemo(() => {
     if (!data?.days || data.days.length === 0) return [];
     
@@ -30,9 +32,9 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue, data, loa
       const isTomorrow = dayDate.isSame(today.add(1, 'day'), 'day');
       
       let title = dayDate.format('dddd, MMMM D');
-      if (isToday) title = `Today (${dayDate.format('MMM D')})`;
-      if (isTomorrow) title = `Tomorrow (${dayDate.format('MMM D')})`;
-      
+      if (isToday) title = `${t('day.today')} (${dayDate.format('MMM D')})`;
+      if (isTomorrow) title = `${t('day.tomorrow')} (${dayDate.format('MMM D')})`;
+
       return {
         title,
         data: day,
@@ -41,14 +43,14 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue, data, loa
     }).sort((a, b) => {
       return dayjs(a.data.date).unix() - dayjs(b.data.date).unix();
     });
-  }, [data]);
+  }, [data, t]);
 
   if (loading) {
     return (
       <Box ta="center" py="xl">
         <Loader size="lg" />
         <Text mt="md" c="dimmed">
-          Loading planned outages from YASNO...
+          {t('outages.loading')}
         </Text>
       </Box>
     );
@@ -68,7 +70,7 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue, data, loa
         <Alert color="yellow" title="No Data Available">
           <Stack gap="sm">
             <Text size="sm">
-              Unable to fetch data from YASNO API. Please try again later.
+              {t('outages.error')}
             </Text>
             <Group justify="center">
               <ActionIcon
@@ -100,27 +102,8 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue, data, loa
     <Stack gap="lg">
       <Group justify="center" align="center" gap="md">
         <Title order={2}>
-          Planned Power Outages Schedule (Queue {outageQueue})
+          {t('outages.title', { outageQueue })}
         </Title>
-        <ActionIcon
-          variant="light"
-          color="blue"
-          size="lg"
-          onClick={() => onRefresh()}
-          title="Refresh data"
-          disabled={loading}
-        >
-          <Box
-            style={{
-              animation: loading ? "spin 1s linear infinite" : "none",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <FontAwesomeIcon icon="refresh" />
-          </Box>
-        </ActionIcon>
       </Group>
       <style>{`
         @keyframes spin {
@@ -148,7 +131,7 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue, data, loa
       {/* Updated On */}
       {data?.updatedOn && (
         <Text size="xs" c="dimmed" ta="center">
-          Last updated: {toLocalDateTime(data.updatedOn)}
+          {t('outages.lastUpdated', { time: toLocalDateTime(data.updatedOn) })}
         </Text>
       )}
     </Stack>

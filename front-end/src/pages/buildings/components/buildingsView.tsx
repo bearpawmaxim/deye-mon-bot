@@ -6,6 +6,7 @@ import { EditableBuildingCard } from "./editableBuildingCard";
 import { BuildingCard } from "./buildingCard";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { BuildingEditType } from "../../../schemas";
+import { usePageTranslation } from "../../../utils";
 
 type BuildingsViewProps = {
   loading: boolean;
@@ -22,12 +23,14 @@ export const BuildingsView: FC<BuildingsViewProps> = ({
   buildings,
   buildingsSummary,
 }) => {
+  const t = usePageTranslation('dashboard');
+
   if (loading) {
     return (
       <Box w='100%' ta="center" py="xl">
         <Loader size="lg" />
         <Text mt="md" c="dimmed">
-          Loading buildings...
+          {t('buildings.loading')}
         </Text>
       </Box>
     )
@@ -52,14 +55,14 @@ export const BuildingsView: FC<BuildingsViewProps> = ({
       })}
 
     {isAuthenticated && <Group justify="center" align="center">
-      Add new building
+      {t('buildings.add')}
       <ActionIcon
         radius="lg"
         size="lg"
         onClick={() =>
           openBuildingEditDialog({
             creating: true,
-            title: "Create new building",
+            title: t('buildings.add'),
           })
         }
       >
