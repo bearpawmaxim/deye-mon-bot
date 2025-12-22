@@ -38,7 +38,7 @@ export const ThemePicker: FC<ThemePickerProps> = ({ isNavbarCollapsed, size }) =
               "linear-gradient(90deg, var(--mantine-color-orange-6) 0%, var(--mantine-color-yellow-4) 100%)",
           },
         }}
-        size={size ?? isNavbarCollapsed ? "xs" : "lg"}
+        size={size ?? isNavbarCollapsed ? "xs" : "md"}
       />
       <FontAwesomeIcon
         icon="moon"

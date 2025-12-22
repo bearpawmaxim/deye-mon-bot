@@ -3,7 +3,7 @@ import { ProfileData } from "../../stores/types";
 import { Burger, Button, Menu, Text, Box, Flex, Divider, Group, Transition, ActionIcon, Indicator  } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classes from "./styles/header.module.css"
-import { BackButton, UserAvatar } from "../../components";
+import { BackButton, LangPicker, UserAvatar } from "../../components";
 import { PageHeaderButton } from "../../providers";
 import { useLocation } from "react-router-dom";
 
@@ -169,6 +169,8 @@ export const Header: FC<HeaderProps> = ({ user, opened, toggle, caption, buttons
                 </Button>
               </Menu.Target>
               <Menu.Dropdown>
+                <LangPicker iconPosition="left" />
+                <Menu.Divider />
                 <Menu.Item
                   leftSection={<FontAwesomeIcon icon='user-md' />}
                   onClick={onProfileClick}

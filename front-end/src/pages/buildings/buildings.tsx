@@ -15,6 +15,7 @@ import { PageHeaderButton, useHeaderContent } from "../../providers";
 import { BuildingEditType } from "../../schemas";
 import { authDataSelector, createSelectEdittedBuildings } from "../../stores/selectors";
 import { initGA, trackPageView } from "../../utils/analytics";
+import { useLocalizedEffect } from "../../hooks";
 
 type ComponentProps = {
   loadingConfig: boolean;
@@ -79,7 +80,7 @@ const Component: FC<ComponentProps> = ({
     }
   }, [configChanged, buildingsChanged, dispatch]);
 
-  useEffect(() => {
+  useLocalizedEffect(() => {
     fetchData();
   }, [fetchData]);
 
@@ -90,7 +91,7 @@ const Component: FC<ComponentProps> = ({
     }
   }, [buildings, buildingsSummary.length, buildngsSummaryError, dispatch]);
 
-  useEffect(() => {
+  useLocalizedEffect(() => {
     fetchSummary();
   }, [fetchSummary]);
 
@@ -103,7 +104,7 @@ const Component: FC<ComponentProps> = ({
     [dashboardConfig, dispatch]
   );
 
-  useEffect(() => {
+  useLocalizedEffect(() => {
     fetchOutages();
   }, [fetchOutages]);
 
@@ -118,7 +119,7 @@ const Component: FC<ComponentProps> = ({
     { text: 'Cancel', icon: "cancel", color: "black", onClick: fetchData, disabled: !dataChanged, },
   ], [fetchData, saveData]);
   const { setHeaderButtons } = useHeaderContent();
-  useEffect(() => {
+  useLocalizedEffect(() => {
     setHeaderButtons(getHeaderButtons(configChanged || buildingsChanged));
     return () => setHeaderButtons([]);
   }, [setHeaderButtons, getHeaderButtons, configChanged, buildingsChanged]);

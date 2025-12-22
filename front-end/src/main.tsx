@@ -6,6 +6,7 @@ import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import '@mantine/charts/styles.css';
 import './icons.ts';
+import './i18n';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

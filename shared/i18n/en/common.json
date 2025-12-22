@@ -1,1 +1,8 @@
-{}
+{
+  "title.app": "Svitlo Power",
+  "title.language": "Language",
+  "lang": {
+    "en": "English",
+    "uk": "Ukrainian"
+  }
+}
