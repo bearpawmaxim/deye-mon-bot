@@ -3,27 +3,57 @@
     "loading": "Завантаження будівель...",
     "edit": "Редагувати будівлю",
     "add": "Додати нову будівлю",
-    "delete": "Видалити будівлю"
+    "delete": "Видалити будівлю",
+    "deletePrompt": "Ви впевнені, що хочете видалити будівлю \"{{name}}\"?",
+    "editDialogTitle": "Редагування будівлі \"{{name}}\"",
+    "createDialogTitle": "Створення будівлі"
+  },
+  "buildingEdit": {
+    "name": "Назва будівлі",
+    "color": "Колір будівлі",
+    "station": "Станція",
+    "reportUsers": "Користувачі для звітів"
+  },
+  "dashboardEdit": {
+    "dialogTitle": "Редагування панелі",
+    "title": "Назва панелі",
+    "enableOutagesSchedule": "Увімкнути графік планових відключень",
+    "outagesScheduleQueue": "Черга розкладу відключень"
   },
   "outages": {
-    "title": "Графік планових відключень електроенергії (черга {{outageQueue}})",
+    "title": "Графік планових відключень (черга {{outageQueue}})",
     "lastUpdated": "Останнє оновлення: {{time}}",
     "loading": "Завантаження планових відключень з YASNO...",
-    "error": "Не вдалося отримати дані з API YASNO. Будь ласка, спробуйте пізніше."
+    "error": "Не вдалося отримати дані з API YASNO. Будь ласка, спробуйте пізніше.",
+    "waitingForSchedule": "Очікування розкладу від YASNO",
+    "emergency": "Аварійні відключення",
+    "noShutdowns": "Немає відключень",
+    "noData": "Дані відсутні"
   },
   "grid": {
     "title": "Мережа",
-    "available": "Доступно",
-    "partiallyAvailable": "Частково доступно",
-    "unavailable": "Недоступно"
+    "available": "Доступна",
+    "partiallyAvailable": "Частково доступна",
+    "unavailable": "Недоступна"
   },
   "battery": {
     "title": "Батарея",
     "charging": "Заряджається",
-    "discharging": "Розряджається"
+    "discharging": "Розряджається",
+    "estimate": {
+      "discharge": "~{{time}} залиш."
+    }
   },
   "consumption": {
     "title": "Споживання",
     "valueLabel": "{{value}} кВт"
+  },
+  "validation": {
+    "nameRequired": "Назва будівлі є обов'язковою.",
+    "colorRequired": "Колір будівлі є обов'язковим.",
+    "stationRequired": "Вибір станції є обов'язковим.",
+    "reportUsersRequired": "Принаймні один користувач для звітів є обов'язковим.",
+    "dashboardTitleRequired": "Назва панелі є обов'язковою.",
+    "outagesScheduleQueueRequired": "Черга розкладу відключень є обов'язковою."
   }
 }

@@ -107,7 +107,8 @@ export const BuildingCard: FC<BuildingCardProps> = ({ building, buildingSummary,
       left: <>{t('battery.title')}: </>,
       right: <>
         {getOperationText(buildingSummary)}{buildingSummary.batteryPercent}%
-        {buildingSummary.batteryDischargeTime && <>, ~{buildingSummary.batteryDischargeTime} left</>}</>,
+        {buildingSummary.batteryDischargeTime && 
+          <>, {t('battery.estimate.discharge', { time: buildingSummary.batteryDischargeTime })}</>}</>,
     });
   }
   if (buildingSummary?.consumptionPower) {

@@ -10,6 +10,7 @@ import {
 } from "../../../stores/slices";
 import { dashboardEditSchema, DashboardEditType } from "../../../schemas/dashboardEdit";
 import { Controller } from "react-hook-form";
+import { usePageTranslation } from "../../../utils";
 
 type OpenDashboardEditOptions = {
   dashboardConfig: DashboardEditType;
@@ -20,6 +21,7 @@ export function openDashboardEditDialog({ dashboardConfig, title }: OpenDashboar
   
   const Inner: FC = () => {
     const dispatch = useAppDispatch();
+    const t = usePageTranslation('dashboard');
 
     const outageScheduleQueueOptions = useMemo(() => ([
       { value: '', label: 'No queue' },
@@ -62,11 +64,12 @@ export function openDashboardEditDialog({ dashboardConfig, title }: OpenDashboar
       defaultRender: (name, title, context) => {
         return <TextInput label={title} {...context.helpers.registerControl(name)} />;
       },
+      errorFormatter: (error) => t(error),
       fields: [
-        { name: "title", title: "Dashboard Title" },
+        { name: "title", title: t('dashboardEdit.title') },
         {
           name: "enableOutagesSchedule",
-          title: "Enable Outage schedule",
+          title: t('dashboardEdit.enableOutagesSchedule'),
           render: (context) => {
             const cbProps = {
               ...context.helpers.registerControl('enableOutagesSchedule'),
@@ -83,7 +86,7 @@ export function openDashboardEditDialog({ dashboardConfig, title }: OpenDashboar
          },
         {
           name: "outagesScheduleQueue",
-          title: "Outage Schedule Queue",
+          title: t('dashboardEdit.outagesScheduleQueue'),
           render: (context) => {
             return <Controller
             name="outagesScheduleQueue"
@@ -130,13 +133,13 @@ export function openDashboardEditDialog({ dashboardConfig, title }: OpenDashboar
             onClick={handleSave}
             disabled={!isDirty || !isValid}
           >
-            Save
+            {t('button.save')}
           </Button>
           <Button
             variant="default"
             onClick={handleCancel}
           >
-            Cancel
+            {t('button.cancel')}
           </Button>
         </Group>
       </Stack>
@@ -144,7 +147,7 @@ export function openDashboardEditDialog({ dashboardConfig, title }: OpenDashboar
   };
   
   const id: string | undefined = modals.open({
-    title: title ?? "Edit dashboard",
+    title: title,
     centered: true,
     withCloseButton: false,
     closeOnClickOutside: false,

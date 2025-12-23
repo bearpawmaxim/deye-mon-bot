@@ -16,6 +16,7 @@ import { BuildingEditType } from "../../schemas";
 import { authDataSelector, createSelectEdittedBuildings } from "../../stores/selectors";
 import { initGA, trackPageView } from "../../utils/analytics";
 import { useLocalizedEffect } from "../../hooks";
+import { usePageTranslation } from "../../utils";
 
 type ComponentProps = {
   loadingConfig: boolean;
@@ -66,6 +67,8 @@ const Component: FC<ComponentProps> = ({
   const isAuthenticated = Boolean(useAppSelector(authDataSelector)?.accessToken);
   const dispatch = useAppDispatch();
 
+  const t = usePageTranslation('dashboard');
+
   const fetchData = useCallback(() => {
     dispatch(fetchBuildings());
     dispatch(fetchDashboardConfig());
@@ -115,9 +118,9 @@ const Component: FC<ComponentProps> = ({
   }, []);
 
   const getHeaderButtons = useCallback((dataChanged: boolean): PageHeaderButton[] => [
-    { text: 'Save', icon: "save", color: "green", onClick: saveData, disabled: !dataChanged, },
-    { text: 'Cancel', icon: "cancel", color: "black", onClick: fetchData, disabled: !dataChanged, },
-  ], [fetchData, saveData]);
+    { text: t('button.save'), icon: "save", color: "green", onClick: saveData, disabled: !dataChanged, },
+    { text: t('button.cancel'), icon: "cancel", color: "black", onClick: fetchData, disabled: !dataChanged, },
+  ], [t, saveData, fetchData]);
   const { setHeaderButtons } = useHeaderContent();
   useLocalizedEffect(() => {
     setHeaderButtons(getHeaderButtons(configChanged || buildingsChanged));
@@ -131,9 +134,9 @@ const Component: FC<ComponentProps> = ({
         enableOutagesSchedule: false,
         outagesScheduleQueue: '',
       },
-      title: 'Edit dashboard',
+      title: t('dashboardEdit.dialogTitle'),
     });
-  }, [dashboardConfig]);
+  }, [dashboardConfig, t]);
 
   return (
     <>
@@ -146,7 +149,7 @@ const Component: FC<ComponentProps> = ({
             { isAuthenticated && <IconButton
                 icon='edit'
                 color='blue'
-                text='Edit dashboard'
+                text={t('dashboardEdit.dialogTitle')}
                 onClick={onEditDashboardClick}
               /> }
           </Group>

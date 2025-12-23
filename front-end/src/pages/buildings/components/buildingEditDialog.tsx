@@ -9,6 +9,7 @@ import { cancelEditingOrCreatingBuilding, finishCreatingBuilding, finishEditingB
 import { connect } from "react-redux";
 import { Controller } from "react-hook-form";
 import { LookupSchema } from "../../../types";
+import { usePageTranslation } from "../../../utils";
 
 type OpenBuildingEditOptions = {
   creating?: boolean;
@@ -31,6 +32,7 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
 
   const Inner: FC<InnerProps> = ({ building, loading, buildingId }) => {
     const dispatch = useAppDispatch();
+    const t = usePageTranslation('dashboard');
 
     const theme = useMantineTheme();
     const { colorScheme } = useMantineColorScheme();
@@ -84,11 +86,12 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
           {...context.helpers.registerControl(name)}
         />;
       },
+      errorFormatter: (error) => t(error),
       fields: [
-        { name: "name", title: "Building name" },
+        { name: "name", title: t("buildingEdit.name") },
         {
           name: "color",
-          title: "Building color",
+          title: t("buildingEdit.color"),
           render: (context) => {
             const selectedColor = context.helpers.getControlValue('color');
             let color: string | undefined = undefined;
@@ -116,7 +119,7 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
         },
         {
           name: "stationId",
-          title: "Station",
+          title: t("buildingEdit.station"),
           render: (context) => {
             return <Controller
               name="stationId"
@@ -139,7 +142,7 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
          },
         {
           name: "reportUserIds",
-          title: "Report Users",
+          title: t("buildingEdit.reportUsers"),
           render: (context) => {
             return <Controller
               name="reportUserIds"
@@ -189,13 +192,13 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
             onClick={handleSave}
             disabled={!isDirty || !isValid}
           >
-            Save
+            {t('button.save')}
           </Button>
           <Button
             variant="default"
             onClick={handleCancel}
           >
-            Cancel
+            {t('button.cancel')}
           </Button>
         </Group>
       </Stack>
@@ -205,7 +208,7 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
   const ConnectedInner = connect(mapStateToProps)(Inner);
 
   const id: string | undefined = modals.open({
-    title: title ?? (creating ? "Create building" : "Edit building"),
+    title: title,
     size: 'lg',
     centered: true,
     withCloseButton: false,

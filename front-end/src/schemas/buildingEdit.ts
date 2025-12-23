@@ -7,22 +7,22 @@ export const buildingEditSchema = v.object({
   ),
   name: v.pipe(
     v.string(),
-    v.minLength(1, 'Name is required'),
+    v.minLength(1, 'validation.nameRequired'),
   ),
   color: v.pipe(
     v.string(),
-    v.minLength(1, 'Color is required'),
+    v.minLength(1, 'validation.colorRequired'),
   ),
   stationId: v.nullable(
     v.pipe(
       objectIdSchema,
-      v.nonEmpty('Station is required'),
+      v.nonEmpty('validation.stationRequired'),
       v.transform((x) => x === '0' ? null : x),
     ),
   ),
   reportUserIds: v.pipe(
     v.array(objectIdSchema),
-    v.nonEmpty('At least one report user is required'),
+    v.nonEmpty('validation.reportUsersRequired'),
   ),
 });
 

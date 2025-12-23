@@ -16,16 +16,17 @@ export const EditableBuildingCard: FC<BuildingCardProps> = ({
   loadingSummary,
 }) => {
   const t = usePageTranslation('dashboard');
+
   const dispatch = useAppDispatch();
   const onDeleteBuilding = useCallback((building: BuildingListItem) => {
     modals.openConfirmModal({
-      title: 'Delete Building',
-      children: `Are you sure you want to delete building "${building.name}"?`,
-      labels: { confirm: 'Delete', cancel: 'Cancel' },
+      title: t('buildings.delete'),
+      children: t('buildings.deletePrompt', { name: building.name }),
+      labels: { confirm: t('button.confirm'), cancel: t('button.cancel') },
       confirmProps: { color: 'red' },
       onConfirm: () => dispatch(deleteBuilding(building.id!)),
     });
-  }, [dispatch]);
+  }, [dispatch, t]);
 
   return <Box className={classes.buildingCard}>
     <BuildingCard
@@ -42,7 +43,7 @@ export const EditableBuildingCard: FC<BuildingCardProps> = ({
         onClick={() => openBuildingEditDialog({
           creating: false,
           buildingId: building.id!,
-          title: `Edit building: ${building.name}`,
+          title: `${t('buildings.editDialogTitle', { name: building.name })}`,
         })}
       />
       <IconButton

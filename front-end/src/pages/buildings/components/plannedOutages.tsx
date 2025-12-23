@@ -67,7 +67,7 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue, data, loa
   if (!data?.days || data.days.length === 0) {
     return (
       <Box ta="center" py="xl">
-        <Alert color="yellow" title="No Data Available">
+        <Alert color="yellow" title={t('outages.noData')}>
           <Stack gap="sm">
             <Text size="sm">
               {t('outages.error')}
