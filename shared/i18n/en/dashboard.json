@@ -1,0 +1,77 @@
+{
+  "buildings": {
+    "loading": "Loading buildings...",
+    "edit": "Edit building",
+    "add": "Add new building",
+    "delete": "Delete building",
+    "deletePrompt": "Are you sure you want to delete building \"{{name}}\"?",
+    "editDialogTitle": "Editing building \"{{name}}\"",
+    "createDialogTitle": "Creating a building"
+  },
+  "buildingEdit": {
+    "name": "Building name",
+    "color": "Building color",
+    "station": "Station",
+    "reportUsers": "Report Users"
+  },
+  "dashboardEdit": {
+    "dialogTitle": "Edit Dashboard",
+    "title": "Dashboard Title",
+    "enableOutagesSchedule": "Enable Planned Outages Schedule",
+    "outagesScheduleQueue": "Outages Schedule Queue"
+  },
+  "outages": {
+    "title": "Planned Power Outages Schedule (Queue {{outageQueue}})",
+    "lastUpdated": "Last updated {{time}}",
+    "loading": "Loading planned outages from YASNO...",
+    "error": "Unable to fetch data from YASNO API. Please try again later.",
+    "waitingForSchedule": "Waiting for schedule from YASNO",
+    "emergency": "Emergency shutdowns in progress",
+    "noShutdowns": "No shutdowns",
+    "noData": "No data available"
+  },
+  "grid": {
+    "title": "Grid",
+    "available": "Available",
+    "partiallyAvailable": "Partially Available",
+    "unavailable": "Unavailable"
+  },
+  "battery": {
+    "title": "Battery",
+    "charging": "Charging",
+    "discharging": "Discharging",
+    "estimate": {
+      "discharge": "~{{time}} left"
+    }
+  },
+  "consumption": {
+    "title": "Consumption",
+    "valueLabel": "{{value}} kW"
+  },
+  "validation": {
+    "nameRequired": "Name is required.",
+    "colorRequired": "Color is required.",
+    "stationRequired": "Station is required.",
+    "reportUsersRequired": "At least one reporter user is required.",
+    "dashboardTitleRequired": "Dashboard title is required.",
+    "outagesScheduleQueueRequired": "Outages schedule queue is required."
+  },
+  "powerLogs": {
+    "dialogTitle": "Power Statistics: {{name}}",
+    "customFilterTitle": "Custom",
+    "totalGridOnTitle": "Total Grid On",
+    "totalGridOffTitle": "Total Grid Off",
+    "dateRangeTitle": "Date range",
+    "dateRangePlaceholder": "Pick dates range",
+    "validation.dateRangeInvalid": "Please select both start and end dates",
+    "noDataTitle": "No data for the selected period",
+    "table": {
+      "startTime": "Start time",
+      "endTime": "End time",
+      "state": "State",
+      "duration": "Duration",
+      "gridOnState": "Grid available",
+      "gridOffState": "Grid unavailable"
+    }
+  }
+}

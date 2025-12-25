@@ -1,7 +1,7 @@
 import { Badge, Card, Divider, Group, Stack, Text } from "@mantine/core";
 import { FC, useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { minutesToHoursAndMinutes } from "../../../utils";
+import { minutesToHoursAndMinutes, usePageTranslation } from "../../../utils";
 import { DayData, DayDataStatus } from "../../../stores/types";
 import { OutageSlot } from "./outageSlot";
 import { Placeholder } from "./outageSchedulePlaceholder";
@@ -34,6 +34,7 @@ export const DayOutageSchedule: FC<DayOutageScheduleProps> = ({ isDark, dayData,
     () => dayData?.status === DayDataStatus.WaitingForSchedule,
     [dayData?.status],
   );
+  const t = usePageTranslation('dashboard');
 
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
@@ -56,21 +57,21 @@ export const DayOutageSchedule: FC<DayOutageScheduleProps> = ({ isDark, dayData,
         <Stack gap="xs" justify="center" h='100%'>
           { isWaitingForSchedule && 
             <Placeholder
-              text="Waiting for schedule from YASNO"
+              text={t('outages.waitingForSchedule')}
               icon='hourglass'
               color="dimmed"
             />
           }
           { isEmergency &&
             <Placeholder
-              text='Emergency shutdowns in progress'
+              text={t('outages.emergency')}
               icon='triangle-exclamation'
               color="orange"
             />
           }
           { !isAvailable && !isWaitingForSchedule && !isEmergency &&
             <Placeholder
-              text="No shutdowns"
+              text={t('outages.noShutdowns')}
               icon='check'
               color="green"
             />

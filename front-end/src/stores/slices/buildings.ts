@@ -19,7 +19,7 @@ export const buildingsSlice = createSlice({
     startCreatingBuilding(state) {
       state.editingItem = {
         id: (state.globalId + 1).toString().padStart(24, 'f'),
-        name: '',
+        name: {},
         color: 'blue.4',
         stationId: null,
         reportUserIds: [],

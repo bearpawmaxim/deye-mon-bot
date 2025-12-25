@@ -3,7 +3,7 @@ import { useForm, FieldValues, PathValue, Path, UseFormRegisterReturn, Control }
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useLocation } from "react-router-dom";
 
-type RenderingHelpers<T extends FieldValues> = {
+export type RenderingHelpers<T extends FieldValues> = {
   hasFieldError(name: Path<T>): boolean;
   registerControl: RegisterControl<T>;
   getFieldError: (name: Path<T>) => string | null;

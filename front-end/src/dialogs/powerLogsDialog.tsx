@@ -1,7 +1,6 @@
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { modals } from "@mantine/modals";
 import { Button, Group, Stack, Table, Text, SegmentedControl, Loader, Center, useMantineColorScheme, ScrollArea } from "@mantine/core";
-import { DatePickerInput } from "@mantine/dates";
 import { RootState, useAppDispatch } from "../stores/store";
 import { fetchPowerLogs } from "../stores/thunks";
 import { clearPowerLogs } from "../stores/slices";
@@ -9,8 +8,14 @@ import { connect } from "react-redux";
 import { PowerLogPeriod, PowerLogsData } from "../stores/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ObjectId } from "../schemas";
+import { TFunction } from "i18next";
+import { formatDateTime, formatDuration, getThisWeekDates } from "../utils";
+import DateRangePicker from "../components/dateRangePicker";
+import { DateRange } from "../types";
+
 
 type OpenPowerLogsDialogOptions = {
+  t: TFunction;
   buildingId: ObjectId;
   buildingName: string;
 };
@@ -30,22 +35,7 @@ const ANIMATION_STYLES = `
   }
 `;
 
-const getThisWeekDates = (): [Date, Date] => {
-  const now = new Date();
-  const dayOfWeek = now.getDay();
-  const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  
-  const startDate = new Date(now);
-  startDate.setDate(now.getDate() - daysFromMonday);
-  startDate.setHours(0, 0, 0, 0);
-  
-  const endDate = new Date(now);
-  endDate.setHours(23, 59, 59, 999);
-  
-  return [startDate, endDate];
-};
-
-const getDateRange = (filter: DateFilter, customDates?: [Date | null, Date | null]) => {
+const getDateRange = (filter: DateFilter, customDates?: DateRange) => {
   const now = new Date();
   const startDate = new Date(now);
   const endDate = new Date(now);
@@ -53,9 +43,9 @@ const getDateRange = (filter: DateFilter, customDates?: [Date | null, Date | nul
   if (filter === 'yesterday') {
     startDate.setDate(now.getDate() - 1);
     endDate.setDate(now.getDate() - 1);
-  } else if (filter === 'custom' && customDates?.[0] && customDates?.[1]) {
-    const customStart = new Date(customDates[0]);
-    const customEnd = new Date(customDates[1]);
+  } else if (filter === 'custom' && customDates?.from && customDates?.to) {
+    const customStart = new Date(customDates.from);
+    const customEnd = new Date(customDates.to);
     customStart.setHours(0, 0, 0, 0);
     customEnd.setHours(23, 59, 59, 999);
     return {
@@ -87,7 +77,7 @@ const calculateOngoingDuration = (startTime: Date, currentTime: Date, originalDu
   return Math.floor((currentTime.getTime() - startTime.getTime()) / 1000) - originalDuration;
 };
 
-export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsDialogOptions) {
+export function openPowerLogsDialog({ buildingId, buildingName, t }: OpenPowerLogsDialogOptions) {
   type InnerProps = {
     loading: boolean;
     error: string | null;
@@ -104,11 +94,11 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
     const dispatch = useAppDispatch();
     const { colorScheme } = useMantineColorScheme();
     const [dateFilter, setDateFilter] = useState<DateFilter>('today');
-    const [customDateRange, setCustomDateRange] = useState<[Date | null, Date | null]>(getThisWeekDates());
+    const [customDateRange, setCustomDateRange] = useState<DateRange>(getThisWeekDates());
     const [currentTime, setCurrentTime] = useState(new Date());
 
-    const loadData = useCallback((filter: DateFilter, customDates?: [Date | null, Date | null]) => {
-      if (filter === 'custom' && (!customDates?.[0] || !customDates?.[1])) {
+    const loadData = useCallback((filter: DateFilter, customDates?: DateRange) => {
+      if (filter === 'custom' && (!customDates?.from || !customDates?.to)) {
         return;
       }
       const { startDate, endDate } = getDateRange(filter, customDates);
@@ -116,7 +106,7 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
     }, [dispatch]);
 
     useEffect(() => {
-      if (dateFilter === 'custom' && (!customDateRange[0] || !customDateRange[1])) {
+      if (dateFilter === 'custom' && (!customDateRange.from || !customDateRange.to)) {
         return;
       }
       loadData(dateFilter, dateFilter === 'custom' ? customDateRange : undefined);
@@ -127,29 +117,6 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
       const timer = setInterval(() => setCurrentTime(new Date()), TIMER_INTERVAL_MS);
       return () => clearInterval(timer);
     }, []);
-
-    const formatDuration = useCallback((seconds: number, roundUp = false): string => {
-      const totalSeconds = roundUp && (seconds % 60) > 0 ? Math.ceil(seconds / 60) * 60 : seconds;
-      const hours = Math.floor(totalSeconds / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      const secs = Math.floor(totalSeconds % 60);
-
-      if (hours > 0) return roundUp ? `${hours}h ${minutes}m` : `${hours}h ${minutes}m ${secs}s`;
-      if (minutes > 0) return roundUp ? `${minutes}m` : `${minutes}m ${secs}s`;
-      return `${secs}s`;
-    }, []);
-
-    const formatDateTime = useCallback((isoString: string): string => {
-      const date = new Date(isoString);
-      const options: Intl.DateTimeFormatOptions = {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-        ...(dateFilter === 'custom' && { day: '2-digit', month: '2-digit', year: 'numeric' })
-      };
-      return date.toLocaleString('en-US', options);
-    }, [dateFilter]);
 
     const getColorScheme = useCallback((isDark: boolean) => ({
       availableBg: isDark ? 'rgba(64, 192, 87, 0.15)' : 'rgba(64, 192, 87, 0.08)',
@@ -204,7 +171,7 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
         totalAvailable: formatDuration(totalAvailableSeconds, true),
         totalUnavailable: formatDuration(totalUnavailableSeconds + adjustment, false),
       };
-    }, [paddedPeriods, dateFilter, currentTime, formatDuration]);
+    }, [paddedPeriods, dateFilter, currentTime]);
 
     const rows = useMemo(() => {
       if (!paddedPeriods.length) return [];
@@ -251,7 +218,8 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
                   </span>
                 )}
                 <Text fw={600} c={textColor}>
-                  {period.isAvailable ? 'Grid On' : 'Grid Off'}{isOngoing && ' (Now)'}
+                  {period.isAvailable ? t('powerLogs.table.gridOnState') : t('powerLogs.table.gridOffState')}
+                  {isOngoing && ` (${t('time.now').toLocaleLowerCase()})`}
                 </Text>
               </Group>
             </Table.Td>
@@ -261,7 +229,7 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
           </Table.Tr>
         );
       });
-    }, [paddedPeriods, colorScheme, dateFilter, currentTime, formatDateTime, formatDuration, getColorScheme]);
+    }, [paddedPeriods, colorScheme, dateFilter, currentTime, getColorScheme]);
 
     const handleClose = () => id && modals.close(id);
 
@@ -273,42 +241,40 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
           value={dateFilter}
           onChange={(value) => setDateFilter(value as DateFilter)}
           data={[
-            { label: 'Today', value: 'today' },
-            { label: 'Yesterday', value: 'yesterday' },
-            { label: 'Custom', value: 'custom' },
+            { label: t('day.today'), value: 'today' },
+            { label: t('day.yesterday'), value: 'yesterday' },
+            { label: t('powerLogs.customFilterTitle'), value: 'custom' },
           ]}
           fullWidth
         />
 
         {dateFilter === 'custom' && (
-          <DatePickerInput
-            type="range"
-            label="Select Date Range"
-            placeholder="Pick dates range"
+          <DateRangePicker
+            clearable={false}
+            placeholder={t("powerLogs.dateRangePlaceholder")}
             value={customDateRange}
-            onChange={(value) => setCustomDateRange(value as [Date | null, Date | null])}
-            maxDate={new Date()}
+            onChange={(value) => setCustomDateRange(value as DateRange)}
           />
         )}
 
         {loading && <Center p="xl"><Loader size="lg" /></Center>}
-        {error && <Text c="red" ta="center">Error: {error}</Text>}
+        {error && <Text c="red" ta="center">{t('error.generic', { error })}</Text>}
         
-        {dateFilter === 'custom' && (!customDateRange[0] || !customDateRange[1]) && (
+        {dateFilter === 'custom' && (!customDateRange.from || !customDateRange.to) && (
           <Text c="dimmed" ta="center" py="xl">
-            Please select both start and end dates
+            {t('powerLogs.validation.dateRangeInvalid')}
           </Text>
         )}
 
-        {!loading && !error && data && (dateFilter !== 'custom' || (customDateRange[0] && customDateRange[1])) && (
+        {!loading && !error && data && (dateFilter !== 'custom' || (customDateRange.from && customDateRange.to)) && (
           <>
             <Stack gap="xs">
               <Group justify="space-between">
-                <Text fw={600}>Total Grid On:</Text>
+                <Text fw={600}>{t('powerLogs.totalGridOnTitle')}:</Text>
                 <Text c={isDark ? 'teal.4' : 'teal.7'}>{totalAvailable}</Text>
               </Group>
               <Group justify="space-between">
-                <Text fw={600}>Total Grid Off:</Text>
+                <Text fw={600}>{t('powerLogs.totalGridOffTitle')}:</Text>
                 <Text c={isDark ? 'red.4' : 'red.7'}>{totalUnavailable}</Text>
               </Group>
             </Stack>
@@ -316,17 +282,17 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
             <Table stickyHeader stickyHeaderOffset={60} striped highlightOnHover withTableBorder>
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>Start Time</Table.Th>
-                  <Table.Th>End Time</Table.Th>
-                  <Table.Th>State</Table.Th>
-                  <Table.Th>Duration</Table.Th>
+                  <Table.Th>{t('powerLogs.table.startTime')}</Table.Th>
+                  <Table.Th>{t('powerLogs.table.endTime')}</Table.Th>
+                  <Table.Th>{t('powerLogs.table.state')}</Table.Th>
+                  <Table.Th>{t('powerLogs.table.duration')}</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
                 {rows.length > 0 ? rows : (
                   <Table.Tr>
                     <Table.Td colSpan={4}>
-                      <Text ta="center" c="dimmed">No data for the selected period</Text>
+                      <Text ta="center" c="dimmed">{t('powerLogs.noDataTitle')}</Text>
                     </Table.Td>
                   </Table.Tr>
                 )}
@@ -336,7 +302,7 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
         )}
 
         <Group justify="flex-end">
-          <Button variant="default" onClick={handleClose}>Close</Button>
+          <Button variant="default" onClick={handleClose}>{t('button.close')}</Button>
         </Group>
       </Stack>
     );
@@ -345,7 +311,7 @@ export function openPowerLogsDialog({ buildingId, buildingName }: OpenPowerLogsD
   const ConnectedInner = connect(mapStateToProps)(Inner);
 
   const id: string | undefined = modals.open({
-    title: `Power Statistics: ${buildingName}`,
+    title: t('powerLogs.dialogTitle', { name: buildingName }),
     centered: true,
     size: "xl",
     scrollAreaComponent: ScrollArea.Autosize,

@@ -2,9 +2,11 @@ from typing import Optional, List
 from beanie import PydanticObjectId
 from pydantic import BaseModel, ConfigDict, Field
 
+from shared.models.localizable_value import LocalizableValue
+
 
 class SaveDashboardConfigRequest(BaseModel):
-    title: str
+    title: LocalizableValue
     enable_outages_schedule: bool = Field(False, alias="enableOutagesSchedule")
     outages_schedule_queue: Optional[str] = Field(None, alias="outagesScheduleQueue")
 
@@ -20,7 +22,7 @@ class DashboardConfigResponse(SaveDashboardConfigRequest):
 
 class BuildingResponse(BaseModel):
     id: Optional[PydanticObjectId] = None
-    name: str
+    name: LocalizableValue
     color: str
 
     model_config = ConfigDict(
@@ -30,7 +32,7 @@ class BuildingResponse(BaseModel):
 
 
 class SaveBuildingRequest(BuildingResponse):
-    name: str
+    name: LocalizableValue
     color: str = "#FFFFFF"
     station_id: Optional[PydanticObjectId] = Field(None, alias="stationId")
     report_user_ids: List[PydanticObjectId] = Field(None, alias="reportUserIds")

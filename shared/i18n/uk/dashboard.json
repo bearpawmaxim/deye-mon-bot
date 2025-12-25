@@ -1,0 +1,77 @@
+{
+  "buildings": {
+    "loading": "Завантаження будівель...",
+    "edit": "Редагувати будівлю",
+    "add": "Додати нову будівлю",
+    "delete": "Видалити будівлю",
+    "deletePrompt": "Ви впевнені, що хочете видалити будівлю \"{{name}}\"?",
+    "editDialogTitle": "Редагування будівлі \"{{name}}\"",
+    "createDialogTitle": "Створення будівлі"
+  },
+  "buildingEdit": {
+    "name": "Назва будівлі",
+    "color": "Колір будівлі",
+    "station": "Станція",
+    "reportUsers": "Користувачі для звітів"
+  },
+  "dashboardEdit": {
+    "dialogTitle": "Редагування панелі",
+    "title": "Назва панелі",
+    "enableOutagesSchedule": "Увімкнути графік планових відключень",
+    "outagesScheduleQueue": "Черга розкладу відключень"
+  },
+  "outages": {
+    "title": "Графік планових відключень (черга {{outageQueue}})",
+    "lastUpdated": "Останнє оновлення: {{time}}",
+    "loading": "Завантаження планових відключень з YASNO...",
+    "error": "Не вдалося отримати дані з API YASNO. Будь ласка, спробуйте пізніше.",
+    "waitingForSchedule": "Очікування розкладу від YASNO",
+    "emergency": "Аварійні відключення",
+    "noShutdowns": "Немає відключень",
+    "noData": "Дані відсутні"
+  },
+  "grid": {
+    "title": "Мережа",
+    "available": "Наявна",
+    "partiallyAvailable": "Частково наявна",
+    "unavailable": "Відсутня"
+  },
+  "battery": {
+    "title": "Батарея",
+    "charging": "Заряджається",
+    "discharging": "Розряджається",
+    "estimate": {
+      "discharge": "~{{time}} залиш."
+    }
+  },
+  "consumption": {
+    "title": "Споживання",
+    "valueLabel": "{{value}} кВт"
+  },
+  "validation": {
+    "nameRequired": "Назва будівлі є обов'язковою.",
+    "colorRequired": "Колір будівлі є обов'язковим.",
+    "stationRequired": "Вибір станції є обов'язковим.",
+    "reportUsersRequired": "Принаймні один користувач для звітів є обов'язковим.",
+    "dashboardTitleRequired": "Назва панелі є обов'язковою.",
+    "outagesScheduleQueueRequired": "Черга розкладу відключень є обов'язковою."
+  },
+  "powerLogs": {
+    "dialogTitle": "Статистика наявності мережі: {{name}}",
+    "customFilterTitle": "Довільний",
+    "totalGridOnTitle": "Всього наявності мережі",
+    "totalGridOffTitle": "Всього відсутності мережі",
+    "dateRangeTitle": "Проміжок дат",
+    "dateRangePlaceholder": "Оберіть проміжок дат",
+    "validation.dateRangeInvalid": "Будь ласка, оберіть дати старту та кінця",
+    "noDataTitle": "Відсутні дані за вказаний період",
+    "table": {
+      "startTime": "Час початку",
+      "endTime": "Час завершення",
+      "state": "Стан",
+      "duration": "Тривалість",
+      "gridOnState": "Мережа наявна",
+      "gridOffState": "Мережа відсутня"
+    }
+  }
+}

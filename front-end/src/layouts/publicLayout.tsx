@@ -1,12 +1,13 @@
 import { FC, ReactNode, useEffect, useState } from "react";
-import { Anchor, AppShell, Box, Container, Group, Image, SimpleGrid, Transition, useMantineColorScheme, Button } from "@mantine/core";
-import { ThemePicker } from "../components";
+import { Anchor, AppShell, Box, Container, Group, Image, SimpleGrid, Transition, useMantineColorScheme, Button, Menu, ActionIcon } from "@mantine/core";
+import { CountryFlag, LangPicker, ThemePicker } from "../components";
 import classes from './styles/publicLayout.module.css';
 import { VisitTracker } from "./components/visitTracker";
 import { Authors } from "./components/authors";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import iconDark from "../assets/icon_dark_with_text.png";
 import iconLight from "../assets/icon_light_with_text.png";
+import { usePageTranslation } from "../utils";
 
 type PublicLayoutProps = {
   children: ReactNode;
@@ -39,6 +40,8 @@ export const PublicLayout: FC<PublicLayoutProps> = ({ children }) => {
     };
   }, []);
 
+  const t = usePageTranslation('common');
+
   return <AppShell
       header={{ height: 60 }}
       layout="default"
@@ -67,14 +70,44 @@ export const PublicLayout: FC<PublicLayoutProps> = ({ children }) => {
               <Anchor href="/app" underline="never">
                 <Button 
                   variant="light" 
-                  // leftSection={<FontAwesomeIcon icon="mobile" />}
+                  leftSection={<FontAwesomeIcon icon="mobile" />}
                   size="xs"
                   className={classes.downloadButton}
                 >
-                  Get the App
+                  {t('button.getApp')}
                 </Button>
               </Anchor>
-              <ThemePicker isNavbarCollapsed={false} size="md" />
+              <Box visibleFrom="md">
+                <Group>
+                  <Menu shadow="md" trigger="click">
+                    <Menu.Target>
+                      <Button px={6} variant="subtle" leftSection={<CountryFlag />}>
+                        {t('title.language')}
+                      </Button>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      <LangPicker />
+                    </Menu.Dropdown>
+                  </Menu>
+                  <ThemePicker isNavbarCollapsed={false} size="md" />
+                </Group>
+              </Box>
+              <Box hiddenFrom="md">
+                <Menu shadow="md" trigger="click">
+                  <Menu.Target>
+                    <ActionIcon variant="subtle" size="lg">
+                      <FontAwesomeIcon icon="chevron-down" />
+                    </ActionIcon>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <LangPicker iconPosition="left" />
+                    <Menu.Divider />
+                    <Box m='sm'>
+                      <ThemePicker isNavbarCollapsed={false} size="md" />
+                    </Box>
+                  </Menu.Dropdown>
+                </Menu>
+              </Box>
             </Group>
           </Container>
         </header>

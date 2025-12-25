@@ -1,8 +1,9 @@
+import { LocalizableValue } from "../../schemas";
 import { DashboardEditType } from "../../schemas/dashboardEdit";
 import { BaseState } from "./base";
 
 export type DashboardConfig = {
-  title: string;
+  title: LocalizableValue;
   enableOutagesSchedule: boolean;
   outagesScheduleQueue: string;
 };

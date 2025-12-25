@@ -8,3 +8,4 @@ export * from './typeUtils';
 export * from './thunkUtils';
 export * from './integrationExamples';
 export * from './uriUtils';
+export * from './i18n';

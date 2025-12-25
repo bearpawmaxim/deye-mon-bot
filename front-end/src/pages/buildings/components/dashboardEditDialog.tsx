@@ -1,6 +1,6 @@
 import { ChangeEvent, FC, useMemo } from "react";
 import { modals } from "@mantine/modals";
-import { Button, Group, Select, Stack, Switch, TextInput } from "@mantine/core";
+import { Button, Group, Select, Stack, Switch } from "@mantine/core";
 import { useFormHandler } from "../../../hooks";
 import { useAppDispatch } from "../../../stores/store";
 import {
@@ -9,7 +9,11 @@ import {
   startEditingDashboardConfig,
 } from "../../../stores/slices";
 import { dashboardEditSchema, DashboardEditType } from "../../../schemas/dashboardEdit";
-import { Controller } from "react-hook-form";
+import { Controller, FieldErrors } from "react-hook-form";
+import { usePageTranslation } from "../../../utils";
+import { LocalizableValue } from "../../../schemas";
+import { AVAILABLE_LANGUAGES } from "../../../i18n";
+import { LocalizableValueEditor } from "../../../components";
 
 type OpenDashboardEditOptions = {
   dashboardConfig: DashboardEditType;
@@ -20,6 +24,7 @@ export function openDashboardEditDialog({ dashboardConfig, title }: OpenDashboar
   
   const Inner: FC = () => {
     const dispatch = useAppDispatch();
+    const t = usePageTranslation('dashboard');
 
     const outageScheduleQueueOptions = useMemo(() => ([
       { value: '', label: 'No queue' },
@@ -37,12 +42,21 @@ export function openDashboardEditDialog({ dashboardConfig, title }: OpenDashboar
       { value: '6.2', label: '6.2' },
     ]), []);
 
+    const getTitleError = (
+      fieldErrors: FieldErrors<DashboardEditType>,
+      culture: string,
+    ): string | null => {
+      const error = fieldErrors.title?.[culture];
+      return error?.message ? t(error.message!) : null;
+    };
+
     const {
       handleFormSubmit,
       handleReset,
       renderField,
       isDirty,
       isValid,
+      errors,
     } = useFormHandler<DashboardEditType>({
       validationSchema: dashboardEditSchema,
       fetchDataAction: () => {
@@ -59,14 +73,39 @@ export function openDashboardEditDialog({ dashboardConfig, title }: OpenDashboar
       initialData: dashboardConfig,
       loading: false,
       useLocationGuard: false,
-      defaultRender: (name, title, context) => {
-        return <TextInput label={title} {...context.helpers.registerControl(name)} />;
-      },
+      errorFormatter: (error) => t(error),
       fields: [
-        { name: "title", title: "Dashboard Title" },
+        {
+          name: "title",
+          title: t('dashboardEdit.title'),
+          render: (context) => {
+            return <Controller
+              name="title"
+              control={context.helpers.control}
+              defaultValue={{}}
+              render={({ field }) => <>
+                <LocalizableValueEditor
+                  t={t}
+                  label={context.title}
+                  value={field.value}
+                  onChange={(value: LocalizableValue) => context.helpers.setControlValue('title', value, true)}
+                  valueErrors={
+                    AVAILABLE_LANGUAGES.reduce(
+                      (prev, curr) => ({
+                        ...prev,
+                        [curr]: getTitleError(errors, curr),
+                      }),
+                      {},
+                    )
+                  }
+                />
+              </>}
+            />
+          }
+        },
         {
           name: "enableOutagesSchedule",
-          title: "Enable Outage schedule",
+          title: t('dashboardEdit.enableOutagesSchedule'),
           render: (context) => {
             const cbProps = {
               ...context.helpers.registerControl('enableOutagesSchedule'),
@@ -83,7 +122,7 @@ export function openDashboardEditDialog({ dashboardConfig, title }: OpenDashboar
          },
         {
           name: "outagesScheduleQueue",
-          title: "Outage Schedule Queue",
+          title: t('dashboardEdit.outagesScheduleQueue'),
           render: (context) => {
             return <Controller
             name="outagesScheduleQueue"
@@ -130,13 +169,13 @@ export function openDashboardEditDialog({ dashboardConfig, title }: OpenDashboar
             onClick={handleSave}
             disabled={!isDirty || !isValid}
           >
-            Save
+            {t('button.save')}
           </Button>
           <Button
             variant="default"
             onClick={handleCancel}
           >
-            Cancel
+            {t('button.cancel')}
           </Button>
         </Group>
       </Stack>
@@ -144,7 +183,7 @@ export function openDashboardEditDialog({ dashboardConfig, title }: OpenDashboar
   };
   
   const id: string | undefined = modals.open({
-    title: title ?? "Edit dashboard",
+    title: title,
     centered: true,
     withCloseButton: false,
     closeOnClickOutside: false,

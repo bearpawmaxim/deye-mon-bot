@@ -1,4 +1,6 @@
 import axios from 'axios';
+
+// import i18n from '../i18n';
 import { logout } from '../stores/slices';
 import { StoreType } from '../stores/store';
 import { NavigateFunction } from 'react-router-dom';
@@ -27,5 +29,10 @@ export const setupResponseInterceptor = (store: StoreType, navigate: NavigateFun
     }
   );
 };
+
+export const setLanguageHeader = (lang: string) => {
+  apiClient.defaults.headers.common['Accept-Language'] = lang;
+};
+
 
 export default apiClient;

@@ -1,6 +1,7 @@
 from beanie import Document, Link
 from typing import List, Optional
 
+from .localizable_value import LocalizableValue
 from .beanie_filter import BeanieFilter
 from .lookup import LookupModel, LookupValue
 from .station import Station
@@ -8,7 +9,7 @@ from .user import User
 
 
 class Building(Document, LookupModel):
-    name: str
+    name: LocalizableValue
     color: str
 
     station: Optional[Link[Station]] = None

@@ -1,4 +1,5 @@
 from .lookup import LookupValue, BeanieFilter
+from .localizable_value import LocalizableValue
 from .allowed_chat import AllowedChat
 from .chat_request import ChatRequest
 from .bot import Bot
@@ -17,7 +18,8 @@ __all__ = [
     BeanieFilter, Bot, AllowedChat, ChatRequest,
     User, Message, Station, Building,
     StationData, ExtData, DashboardConfig,
-    VisitCounter, DailyVisitCounter, LookupValue
+    VisitCounter, DailyVisitCounter, LookupValue,
+    LocalizableValue,
 ]
 
 BEANIE_MODELS = [Bot, AllowedChat, ChatRequest,

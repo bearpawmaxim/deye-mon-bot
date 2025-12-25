@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect, useMemo } from "react";
 import {
   Container,
   Title,
@@ -15,6 +15,9 @@ import { PageHeaderButton, useHeaderContent } from "../../providers";
 import { BuildingEditType } from "../../schemas";
 import { authDataSelector, createSelectEdittedBuildings } from "../../stores/selectors";
 import { initGA, trackPageView } from "../../utils/analytics";
+import { useLocalizedEffect } from "../../hooks";
+import { usePageTranslation } from "../../utils";
+import i18n from "../../i18n";
 
 type ComponentProps = {
   loadingConfig: boolean;
@@ -65,6 +68,8 @@ const Component: FC<ComponentProps> = ({
   const isAuthenticated = Boolean(useAppSelector(authDataSelector)?.accessToken);
   const dispatch = useAppDispatch();
 
+  const t = usePageTranslation('dashboard');
+
   const fetchData = useCallback(() => {
     dispatch(fetchBuildings());
     dispatch(fetchDashboardConfig());
@@ -79,7 +84,7 @@ const Component: FC<ComponentProps> = ({
     }
   }, [configChanged, buildingsChanged, dispatch]);
 
-  useEffect(() => {
+  useLocalizedEffect(() => {
     fetchData();
   }, [fetchData]);
 
@@ -90,7 +95,7 @@ const Component: FC<ComponentProps> = ({
     }
   }, [buildings, buildingsSummary.length, buildngsSummaryError, dispatch]);
 
-  useEffect(() => {
+  useLocalizedEffect(() => {
     fetchSummary();
   }, [fetchSummary]);
 
@@ -103,7 +108,7 @@ const Component: FC<ComponentProps> = ({
     [dashboardConfig, dispatch]
   );
 
-  useEffect(() => {
+  useLocalizedEffect(() => {
     fetchOutages();
   }, [fetchOutages]);
 
@@ -114,11 +119,11 @@ const Component: FC<ComponentProps> = ({
   }, []);
 
   const getHeaderButtons = useCallback((dataChanged: boolean): PageHeaderButton[] => [
-    { text: 'Save', icon: "save", color: "green", onClick: saveData, disabled: !dataChanged, },
-    { text: 'Cancel', icon: "cancel", color: "black", onClick: fetchData, disabled: !dataChanged, },
-  ], [fetchData, saveData]);
+    { text: t('button.save'), icon: "save", color: "green", onClick: saveData, disabled: !dataChanged, },
+    { text: t('button.cancel'), icon: "cancel", color: "black", onClick: fetchData, disabled: !dataChanged, },
+  ], [t, saveData, fetchData]);
   const { setHeaderButtons } = useHeaderContent();
-  useEffect(() => {
+  useLocalizedEffect(() => {
     setHeaderButtons(getHeaderButtons(configChanged || buildingsChanged));
     return () => setHeaderButtons([]);
   }, [setHeaderButtons, getHeaderButtons, configChanged, buildingsChanged]);
@@ -126,13 +131,20 @@ const Component: FC<ComponentProps> = ({
   const onEditDashboardClick = useCallback(() => {
     openDashboardEditDialog({
       dashboardConfig: dashboardConfig ?? {
-        title: '',
+        title: {
+          en: '',
+          uk: '',
+        },
         enableOutagesSchedule: false,
         outagesScheduleQueue: '',
       },
-      title: 'Edit dashboard',
+      title: t('dashboardEdit.dialogTitle'),
     });
-  }, [dashboardConfig]);
+  }, [dashboardConfig, t]);
+
+  const dashboardTitle = useMemo(() => {
+    return dashboardConfig?.title[i18n.language] ?? dashboardConfig?.title['en'] ?? '<not set>'
+  }, [dashboardConfig?.title]);
 
   return (
     <>
@@ -140,12 +152,12 @@ const Component: FC<ComponentProps> = ({
         <Stack gap={48} justify="space-between">
           <Group justify="center">
             { !loadingConfig && <Title pt='sm' order={1} ta="center" c="blue">
-                {dashboardConfig?.title ?? '<no title set>'}
+                {dashboardTitle}
               </Title> }
             { isAuthenticated && <IconButton
                 icon='edit'
                 color='blue'
-                text='Edit dashboard'
+                text={t('dashboardEdit.dialogTitle')}
                 onClick={onEditDashboardClick}
               /> }
           </Group>

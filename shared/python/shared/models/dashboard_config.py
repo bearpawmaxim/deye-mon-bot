@@ -1,9 +1,11 @@
 from typing import Optional
 from beanie import Document
 
+from .localizable_value import LocalizableValue
+
 
 class DashboardConfig(Document):
-    title: str
+    title: LocalizableValue
     enable_outages_schedule: bool = False
     outages_schedule_queue: Optional[str]
 

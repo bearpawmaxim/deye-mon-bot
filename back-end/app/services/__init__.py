@@ -4,7 +4,7 @@ from .deye_api import DeyeConfig, DeyeApiService
 from .telegram import TelegramConfig, TelegramService
 from .visit_counter import VisitCounterService
 from .outages_schedule import OutagesScheduleService
-from shared.services import EventsService, EventItem
+from shared.services import EventsService, EventItem, TranslationService
 from .users import UsersService
 from .container import ServicesContainer
 from .authorization import AuthorizationService
@@ -25,4 +25,4 @@ __all__ = [BeanieInitializer, BotsService, DeyeConfig, DeyeApiService,
            MessagesService, OutagesScheduleService, StationsService, LookupsService,
            ChatsService, ExtDataService, DashboardService, UsersService,
            MaintenanceService, IMessageGeneratorService, MessageItem,
-           MessageProcessorService]
+           MessageProcessorService, TranslationService]

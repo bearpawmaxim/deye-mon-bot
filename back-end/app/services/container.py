@@ -2,7 +2,7 @@ from injector import Binder, Module, singleton, noscope
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.settings import Settings
-from shared.services.events import EventsService, EventsServiceConfig
+from shared.services import EventsService, EventsServiceConfig, TranslationService
 from .beanie_initializer import BeanieInitializer
 from .authorization import AuthorizationService
 from .bots import BotConfig, BotsService
@@ -70,3 +70,6 @@ class ServicesContainer(Module):
         binder.bind(AsyncIOScheduler, to=scheduler, scope=singleton)
 
         binder.bind(MaintenanceService, scope=noscope)
+
+        translations_service = TranslationService(path=self._settings.I18N_PATH)
+        binder.bind(TranslationService, to=translations_service, scope=singleton)

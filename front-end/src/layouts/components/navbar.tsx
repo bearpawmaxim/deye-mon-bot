@@ -1,13 +1,14 @@
 import { FC, forwardRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Button, Divider, Flex, Grid, Group, Image, rem, Stack , Switch, Text, Tooltip, useMantineColorScheme } from "@mantine/core";
+import { Button, Divider, Flex, Grid, Group, Image, Menu, rem, Stack , Switch, Text, Tooltip, useMantineColorScheme } from "@mantine/core";
 import classes from "./styles/navbar.module.css"
 import { MenuItem, RootRoutes } from "../../routes";
-import { ThemePicker, UserAvatar } from "../../components";
+import { CountryFlag, LangPicker, ThemePicker, UserAvatar } from "../../components";
 import { ProfileData } from "../../stores/types";
 import iconDark from "../../assets/icon_dark.png";
 import iconLight from "../../assets/icon_light.png";
+import { useTranslation } from "react-i18next";
 
 type MenuRowProps = {
   route: MenuItem;
@@ -90,7 +91,8 @@ type NavbarProps = {
 export const Navbar: FC<NavbarProps> = ({ user, isNavbarCollapsed, toggleNavbar, closeMenu, onProfileClick, onLogoutClick }) => {
   const { colorScheme } = useMantineColorScheme();
   const iconSrc = colorScheme === 'dark' ? iconLight : iconDark;
-  
+  const { t } = useTranslation('common');
+
   return (
       <Stack
         w="100%"
@@ -184,7 +186,49 @@ export const Navbar: FC<NavbarProps> = ({ user, isNavbarCollapsed, toggleNavbar,
             </Button>
           </Group>
           <Divider hiddenFrom="md"/>
-          <ThemePicker isNavbarCollapsed={isNavbarCollapsed} />
+          <Group justify="center" hiddenFrom="md">
+            <Menu shadow="md" trigger="click">
+              <Menu.Target>
+                <Button px={6} variant="subtle" size="md" leftSection={<CountryFlag />}>
+                  {t('title.language')}
+                </Button>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <LangPicker />
+              </Menu.Dropdown>
+            </Menu>
+            <ThemePicker isNavbarCollapsed={isNavbarCollapsed} />
+          </Group>
+          <Group justify="center" visibleFrom="md">
+            <Stack>
+              <Menu shadow="md" trigger="click" position="top">
+                <Menu.Target>
+                  {
+                    isNavbarCollapsed
+                      ? <Tooltip
+                          position="right"
+                          label={
+                            <Text fw={500} fz={13}>
+                              {t('title.language')}
+                            </Text>
+                          }
+                        >
+                          <Link to="#" className={classes.navlink}>
+                            <CountryFlag />
+                          </Link>
+                        </Tooltip>
+                      : <Button variant="subtle" size="md" leftSection={<CountryFlag />}>
+                          {t('title.language')}
+                        </Button>
+                  }
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <LangPicker />
+                </Menu.Dropdown>
+              </Menu>
+              <ThemePicker isNavbarCollapsed={isNavbarCollapsed} />
+            </Stack>
+          </Group>
         </Stack>
 
       </Stack>
