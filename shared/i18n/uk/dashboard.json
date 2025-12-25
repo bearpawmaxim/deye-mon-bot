@@ -32,9 +32,9 @@
   },
   "grid": {
     "title": "Мережа",
-    "available": "Доступна",
-    "partiallyAvailable": "Частково доступна",
-    "unavailable": "Недоступна"
+    "available": "Наявна",
+    "partiallyAvailable": "Частково наявна",
+    "unavailable": "Відсутня"
   },
   "battery": {
     "title": "Батарея",
@@ -55,5 +55,23 @@
     "reportUsersRequired": "Принаймні один користувач для звітів є обов'язковим.",
     "dashboardTitleRequired": "Назва панелі є обов'язковою.",
     "outagesScheduleQueueRequired": "Черга розкладу відключень є обов'язковою."
+  },
+  "powerLogs": {
+    "dialogTitle": "Статистика наявності мережі: {{name}}",
+    "customFilterTitle": "Довільний",
+    "totalGridOnTitle": "Всього наявності мережі",
+    "totalGridOffTitle": "Всього відсутності мережі",
+    "dateRangeTitle": "Проміжок дат",
+    "dateRangePlaceholder": "Оберіть проміжок дат",
+    "validation.dateRangeInvalid": "Будь ласка, оберіть дати старту та кінця",
+    "noDataTitle": "Відсутні дані за вказаний період",
+    "table": {
+      "startTime": "Час початку",
+      "endTime": "Час завершення",
+      "state": "Стан",
+      "duration": "Тривалість",
+      "gridOnState": "Мережа наявна",
+      "gridOffState": "Мережа відсутня"
+    }
   }
 }

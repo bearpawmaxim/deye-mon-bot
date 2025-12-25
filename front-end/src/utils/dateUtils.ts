@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import utc from "dayjs/plugin/utc";
 import { DateOrDateRange, DateRange } from "../types";
+import i18n from "../i18n";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
@@ -18,6 +19,38 @@ export const formatDateTime = (date: Date | string, ms: boolean = false) => {
 export const formatDate = (date: Date | string) => {
   const dateObject = getDateObject(date);
   return dateObject.isValid() ? dateObject.format("DD.MM.YYYY") : "";
+};
+
+export const formatDuration = (seconds: number, roundUp = false): string => {
+  const totalSeconds =
+    roundUp && seconds % 60 > 0
+      ? Math.ceil(seconds / 60) * 60
+      : seconds;
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const secs = Math.floor(totalSeconds % 60);
+
+  const format = (value: number, unit: Intl.NumberFormatOptions['unit']) =>
+    new Intl.NumberFormat(i18n.language, {
+      style: 'unit',
+      unit,
+      unitDisplay: 'short',
+    }).format(value);
+
+  if (hours > 0) {
+    return roundUp
+      ? `${format(hours, 'hour')} ${format(minutes, 'minute')}`
+      : `${format(hours, 'hour')} ${format(minutes, 'minute')} ${format(secs, 'second')}`;
+  }
+
+  if (minutes > 0) {
+    return roundUp
+      ? format(minutes, 'minute')
+      : `${format(minutes, 'minute')} ${format(secs, 'second')}`;
+  }
+
+  return format(secs, 'second');
 };
 
 export const toDateRange = (date: string | null | undefined): DateRange => {
@@ -96,4 +129,19 @@ export const minutesToHoursAndMinutes = (minutes: number): string => {
   return `${hours.toString().padStart(2, "0")}:${mins
     .toString()
     .padStart(2, "0")}`;
+};
+
+export const getThisWeekDates = (): DateRange => {
+  const now = dayjs();
+  const startDate = now
+    .startOf('day')
+    .subtract((now.day() + 6) % 7, 'day')
+    .toDate();
+  const endDate = now
+    .endOf('day')
+    .toDate();
+  return {
+    from: startDate,
+    to: endDate,
+  };
 };

@@ -16,17 +16,18 @@ export type BuildingCardProps = {
 
 export const BuildingCard: FC<BuildingCardProps> = ({ building, buildingSummary, loadingSummary }) => {
   const buildingName = useMemo(() => building.name[i18n.language], [building.name]);
+  const t = usePageTranslation('dashboard');
 
   const handleIconClick = useCallback(() => {
     if (building.id) {
       openPowerLogsDialog({
         buildingId: building.id,
         buildingName: buildingName,
+        t,
       });
     }
-  }, [building.id, buildingName]);
+  }, [building.id, buildingName, t]);
 
-  const t = usePageTranslation('dashboard');
 
   const getBatteryIcon = (summary: BuildingSummaryItem): ReactNode | null => {
     const batteryPercent = summary.batteryPercent ?? 0;
