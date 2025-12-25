@@ -22,7 +22,7 @@ class DashboardConfigResponse(SaveDashboardConfigRequest):
 
 class BuildingResponse(BaseModel):
     id: Optional[PydanticObjectId] = None
-    name: str
+    name: LocalizableValue
     color: str
 
     model_config = ConfigDict(
@@ -32,7 +32,7 @@ class BuildingResponse(BaseModel):
 
 
 class SaveBuildingRequest(BuildingResponse):
-    name: str
+    name: LocalizableValue
     color: str = "#FFFFFF"
     station_id: Optional[PydanticObjectId] = Field(None, alias="stationId")
     report_user_ids: List[PydanticObjectId] = Field(None, alias="reportUserIds")

@@ -15,7 +15,7 @@ type Props = {
 	valueErrors?: Record<string, string>;
 };
 
-const LocalizableValueEditor: React.FC<Props> = ({ t, value = {}, onChange, className, label, valueErrors = {} }) => {
+export const LocalizableValueEditor: React.FC<Props> = ({ t, value = {}, onChange, className, label, valueErrors = {} }) => {
 	const handleChange = (lang: string, text: string) => {
 		const next: LocalizableValue = { ...value, [lang]: text } as LocalizableValue;
 		onChange?.(next);
@@ -37,5 +37,3 @@ const LocalizableValueEditor: React.FC<Props> = ({ t, value = {}, onChange, clas
 		</Stack>
 	);
 };
-
-export default LocalizableValueEditor;

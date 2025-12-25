@@ -6,6 +6,7 @@ import { IconName } from "@fortawesome/free-solid-svg-icons";
 import { openPowerLogsDialog } from "../../../dialogs";
 import { ProgressProps, useMantineTheme } from "@mantine/core";
 import { usePageTranslation } from "../../../utils";
+import i18n from "../../../i18n";
 
 export type BuildingCardProps = {
   building: BuildingListItem;
@@ -14,14 +15,16 @@ export type BuildingCardProps = {
 };
 
 export const BuildingCard: FC<BuildingCardProps> = ({ building, buildingSummary, loadingSummary }) => {
+  const buildingName = useMemo(() => building.name[i18n.language], [building.name]);
+
   const handleIconClick = useCallback(() => {
     if (building.id) {
       openPowerLogsDialog({
         buildingId: building.id,
-        buildingName: building.name,
+        buildingName: buildingName,
       });
     }
-  }, [building.id, building.name]);
+  }, [building.id, buildingName]);
 
   const t = usePageTranslation('dashboard');
 
@@ -177,7 +180,7 @@ export const BuildingCard: FC<BuildingCardProps> = ({ building, buildingSummary,
     <StatsCard
       loading={loadingSummary}
       key={`building_${building.id}`}
-      title={building.name}
+      title={buildingName}
       bgColor={building.color}
       icon={getHeaderGridIcon(buildingSummary)}
       iconColor={

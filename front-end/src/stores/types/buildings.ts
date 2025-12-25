@@ -1,11 +1,11 @@
 import { MantineColor } from "@mantine/core";
 import { BaseState } from "./base";
-import { BuildingEditType, ObjectId } from "../../schemas";
+import { BuildingEditType, LocalizableValue, ObjectId } from "../../schemas";
 
 
 export type BuildingListItem = {
   id?: ObjectId;
-  name: string;
+  name: LocalizableValue;
   color: MantineColor;
 };
 

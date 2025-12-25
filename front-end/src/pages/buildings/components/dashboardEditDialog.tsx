@@ -11,9 +11,9 @@ import {
 import { dashboardEditSchema, DashboardEditType } from "../../../schemas/dashboardEdit";
 import { Controller, FieldErrors } from "react-hook-form";
 import { usePageTranslation } from "../../../utils";
-import LocalizableValueEditor from "../../../components/localizableValueEditor";
 import { LocalizableValue } from "../../../schemas";
 import { AVAILABLE_LANGUAGES } from "../../../i18n";
+import { LocalizableValueEditor } from "../../../components";
 
 type OpenDashboardEditOptions = {
   dashboardConfig: DashboardEditType;

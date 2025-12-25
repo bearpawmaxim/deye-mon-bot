@@ -1,14 +1,11 @@
 import * as v from 'valibot';
-import { objectIdSchema } from './base';
+import { localizableValueSchema, objectIdSchema } from './base';
 
 export const buildingEditSchema = v.object({
   id: v.nullish(
     objectIdSchema,
   ),
-  name: v.pipe(
-    v.string(),
-    v.minLength(1, 'validation.nameRequired'),
-  ),
+  name: localizableValueSchema,
   color: v.pipe(
     v.string(),
     v.minLength(1, 'validation.colorRequired'),
