@@ -1,11 +1,7 @@
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from shared import current_language
-
-
-SUPPORTED_LANGUAGES = {"en", "uk"}
-DEFAULT_LANGUAGE = "en"
+from shared import current_language, SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE
 
 
 class LanguageMiddleware(BaseHTTPMiddleware):

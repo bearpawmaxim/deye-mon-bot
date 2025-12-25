@@ -1,6 +1,6 @@
 import { ChangeEvent, FC, useMemo } from "react";
 import { modals } from "@mantine/modals";
-import { Button, Group, Select, Stack, Switch, TextInput } from "@mantine/core";
+import { Button, Group, Select, Stack, Switch } from "@mantine/core";
 import { useFormHandler } from "../../../hooks";
 import { useAppDispatch } from "../../../stores/store";
 import {
@@ -9,8 +9,11 @@ import {
   startEditingDashboardConfig,
 } from "../../../stores/slices";
 import { dashboardEditSchema, DashboardEditType } from "../../../schemas/dashboardEdit";
-import { Controller } from "react-hook-form";
+import { Controller, FieldErrors } from "react-hook-form";
 import { usePageTranslation } from "../../../utils";
+import LocalizableValueEditor from "../../../components/localizableValueEditor";
+import { LocalizableValue } from "../../../schemas";
+import { AVAILABLE_LANGUAGES } from "../../../i18n";
 
 type OpenDashboardEditOptions = {
   dashboardConfig: DashboardEditType;
@@ -39,12 +42,21 @@ export function openDashboardEditDialog({ dashboardConfig, title }: OpenDashboar
       { value: '6.2', label: '6.2' },
     ]), []);
 
+    const getTitleError = (
+      fieldErrors: FieldErrors<DashboardEditType>,
+      culture: string,
+    ): string | null => {
+      const error = fieldErrors.title?.[culture];
+      return error?.message ? t(error.message!) : null;
+    };
+
     const {
       handleFormSubmit,
       handleReset,
       renderField,
       isDirty,
       isValid,
+      errors,
     } = useFormHandler<DashboardEditType>({
       validationSchema: dashboardEditSchema,
       fetchDataAction: () => {
@@ -61,12 +73,36 @@ export function openDashboardEditDialog({ dashboardConfig, title }: OpenDashboar
       initialData: dashboardConfig,
       loading: false,
       useLocationGuard: false,
-      defaultRender: (name, title, context) => {
-        return <TextInput label={title} {...context.helpers.registerControl(name)} />;
-      },
       errorFormatter: (error) => t(error),
       fields: [
-        { name: "title", title: t('dashboardEdit.title') },
+        {
+          name: "title",
+          title: t('dashboardEdit.title'),
+          render: (context) => {
+            return <Controller
+              name="title"
+              control={context.helpers.control}
+              defaultValue={{}}
+              render={({ field }) => <>
+                <LocalizableValueEditor
+                  t={t}
+                  label={context.title}
+                  value={field.value}
+                  onChange={(value: LocalizableValue) => context.helpers.setControlValue('title', value, true)}
+                  valueErrors={
+                    AVAILABLE_LANGUAGES.reduce(
+                      (prev, curr) => ({
+                        ...prev,
+                        [curr]: getTitleError(errors, curr),
+                      }),
+                      {},
+                    )
+                  }
+                />
+              </>}
+            />
+          }
+        },
         {
           name: "enableOutagesSchedule",
           title: t('dashboardEdit.enableOutagesSchedule'),

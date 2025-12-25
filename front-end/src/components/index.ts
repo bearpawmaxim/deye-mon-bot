@@ -11,4 +11,5 @@ export * from './themePicker';
 export * from './page';
 export * from './iconButton'
 export * from './langPicker';
+export * from './localizableValueEditor';
 export * from './countryFlag';

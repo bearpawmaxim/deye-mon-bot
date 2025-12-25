@@ -1,4 +1,9 @@
 from .bounded_queue import BoundedQueue
-from .current_language import current_language
+from .language import current_language, SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE
 
-__all__ = [BoundedQueue, current_language]
+__all__ = [
+    BoundedQueue,
+    current_language,
+    SUPPORTED_LANGUAGES,
+    DEFAULT_LANGUAGE,
+]

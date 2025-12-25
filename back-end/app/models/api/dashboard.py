@@ -2,9 +2,11 @@ from typing import Optional, List
 from beanie import PydanticObjectId
 from pydantic import BaseModel, ConfigDict, Field
 
+from shared.models.localizable_value import LocalizableValue
+
 
 class SaveDashboardConfigRequest(BaseModel):
-    title: str
+    title: LocalizableValue
     enable_outages_schedule: bool = Field(False, alias="enableOutagesSchedule")
     outages_schedule_queue: Optional[str] = Field(None, alias="outagesScheduleQueue")
 

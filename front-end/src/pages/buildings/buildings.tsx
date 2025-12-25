@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect, useMemo } from "react";
 import {
   Container,
   Title,
@@ -17,6 +17,7 @@ import { authDataSelector, createSelectEdittedBuildings } from "../../stores/sel
 import { initGA, trackPageView } from "../../utils/analytics";
 import { useLocalizedEffect } from "../../hooks";
 import { usePageTranslation } from "../../utils";
+import i18n from "../../i18n";
 
 type ComponentProps = {
   loadingConfig: boolean;
@@ -130,7 +131,10 @@ const Component: FC<ComponentProps> = ({
   const onEditDashboardClick = useCallback(() => {
     openDashboardEditDialog({
       dashboardConfig: dashboardConfig ?? {
-        title: '',
+        title: {
+          en: '',
+          uk: '',
+        },
         enableOutagesSchedule: false,
         outagesScheduleQueue: '',
       },
@@ -138,13 +142,17 @@ const Component: FC<ComponentProps> = ({
     });
   }, [dashboardConfig, t]);
 
+  const dashboardTitle = useMemo(() => {
+    return dashboardConfig?.title[i18n.language] ?? dashboardConfig?.title['en'] ?? '<not set>'
+  }, [dashboardConfig?.title]);
+
   return (
     <>
       <Container size={"xl"} mih='100%'>
         <Stack gap={48} justify="space-between">
           <Group justify="center">
             { !loadingConfig && <Title pt='sm' order={1} ta="center" c="blue">
-                {dashboardConfig?.title ?? '<no title set>'}
+                {dashboardTitle}
               </Title> }
             { isAuthenticated && <IconButton
                 icon='edit'

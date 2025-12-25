@@ -17,5 +17,8 @@
     "add": "Add",
     "close": "Close",
     "confirm": "Confirm"
+  },
+  "validation": {
+    "localizableValue.required": "Localized value is required"
   }
 }

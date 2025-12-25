@@ -17,5 +17,8 @@
     "add": "Додати",
     "close": "Закрити",
     "confirm": "Підтвердити"
+  },
+  "validation": {
+    "localizableValue.required": "Локалізоване значення обов'язкове"
   }
 }
