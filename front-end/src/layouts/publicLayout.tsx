@@ -74,7 +74,7 @@ export const PublicLayout: FC<PublicLayoutProps> = ({ children }) => {
                   size="xs"
                   className={classes.downloadButton}
                 >
-                  Get the App
+                  {t('button.getApp')}
                 </Button>
               </Anchor>
               <Box visibleFrom="md">

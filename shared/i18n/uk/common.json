@@ -20,12 +20,21 @@
     "delete": "Видалити",
     "add": "Додати",
     "close": "Закрити",
-    "confirm": "Підтвердити"
+    "confirm": "Підтвердити",
+    "getApp": "Додаток"
   },
   "validation": {
     "localizableValue.required": "Локалізоване значення обов'язкове"
   },
   "error": {
     "generic": "Помилка: {{error}}"
+  },
+  "visits": {
+    "unique": "Унікальних відвідувачів",
+    "daily": "День",
+    "total": "Всього"
+  },
+  "authors": {
+    "label": "Розроблено <0>{{author1}}</0> та <1>{{author2}}</1>"
   }
 }
