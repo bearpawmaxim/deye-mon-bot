@@ -179,6 +179,7 @@ export const BuildingCard: FC<BuildingCardProps> = ({ t, building, buildingSumma
 
   return (
     <StatsCard
+      christmasTree={true}
       loading={loadingSummary}
       key={`building_${building.id}`}
       title={buildingName}

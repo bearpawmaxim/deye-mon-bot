@@ -9,6 +9,7 @@ type Row = {
 };
 
 type StatsCardProps = {
+  christmasTree: boolean;
   title: string;
   bgColor: MantineColor;
   icon?: ReactNode;
@@ -20,6 +21,7 @@ type StatsCardProps = {
 };
 
 export const StatsCard: FC<StatsCardProps> = ({
+  christmasTree = false,
   title,
   bgColor,
   icon,
@@ -73,6 +75,11 @@ export const StatsCard: FC<StatsCardProps> = ({
       className={classes.cardHover}
       style={{ cursor: onClick ? 'pointer' : 'default' }} onClick={onClick}
     >
+      { christmasTree && <Box className={classes.tree}>
+        <Box className={classes.treeTriangle1} />
+        <Box className={classes.treeTriangle2} />
+        <Box className={classes.treeTriangle3} />
+      </Box> }
       <Group justify="space-between" pos="relative">
         <Box style={{ borderColor: iconColor }}>
           <Group>
