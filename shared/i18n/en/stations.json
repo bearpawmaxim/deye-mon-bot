@@ -1,0 +1,18 @@
+{
+  "title": "Stations",
+  "table": {
+    "name": "Name",
+    "connectionStatus": "Connection status",
+    "mode": "Mode",
+    "lastUpdated": "Last updated",
+    "enabled": "Enabled",
+    "batteryCapacity": "Battery capacity",
+    "order": "Order"
+  },
+  "batteryEdit": {
+    "title": "Edit battery capacity",
+    "label": "Battery capacity (in kWh)",
+    "tooltip": "Edit battery capacity",
+    "valueLabel": "{{value}} kWh"
+  }
+}
