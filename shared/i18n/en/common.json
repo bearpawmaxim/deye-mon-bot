@@ -36,5 +36,23 @@
   },
   "authors": {
     "label": "Co-authored by <0>{{author1}}</0> and <1>{{author2}}</1>"
-  }
+  },
+  "routes": {
+    "home": "Home",
+    "bots": "Bots",
+    "stations": "Stations",
+    "stationDetails": "Station Details",
+    "messages": "Messages",
+    "editMessage": "Editing message",
+    "createMessage": "Creating a new message",
+    "chats": "Chats",
+    "externalLogs": "External Logs",
+    "users": "Users",
+    "buildings": "Buildings",
+    "notFound": "Not found"
+  },
+  "profile": "Profile",
+  "logOut": "Log out",
+  "navShort": "NAV",
+  "navFull": "NAVIGATION"
 }

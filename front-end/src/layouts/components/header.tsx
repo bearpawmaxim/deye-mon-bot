@@ -6,8 +6,10 @@ import classes from "./styles/header.module.css"
 import { BackButton, UserAvatar } from "../../components";
 import { PageHeaderButton } from "../../providers";
 import { useLocation } from "react-router-dom";
+import { TFunction } from "i18next";
 
 type HeaderProps = {
+  t: TFunction;
   opened: boolean;
   toggle: () => void;
   caption: string;
@@ -17,7 +19,7 @@ type HeaderProps = {
   onLogoutClick: () => void;
 };
 
-export const Header: FC<HeaderProps> = ({ user, opened, toggle, caption, buttons, onProfileClick, onLogoutClick }) => {
+export const Header: FC<HeaderProps> = ({ t, user, opened, toggle, caption, buttons, onProfileClick, onLogoutClick }) => {
   const [initialDisabled, setInitialDisabled] = useState<boolean[] | null>(null);
 
   useEffect(() => {
@@ -69,7 +71,7 @@ export const Header: FC<HeaderProps> = ({ user, opened, toggle, caption, buttons
               >
                 <BackButton />
                 <Text lts={-0.4} fw={500}>
-                  {caption}
+                  {t(caption)}
                 </Text>
               </Group>
             )}
@@ -173,13 +175,13 @@ export const Header: FC<HeaderProps> = ({ user, opened, toggle, caption, buttons
                   leftSection={<FontAwesomeIcon icon='user-md' />}
                   onClick={onProfileClick}
                 >
-                  Profile
+                  {t('profile')}
                 </Menu.Item>
                 <Menu.Item
                   leftSection={<FontAwesomeIcon icon='sign-out' />}
                   onClick={onLogoutClick}
                 >
-                  Log out
+                  {t('logOut')}
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>
