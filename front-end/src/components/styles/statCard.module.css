@@ -49,3 +49,37 @@
   height: 140px;
   border-radius: 50%;
 }
+
+.tree {
+  opacity: 0.3;
+}
+.treeTriangle3 {
+  position: absolute;
+  width: 250px;
+  height: 100px;
+  top: 149px;
+  left: -93px;
+  background: white;
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  z-index: 1;
+}
+.treeTriangle2 {
+  position: absolute;
+  width: 130px;
+  height: 70px;
+  top: 94px;
+  left: -34px;
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  background: white;
+  z-index: 2;
+}
+.treeTriangle1 {
+  position: absolute;
+  width: 70px;
+  height: 70px;
+  top: 39px;
+  left: -4px;
+  background: white;
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  z-index: 3;
+}
