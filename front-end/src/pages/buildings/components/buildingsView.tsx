@@ -6,9 +6,10 @@ import { EditableBuildingCard } from "./editableBuildingCard";
 import { BuildingCard } from "./buildingCard";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { BuildingEditType } from "../../../schemas";
-import { usePageTranslation } from "../../../utils";
+import { TFunction } from "i18next";
 
 type BuildingsViewProps = {
+  t: TFunction;
   loading: boolean;
   loadingSummary: boolean;
   isAuthenticated: boolean;
@@ -17,14 +18,13 @@ type BuildingsViewProps = {
 }
 
 export const BuildingsView: FC<BuildingsViewProps> = ({
+  t,
   loading,
   loadingSummary,
   isAuthenticated,
   buildings,
   buildingsSummary,
 }) => {
-  const t = usePageTranslation('dashboard');
-
   if (loading) {
     return (
       <Box w='100%' ta="center" py="xl">
@@ -41,12 +41,14 @@ export const BuildingsView: FC<BuildingsViewProps> = ({
       const buildingSummary = buildingsSummary.find(f => f.id === building.id);
       return isAuthenticated
         ? <EditableBuildingCard
+            t={t}
             key={`b_${idx}`}
             building={building as BuildingListItem}
             loadingSummary={loadingSummary}
             buildingSummary={buildingSummary}
           />
         : <BuildingCard
+            t={t}
             key={`b_${idx}`}
             building={building as BuildingListItem}
             loadingSummary={loadingSummary}
