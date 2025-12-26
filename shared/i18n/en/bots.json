@@ -1,0 +1,13 @@
+{
+  "title": "Bots",
+  "tokenEdit": {
+    "set": "Set token",
+    "edit": "Edit token"
+  },
+  "table": {
+    "name": "Name",
+    "canRespondInChat": "Can respond in chat",
+    "token": "Token",
+    "active": "Active"
+  }
+}

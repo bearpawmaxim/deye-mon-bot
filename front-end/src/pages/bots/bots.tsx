@@ -7,6 +7,7 @@ import { PageHeaderButton, useHeaderContent } from "../../providers";
 import { createSelector } from "@reduxjs/toolkit";
 import { BotItem } from "../../stores/types";
 import { openTokenEditDialog } from "./components/tokenEditDialog";
+import { usePageTranslation } from "../../utils";
 import { DataTable, ErrorMessage, Page } from "../../components";
 import { ColumnDataType } from "../../types";
 import { ObjectId } from "../../schemas";
@@ -37,6 +38,7 @@ const mapStateToProps = (state: RootState): ComponentProps => ({
 
 const Component: FC<ComponentProps> = ({ bots, loading, error, changed }: ComponentProps) => {
   const dispatch = useAppDispatch();
+  const t = usePageTranslation('bots');
   const [initiallyChanged, setInitiallyChanged] = useState(false);
 
   const fetchData = useCallback(() => dispatch(fetchBots()), [dispatch]);
@@ -50,6 +52,8 @@ const Component: FC<ComponentProps> = ({ bots, loading, error, changed }: Compon
     openTokenEditDialog({
       create: true,
       token: '',
+      t,
+      title: t('tokenEdit.set'),
       onClose: (result: boolean, token: string) => {
         if (result) {
           dispatch(createBot(token));
@@ -58,13 +62,13 @@ const Component: FC<ComponentProps> = ({ bots, loading, error, changed }: Compon
         }
       },
     });
-  }, [dispatch]);
+  }, [dispatch, t]);
 
   const getHeaderButtons = useCallback((dataChanged: boolean): PageHeaderButton[] => [
-    { text: 'Create', icon: "add", color: "teal", onClick: () => create(), disabled: false, },
-    { text: 'Save', icon: "save", color: "green", onClick: () => dispatch(saveBots()), disabled: !dataChanged, },
-    { text: 'Cancel', icon: "cancel", color: "black", onClick: () => dispatch(cancelBotsEditing()), disabled: !dataChanged, },
-  ], [create, dispatch]);
+    { text: t('button.add'), icon: "add", color: "teal", onClick: () => create(), disabled: false, },
+    { text: t('button.save'), icon: "save", color: "green", onClick: () => dispatch(saveBots()), disabled: !dataChanged, },
+    { text: t('button.cancel'), icon: "cancel", color: "black", onClick: () => dispatch(cancelBotsEditing()), disabled: !dataChanged, },
+  ], [create, dispatch, t]);
 
   const { setHeaderButtons, updateButtonAttributes } = useHeaderContent();
   useEffect(() => {
@@ -98,14 +102,14 @@ const Component: FC<ComponentProps> = ({ bots, loading, error, changed }: Compon
       columns={[
         {
           id: 'bot',
-          header: 'Name',
+          header: t('table.name'),
           enableSorting: true,
           accessorKey: 'name',
         },
         {
           id: 'canRespondInChat',
           accessorKey: 'hookEnabled',
-          header: 'Can respond in chat',
+          header: t('table.canRespondInChat'),
           enableSorting: true,
           meta: {
             dataType: ColumnDataType.Boolean,
@@ -115,12 +119,12 @@ const Component: FC<ComponentProps> = ({ bots, loading, error, changed }: Compon
         },
         {
           id: 'token',
-          header: 'Token',
+          header: t('table.token'),
           accessorKey: 'token',
         },
         {
           id: 'enabled',
-          header: 'Active',
+          header: t('table.active'),
           enableSorting: true,
           accessorKey: 'enabled',
           meta: {

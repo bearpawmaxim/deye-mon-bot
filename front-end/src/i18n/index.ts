@@ -5,6 +5,8 @@ import enCommon from './en/common.json';
 import enDashboard from './en/dashboard.json';
 import ukCommon from './uk/common.json';
 import ukDashboard from './uk/dashboard.json';
+import enBots from './en/bots.json';
+import ukBots from './uk/bots.json';
 
 export const AVAILABLE_LANGUAGES = ['en', 'uk'];
 
@@ -22,10 +24,12 @@ i18n
       en: {
         common: enCommon,
         dashboard: enDashboard,
+        bots: enBots,
       },
       uk: {
         common: ukCommon,
         dashboard: ukDashboard,
+        bots: ukBots,
       },
     },
 
