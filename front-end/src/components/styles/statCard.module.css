@@ -10,6 +10,10 @@
   transform: scale(1.5);
 }
 
+.cardHover:hover .iconBox {
+  transform: rotate(0.5turn);
+}
+
 .iconBox,
 .innerCircleBox,
 .outerCircleBox {
@@ -25,7 +29,7 @@
   border: "dashed 1px";
   border-radius: "50%";
   filter: drop-shadow(
-    0 0 6px light-dark(rgba(0, 0, 0, 1), rgba(255, 255, 255, 1))
+    0 0 4px rgba(255, 255, 255, 1)
   );
 }
 
