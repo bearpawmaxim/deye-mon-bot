@@ -5,18 +5,18 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconName } from "@fortawesome/free-solid-svg-icons";
 import { openPowerLogsDialog } from "../../../dialogs";
 import { ProgressProps, useMantineTheme } from "@mantine/core";
-import { usePageTranslation } from "../../../utils";
 import i18n from "../../../i18n";
+import { TFunction } from "i18next";
 
 export type BuildingCardProps = {
+  t: TFunction;
   building: BuildingListItem;
   loadingSummary: boolean;
   buildingSummary?: BuildingSummaryItem;
 };
 
-export const BuildingCard: FC<BuildingCardProps> = ({ building, buildingSummary, loadingSummary }) => {
+export const BuildingCard: FC<BuildingCardProps> = ({ t, building, buildingSummary, loadingSummary }) => {
   const buildingName = useMemo(() => building.name[i18n.language], [building.name]);
-  const t = usePageTranslation('dashboard');
 
   const handleIconClick = useCallback(() => {
     if (building.id) {

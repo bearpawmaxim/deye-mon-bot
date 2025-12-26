@@ -28,7 +28,10 @@
     "waitingForSchedule": "Waiting for schedule from YASNO",
     "emergency": "Emergency shutdowns in progress",
     "noShutdowns": "No shutdowns",
-    "noData": "No data available"
+    "noData": "No data available",
+    "slotTimeFrameFormat": "{{startTime}} - {{endTime}}",
+    "slotDurationFormat": "{{duration}}",
+    "activeSlotDurationFormat": "{{duration}} ({{left}} left)"
   },
   "grid": {
     "title": "Grid",

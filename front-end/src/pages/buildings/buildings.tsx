@@ -163,6 +163,7 @@ const Component: FC<ComponentProps> = ({
           </Group>
 
           <BuildingsView
+            t={t}
             loading={loadingBuildings}
             isAuthenticated={isAuthenticated}
             buildings={buildings}
@@ -171,6 +172,7 @@ const Component: FC<ComponentProps> = ({
           />
 
           { dashboardConfig?.enableOutagesSchedule && <PlannedOutages
+              t={t}
               outageQueue={dashboardConfig.outagesScheduleQueue}
               data={outagesSchedule}
               loading={loadingOutagesSchedule}
