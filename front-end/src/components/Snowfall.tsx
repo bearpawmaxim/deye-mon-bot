@@ -1,18 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import SnowfallEffect from "react-snowfall";
-
-function isChristmasSeason(): boolean {
-  const now = new Date();
-  const month = now.getMonth(); 
-  const day = now.getDate();
-
-  //Start of Christmas season: Dec 20 - Dec 31
-  if (month === 11 && day >= 20) return true;
-  //End of Christmas season: Jan 1 - Jan 10
-  if (month === 0 && day <= 10) return true;
-
-  return false;
-}
+import { isChristmasSeason } from "../utils";
 
 export function Snowfall() {
   const [isActive, setIsActive] = useState(() => isChristmasSeason());
