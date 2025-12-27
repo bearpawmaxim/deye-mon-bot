@@ -52,7 +52,7 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
   const getHeaderButtons = useCallback((dataChanged: boolean): PageHeaderButton[] => [
     { text: t('button.save'), icon: "save", color: "green", onClick: () => dispatch(saveStations()), disabled: !dataChanged, },
     { text: t('button.cancel'), icon: "cancel", color: "black", onClick: () => dispatch(cancelStationsEditing()), disabled: !dataChanged, },
-  ], [dispatch]);
+  ], [dispatch, t]);
   const { setHeaderButtons, updateButtonAttributes } = useHeaderContent();
   useEffect(() => {
     setHeaderButtons(getHeaderButtons(changed));

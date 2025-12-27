@@ -1,0 +1,20 @@
+{
+  "title": "Chats",
+  "allowed": {
+    "title": "Allowed chats"
+  },
+  "requests": {
+    "title": "Chat requests"
+  },
+  "table": {
+    "chat": "Chat",
+    "bot": "Bot",
+    "approvedOn": "Approved on",
+    "requestedOn": "Requested on"
+  },
+  "actions": {
+    "disallow": "Disallow",
+    "approve": "Approve",
+    "reject": "Reject"
+  }
+}

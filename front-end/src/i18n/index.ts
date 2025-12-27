@@ -9,6 +9,8 @@ import enBots from './en/bots.json';
 import ukBots from './uk/bots.json';
 import enStations from './en/stations.json';
 import ukStations from './uk/stations.json';
+import enChats from './en/chats.json';
+import ukChats from './uk/chats.json';
 
 export const AVAILABLE_LANGUAGES = ['en', 'uk'];
 
@@ -28,12 +30,14 @@ i18n
         dashboard: enDashboard,
         bots: enBots,
         stations: enStations,
+        chats: enChats,
       },
       uk: {
         common: ukCommon,
         dashboard: ukDashboard,
         bots: ukBots,
         stations: ukStations,
+        chats: ukChats,
       },
     },
 
