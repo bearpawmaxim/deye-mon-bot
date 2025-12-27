@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconName } from "@fortawesome/free-solid-svg-icons";
 import { openPowerLogsDialog } from "../../../dialogs";
 import { ProgressProps, useMantineTheme } from "@mantine/core";
-import { isChristmasSeason, usePageTranslation } from "../../../utils";
+import { isChristmasSeason } from "../../../utils";
 import i18n from "../../../i18n";
 import { TFunction } from "i18next";
 
