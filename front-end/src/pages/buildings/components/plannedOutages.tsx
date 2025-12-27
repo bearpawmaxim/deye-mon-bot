@@ -1,12 +1,14 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ActionIcon, Alert, Box, Group, Loader, SimpleGrid, Stack, Text, Title, useMantineColorScheme } from "@mantine/core";
 import { FC, useMemo } from "react";
-import { toLocalDateTime, usePageTranslation } from "../../../utils";
+import { toLocalDateTime } from "../../../utils";
 import { DayOutageSchedule } from "./dayOutageSchedule";
 import { OutagesScheduleData } from "../../../stores/types";
 import dayjs from "dayjs";
+import { TFunction } from "i18next";
 
 type PlannedOutagesProps = {
+  t: TFunction;
   outageQueue: string;
   data: OutagesScheduleData;
   loading: boolean;
@@ -14,11 +16,9 @@ type PlannedOutagesProps = {
   onRefresh: () => void;
 };
 
-export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue, data, loading, error, onRefresh }) => {
+export const PlannedOutages: FC<PlannedOutagesProps> = ({ t, outageQueue, data, loading, error, onRefresh }) => {
   const { colorScheme } = useMantineColorScheme();
   const isDark = colorScheme === "dark";
-
-  const t = usePageTranslation('dashboard');
 
   const days = useMemo(() => {
     if (!data?.days || data.days.length === 0) return [];
@@ -118,7 +118,8 @@ export const PlannedOutages: FC<PlannedOutagesProps> = ({ outageQueue, data, loa
 
       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
         {days.map((day, idx) => (
-          <DayOutageSchedule 
+          <DayOutageSchedule
+            t={t}
             key={`day-${idx}-${day.data.date}`}
             title={day.title} 
             isDark={isDark} 

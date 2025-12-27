@@ -108,7 +108,7 @@ fun BuildingsList(
         items(buildings) { building ->
             BuildingCard(
                 building = building,
-                onClick = { onBuildingClick(building.id, building.name) }
+                onClick = { onBuildingClick(building.id, building.getDisplayName()) }
             )
         }
     }
@@ -157,7 +157,7 @@ fun BuildingCard(
                         modifier = Modifier.size(24.dp)
                     )
                     Text(
-                        text = building.name,
+                        text = building.getDisplayName(),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )

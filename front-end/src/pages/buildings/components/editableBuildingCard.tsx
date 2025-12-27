@@ -8,15 +8,13 @@ import { useAppDispatch } from "../../../stores/store";
 import { modals } from "@mantine/modals";
 import { BuildingListItem } from "../../../stores/types";
 import { deleteBuilding } from "../../../stores/thunks";
-import { usePageTranslation } from "../../../utils";
 
 export const EditableBuildingCard: FC<BuildingCardProps> = ({
+  t,
   building,
   buildingSummary,
   loadingSummary,
 }) => {
-  const t = usePageTranslation('dashboard');
-
   const dispatch = useAppDispatch();
   const onDeleteBuilding = useCallback((building: BuildingListItem) => {
     modals.openConfirmModal({
@@ -30,6 +28,7 @@ export const EditableBuildingCard: FC<BuildingCardProps> = ({
 
   return <Box className={classes.buildingCard}>
     <BuildingCard
+      t={t}
       building={building}
       buildingSummary={buildingSummary}
       loadingSummary={loadingSummary}

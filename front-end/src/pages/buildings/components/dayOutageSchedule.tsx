@@ -1,19 +1,21 @@
 import { Badge, Card, Divider, Group, Stack, Text } from "@mantine/core";
 import { FC, useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { minutesToHoursAndMinutes, usePageTranslation } from "../../../utils";
+import { minutesToHoursAndMinutes } from "../../../utils";
 import { DayData, DayDataStatus } from "../../../stores/types";
 import { OutageSlot } from "./outageSlot";
 import { Placeholder } from "./outageSchedulePlaceholder";
+import { TFunction } from "i18next";
 
 type DayOutageScheduleProps = {
+  t: TFunction;
   title: string;
   isDark: boolean;
   dayData?: DayData;
   isToday?: boolean;
 };
 
-export const DayOutageSchedule: FC<DayOutageScheduleProps> = ({ isDark, dayData, title, isToday = false }) => {
+export const DayOutageSchedule: FC<DayOutageScheduleProps> = ({ t, isDark, dayData, title, isToday = false }) => {
   const slots = useMemo(
     () => (dayData?.slots ?? []),
     [dayData],
@@ -34,7 +36,6 @@ export const DayOutageSchedule: FC<DayOutageScheduleProps> = ({ isDark, dayData,
     () => dayData?.status === DayDataStatus.WaitingForSchedule,
     [dayData?.status],
   );
-  const t = usePageTranslation('dashboard');
 
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
@@ -77,7 +78,7 @@ export const DayOutageSchedule: FC<DayOutageScheduleProps> = ({ isDark, dayData,
             />
           }
           {isAvailable && slots.map((slot, idx) => (
-            <OutageSlot key={`outage_${idx}`} isDark={isDark} slot={slot} isToday={isToday} />
+            <OutageSlot t={t} key={`outage_${idx}`} isDark={isDark} slot={slot} isToday={isToday} />
           ))}
         </Stack>
       </Stack>

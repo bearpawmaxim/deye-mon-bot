@@ -28,7 +28,9 @@
     "waitingForSchedule": "Очікування розкладу від YASNO",
     "emergency": "Аварійні відключення",
     "noShutdowns": "Немає відключень",
-    "noData": "Дані відсутні"
+    "noData": "Дані відсутні",
+    "slotDurationFormat": "{{duration}}",
+    "activeSlotDurationFormat": "{{duration}} ({{left}} залиш.)"
   },
   "grid": {
     "title": "Мережа",

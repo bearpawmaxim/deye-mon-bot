@@ -5,14 +5,16 @@ import { minutesToHoursAndMinutes } from "../../../utils";
 import { TimeSlot } from "../../../stores/types";
 import classes from '../../styles/buildings.module.css';
 import dayjs from "dayjs";
+import { TFunction } from "i18next";
 
 type OutageSlotProps = {
+  t: TFunction;
   isDark: boolean;
   slot: TimeSlot;
   isToday?: boolean;
 };
 
-export const OutageSlot: FC<OutageSlotProps> = ({ isDark, slot, isToday = false }) => {
+export const OutageSlot: FC<OutageSlotProps> = ({ t, isDark, slot, isToday = false }) => {
   const [now, setNow] = useState(dayjs());
   useEffect(() => {
     const interval = setInterval(() => {
@@ -48,6 +50,17 @@ export const OutageSlot: FC<OutageSlotProps> = ({ isDark, slot, isToday = false 
     isDark ? "4" : "6"
   })`;
 
+  const slotFormat = useMemo(() => t('outages.slotTimeFrameFormat', {
+    startTime: minutesToHoursAndMinutes(slot.start),
+    endTime: minutesToHoursAndMinutes(slot.end),
+  }), [slot.end, slot.start, t]);
+  const durationFormat = useMemo(() => t(
+    isActive ? 'outages.activeSlotDurationFormat' : 'outages.slotDurationFormat',
+    {
+      duration: minutesToHoursAndMinutes(slot.end - slot.start),
+      left: minutesToHoursAndMinutes(slot.end - minutesFromMidnight),
+    }), [isActive, minutesFromMidnight, slot.end, slot.start, t]);
+
   return <Box
     className={className}
     p="sm"
@@ -77,12 +90,11 @@ export const OutageSlot: FC<OutageSlotProps> = ({ isDark, slot, isToday = false 
       </Progress.Root> }
     <Group justify="space-between" style={{ zIndex: 2, position: "relative" }}>
       <Text size="sm" fw={500}>
-        {minutesToHoursAndMinutes(slot.start)} - {minutesToHoursAndMinutes(slot.end)}
+        {slotFormat}
       </Text>
       <Text size="sm" fw={500}>
         <FontAwesomeIcon icon='clock' />
-        {minutesToHoursAndMinutes(slot.end - slot.start)}
-        {isActive && ` (${minutesToHoursAndMinutes(slot.end - minutesFromMidnight)} left)`}
+        {durationFormat}
       </Text>
     </Group>
   </Box>;

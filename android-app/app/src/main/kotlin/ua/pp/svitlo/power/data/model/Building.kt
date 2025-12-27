@@ -1,8 +1,13 @@
 package ua.pp.svitlo.power.data.model
 
+data class BuildingName(
+    val en: String? = null,
+    val uk: String? = null
+)
+
 data class Building(
     val id: String,
-    val name: String,
+    val name: BuildingName,
     val batteryPercent: Double,
     val color: String,
     val consumptionPower: String,
@@ -12,6 +17,8 @@ data class Building(
     val batteryDischargeTime: String? = null,
     val hasMixedReporterStates: Boolean? = null
 ) {
+    fun getDisplayName(): String = name.en ?: name.uk ?: "Unknown"
+    
     fun getBatteryLevel(): Int = batteryPercent.toInt()
     
     fun getPowerStatus(): PowerStatus {
