@@ -1,0 +1,20 @@
+{
+  "title": "Чати",
+  "allowed": {
+    "title": "Дозволені чати"
+  },
+  "requests": {
+    "title": "Запити у чат"
+  },
+  "table": {
+    "chat": "Чат",
+    "bot": "Бот",
+    "approvedOn": "Затверджено",
+    "requestedOn": "Запрошено"
+  },
+  "actions": {
+    "disallow": "Заборонити",
+    "approve": "Підтвердити",
+    "reject": "Відхилити"
+  }
+}

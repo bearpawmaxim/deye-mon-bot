@@ -8,15 +8,16 @@ import { CountryFlag, LangPicker, ThemePicker, UserAvatar } from "../../componen
 import { ProfileData } from "../../stores/types";
 import iconDark from "../../assets/icon_dark.png";
 import iconLight from "../../assets/icon_light.png";
-import { useTranslation } from "react-i18next";
+import { TFunction } from "i18next";
 
 type MenuRowProps = {
+  t: TFunction;
   route: MenuItem;
   isNavbarCollapsed: boolean;
   closeMenu?: () => void;
 };
 
-const MenuRow: FC<MenuRowProps> = ({ route, isNavbarCollapsed, closeMenu }) => {
+const MenuRow: FC<MenuRowProps> = ({ t, route, isNavbarCollapsed, closeMenu }) => {
   const location = useLocation();
   const isActive = location.pathname === route.path;
 
@@ -29,7 +30,7 @@ const MenuRow: FC<MenuRowProps> = ({ route, isNavbarCollapsed, closeMenu }) => {
       onClick={() => closeMenu?.call(this) }
     >
       <FontAwesomeIcon icon={route.icon!} />
-      {!isNavbarCollapsed && <Text className={classes.nav_title}>{route.name}</Text>}
+      {!isNavbarCollapsed && <Text className={classes.nav_title}>{t(route.name ?? '')}</Text>}
     </Link>);
   
   return isNavbarCollapsed ? (
@@ -37,7 +38,7 @@ const MenuRow: FC<MenuRowProps> = ({ route, isNavbarCollapsed, closeMenu }) => {
       position="right"
       label={
         <Text fw={500} fz={13}>
-          {route.name}
+          {t(route.name ?? '')}
         </Text>
       }
     >
@@ -80,6 +81,7 @@ const NavbarSwitch: FC<{ isNavbarCollapsed: boolean, toggleNavbar: () => void}> 
   };
 
 type NavbarProps = {
+  t: TFunction;
   user?: ProfileData;
   isNavbarCollapsed: boolean;
   toggleNavbar: () => void;
@@ -88,10 +90,9 @@ type NavbarProps = {
   onLogoutClick: () => void;
 };
 
-export const Navbar: FC<NavbarProps> = ({ user, isNavbarCollapsed, toggleNavbar, closeMenu, onProfileClick, onLogoutClick }) => {
+export const Navbar: FC<NavbarProps> = ({ t, user, isNavbarCollapsed, toggleNavbar, closeMenu, onProfileClick, onLogoutClick }) => {
   const { colorScheme } = useMantineColorScheme();
   const iconSrc = colorScheme === 'dark' ? iconLight : iconDark;
-  const { t } = useTranslation('common');
 
   return (
       <Stack
@@ -135,7 +136,7 @@ export const Navbar: FC<NavbarProps> = ({ user, isNavbarCollapsed, toggleNavbar,
             gap={14}
           >
             <Text className={classes.navTitle} fz={12} fw={500} tt="uppercase">
-              {isNavbarCollapsed ? "NAV" : "Navigation"}
+              {t(isNavbarCollapsed ? "navShort" : "navFull")}
             </Text>
             <Group gap={0}>
               { RootRoutes.map((route: MenuItem, i) => {
@@ -143,6 +144,7 @@ export const Navbar: FC<NavbarProps> = ({ user, isNavbarCollapsed, toggleNavbar,
                   return;
                 }
                 return <MenuRow
+                  t={t}
                   key={`menu_${i}`}
                   route={route}
                   isNavbarCollapsed={isNavbarCollapsed}

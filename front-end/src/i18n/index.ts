@@ -5,6 +5,14 @@ import enCommon from './en/common.json';
 import enDashboard from './en/dashboard.json';
 import ukCommon from './uk/common.json';
 import ukDashboard from './uk/dashboard.json';
+import enBots from './en/bots.json';
+import ukBots from './uk/bots.json';
+import enStations from './en/stations.json';
+import ukStations from './uk/stations.json';
+import enChats from './en/chats.json';
+import ukChats from './uk/chats.json';
+import enExtData from './en/extData.json';
+import ukExtData from './uk/extData.json';
 
 export const AVAILABLE_LANGUAGES = ['en', 'uk'];
 
@@ -22,10 +30,18 @@ i18n
       en: {
         common: enCommon,
         dashboard: enDashboard,
+        bots: enBots,
+        stations: enStations,
+        chats: enChats,
+        extData: enExtData,
       },
       uk: {
         common: ukCommon,
         dashboard: ukDashboard,
+        bots: ukBots,
+        stations: ukStations,
+        chats: ukChats,
+        extData: ukExtData,
       },
     },
 

@@ -1,17 +1,20 @@
 import { Button, Divider, Group, NumberInput } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { FC, useState } from "react";
+import { TFunction } from "i18next";
 
 type BatteryCapacityEditOptions = {
   batteryCapacity: number;
   onClose: (result: boolean, batteryCapacity: number) => void;
   title?: string;
+  t: TFunction;
 };
 
 export function openBatteryCapacityEditDialog({
   batteryCapacity,
   onClose,
   title,
+  t,
 }: BatteryCapacityEditOptions) {
   const Inner: FC = () => {
     const [editingBattCapacity, setBattCapacity] = useState(batteryCapacity);
@@ -31,7 +34,7 @@ export function openBatteryCapacityEditDialog({
     };
     return <>
       <NumberInput
-        label="Battery capacity (in kWh)"
+        label={t('batteryEdit.label')}
         data-autofocus
         value={editingBattCapacity}
         onChange={(e) => setBattCapacity(parseFloat(e.toString()))}
@@ -39,15 +42,15 @@ export function openBatteryCapacityEditDialog({
       <Divider mt='sm' mb='sm' />
       <Group gap={'sm'} justify='flex-end'>
         <Button variant="default" onClick={handleCancel}>
-          Cancel
+          {t('button.cancel')}
         </Button>
-        <Button onClick={handleSave}>Save</Button>
+        <Button onClick={handleSave}>{t('button.save')}</Button>
       </Group>
     </>;
   };
 
   const id: string | undefined = modals.open({
-    title: title ?? ("Edit battery capacity"),
+    title: title ?? (t('batteryEdit.title')),
     centered: true,
     children: <Inner />,
   });

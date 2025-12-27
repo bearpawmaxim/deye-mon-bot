@@ -11,6 +11,7 @@ import { ColumnDataType } from "../../types";
 import { ActionIcon, Anchor, Button, Group, Text, Tooltip } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { openBatteryCapacityEditDialog } from "./components";
+import { usePageTranslation } from "../../utils";
 import { useNavigate } from "react-router-dom";
 import { ObjectId } from "../../schemas";
 
@@ -44,13 +45,14 @@ const mapStateToProps = (state: RootState): ComponentProps => ({
 
 const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, error }: ComponentProps) => {
   const dispatch = useAppDispatch();
+  const t = usePageTranslation('stations');
   const navigate = useNavigate();
   const [initiallyChanged, setInitiallyChanged] = useState(false);
 
   const getHeaderButtons = useCallback((dataChanged: boolean): PageHeaderButton[] => [
-    { text: 'Save', icon: "save", color: "green", onClick: () => dispatch(saveStations()), disabled: !dataChanged, },
-    { text: 'Cancel', icon: "cancel", color: "black", onClick: () => dispatch(cancelStationsEditing()), disabled: !dataChanged, },
-  ], [dispatch]);
+    { text: t('button.save'), icon: "save", color: "green", onClick: () => dispatch(saveStations()), disabled: !dataChanged, },
+    { text: t('button.cancel'), icon: "cancel", color: "black", onClick: () => dispatch(cancelStationsEditing()), disabled: !dataChanged, },
+  ], [dispatch, t]);
   const { setHeaderButtons, updateButtonAttributes } = useHeaderContent();
   useEffect(() => {
     setHeaderButtons(getHeaderButtons(changed));
@@ -94,7 +96,7 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
       columns={[
         {
           id: 'stationName',
-          header: 'Name',
+          header: t('table.name'),
           accessorKey: "stationName",
           cell: ({ row }) => {
             return (
@@ -110,17 +112,17 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
         },
         {
           id: 'connectionStatus',
-          header: 'Connection status',
+          header: t('table.connectionStatus'),
           accessorKey: 'connectionStatus',
         },
         {
           id: 'mode',
-          header: 'Mode',
+          header: t('table.mode'),
           accessorKey: 'gridInterconnectionType',
         },
         {
           id: 'lastUpdate',
-          header: 'Last updated',
+          header: t('table.lastUpdated'),
           accessorKey: 'lastUpdateTime',
           meta: {
             dataType: ColumnDataType.DateTime,
@@ -128,7 +130,7 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
         },
         {
           id: 'enabled',
-          header: 'Enabled',
+          header: t('table.enabled'),
           accessorKey: 'enabled',
           meta: {
             dataType: ColumnDataType.Boolean,
@@ -138,19 +140,19 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
         },
         {
           id: 'battery capacity',
-          header: 'Battery capacity',
+          header: t('table.batteryCapacity'),
           accessorKey: 'batteryCapacity',
           meta: {
             dataType: ColumnDataType.Number,
           },
           cell: ({ renderValue, row }) => {
             return <Group justify="space-between">
-              <Text>{renderValue()} kWh</Text>
+              <Text>{t('batteryEdit.valueLabel', { value: renderValue() })}</Text>
               <Tooltip
                 ml='sm'
                 label={
                   <Text fw={500} fz={13}>
-                    Edit battery capacity
+                    {t('batteryEdit.tooltip')}
                   </Text>
                 }
               >
@@ -158,6 +160,8 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
                   color={'orange'}
                   onClick={() => openBatteryCapacityEditDialog({
                     batteryCapacity: row.original.batteryCapacity,
+                    t,
+                    title: t('batteryEdit.title'),
                     onClose: (result, newCapacity) => {
                       if (result) {
                         onSetBatteryCapacity(row.original.id, newCapacity)
@@ -173,7 +177,7 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
         },
         {
           id: 'order',
-          header: 'Order',
+          header: t('table.order'),
           accessorKey: 'order',
           meta: {
             dataType: ColumnDataType.Number,

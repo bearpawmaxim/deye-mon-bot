@@ -1,4 +1,5 @@
 import { useState, FC } from "react";
+import { TFunction } from "i18next";
 import { modals } from "@mantine/modals";
 import { Textarea, Button, Stack } from "@mantine/core";
 
@@ -7,9 +8,10 @@ type OpenTokenEditOptions = {
   token?: string;
   onClose: (result: boolean, token: string) => void;
   title?: string;
+  t: TFunction;
 };
 
-export function openTokenEditDialog({ create = false, token = "", onClose, title }: OpenTokenEditOptions) {
+export function openTokenEditDialog({ create = false, token = "", onClose, title, t }: OpenTokenEditOptions) {
   const Inner: FC = () => {
     const [editingToken, setEditingToken] = useState(token);
 
@@ -32,16 +34,16 @@ export function openTokenEditDialog({ create = false, token = "", onClose, title
         <Textarea minRows={3} value={editingToken} onChange={(e) => setEditingToken(e.currentTarget.value)} />
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
           <Button variant="default" onClick={handleCancel}>
-            Cancel
+            {t('button.cancel')}
           </Button>
-          <Button onClick={handleSave}>Save</Button>
+          <Button onClick={handleSave}>{t('button.save')}</Button>
         </div>
       </Stack>
     );
   };
   
   const id: string | undefined = modals.open({
-    title: title ?? (create ? "Set token" : "Edit token"),
+    title: title ?? (create ? t('tokenEdit.set') : t('tokenEdit.edit')),
     centered: true,
     children: <Inner />,
   });

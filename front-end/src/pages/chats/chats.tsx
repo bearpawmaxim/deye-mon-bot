@@ -5,6 +5,7 @@ import { RootState, useAppDispatch } from "../../stores/store";
 import { approveChatRequest, disallowChat, fetchAllowedChats, fetchChatRequests, rejectChatRequest } from "../../stores/thunks";
 import { DataTable, ErrorMessage, Page } from "../../components";
 import { Title } from "@mantine/core";
+import { usePageTranslation } from "../../utils";
 import { ColumnDataType } from "../../types";
 import { ObjectId } from "../../schemas";
 
@@ -24,6 +25,7 @@ const mapStateToProps = (state: RootState): ComponentProps => ({
 
 const Component: FC<ComponentProps> = ({ allowedChats, chatRequests, loading, error }) => {
   const dispatch = useAppDispatch();
+  const t = usePageTranslation('chats');
 
   const fetchChats = useCallback(
     () => dispatch(fetchAllowedChats()),
@@ -57,26 +59,26 @@ const Component: FC<ComponentProps> = ({ allowedChats, chatRequests, loading, er
 
   return <>
     <Page loading={loading}>
-      <Title mt='sm' ta='center' order={4}>Allowed chats</Title>
+      <Title mt='sm' ta='center' order={4}>{t('allowed.title')}</Title>
       <DataTable<AllowedChatListItem>
         data={allowedChats}
         fetchAction={fetchChats}
         columns={[
           {
             id: 'chat',
-            header: 'Chat',
+            header: t('table.chat'),
             accessorKey: 'chatName',
             enableSorting: true,
           },
           {
             id: 'bot',
-            header: 'Bot',
+            header: t('table.bot'),
             accessorKey: 'botName',
             enableSorting: true,
           },
           {
             id: 'approveDate',
-            header: 'Approved on',
+            header: t('table.approvedOn'),
             accessorKey: 'approveDate',
             enableSorting: true,
             meta: {
@@ -89,7 +91,7 @@ const Component: FC<ComponentProps> = ({ allowedChats, chatRequests, loading, er
               dataType: 'actions',
               actions: [
                 {
-                  text: 'Disallow',
+                  text: t('actions.disallow'),
                   icon: 'cancel',
                   color: 'red',
                   clickHandler: (row) => disallowClick(row.id!),
@@ -102,26 +104,26 @@ const Component: FC<ComponentProps> = ({ allowedChats, chatRequests, loading, er
       />
     </Page>
     <Page loading={loading} mt='sm'>
-      <Title mt='sm' ta='center' order={4}>Chat requests</Title>
+      <Title mt='sm' ta='center' order={4}>{t('requests.title')}</Title>
       <DataTable<ChatRequestListItem>
         data={chatRequests}
         fetchAction={fetchRequests}
         columns={[
           {
             id: 'chat',
-            header: 'Chat',
+            header: t('table.chat'),
             accessorKey: 'chatName',
             enableSorting: true,
           },
           {
             id: 'bot',
-            header: 'Bot',
+            header: t('table.bot'),
             accessorKey: 'botName',
             enableSorting: true,
           },
           {
             id: 'requestDate',
-            header: 'Requested on',
+            header: t('table.requestedOn'),
             accessorKey: 'requestDate',
             enableSorting: true,
             meta: {
@@ -134,13 +136,13 @@ const Component: FC<ComponentProps> = ({ allowedChats, chatRequests, loading, er
               dataType: 'actions',
               actions: [
                 {
-                  text: 'Approve',
+                  text: t('actions.approve'),
                   icon: 'check',
                   color: 'green',
                   clickHandler: (row) => approveClick(row.id!),
                 },
                 {
-                  text: 'Reject',
+                  text: t('actions.reject'),
                   icon: 'cancel',
                   color: 'red',
                   clickHandler: (row) => rejectClick(row.id!),

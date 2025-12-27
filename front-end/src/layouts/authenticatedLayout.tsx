@@ -16,6 +16,7 @@ import { openProfileEditDialog } from "../dialogs";
 import { authDataSelector } from "../stores/selectors";
 import { AuthData } from "../types";
 import { logout } from "../stores/slices";
+import { useTranslation } from "react-i18next";
 
 type ComponentProps = {
   authData: AuthData | null;
@@ -29,6 +30,8 @@ const mapStateToProps = (state: RootState): ComponentProps => ({
 
 const Component: FC<ComponentProps> = ({ authData, profile }) => {
   const dispatch = useAppDispatch()
+  const { t } = useTranslation('common');
+
   const location = useLocation();
 
   useEffect(() => {
@@ -75,6 +78,7 @@ const Component: FC<ComponentProps> = ({ authData, profile }) => {
     >
       <AppShell.Header ms={0}>
         <Header
+          t={t}
           user={profile}
           opened={opened}
           toggle={toggle}
@@ -86,6 +90,7 @@ const Component: FC<ComponentProps> = ({ authData, profile }) => {
       </AppShell.Header>
       <AppShell.Navbar data-collapsed={isNavbarCollapsed}>
         <Navbar
+          t={t}
           user={profile}
           isNavbarCollapsed={isNavbarCollapsed}
           toggleNavbar={toggleNavbar}

@@ -1,0 +1,33 @@
+{
+  "title": "External Events",
+  "button": {
+    "createEvent": "Create Event"
+  },
+  "table": {
+    "user": "User",
+    "gridState": "Grid State",
+    "receivedAt": "Received At",
+    "actions": "Actions"
+  },
+  "filters": {
+    "allUsers": "All users",
+    "all": "All"
+  },
+  "gridState": {
+    "on": "ON",
+    "off": "OFF",
+    "optionOn": "💡 ON",
+    "optionOff": "🌑 OFF",
+    "tooltipOn": "ON",
+    "tooltipOff": "OFF"
+  },
+  "modal": {
+    "createTitle": "Create Event",
+    "userLabel": "User",
+    "selectUserPlaceholder": "Select user",
+    "gridStateLabel": "Grid State (ON/OFF)",
+    "receivedAtLabel": "Received At (optional, defaults to now)",
+    "deleteConfirmTitle": "Delete Event",
+    "deleteConfirmMessage": "Are you sure you want to delete this event? User: {{user}}, State: {{state}}"
+  }
+}
