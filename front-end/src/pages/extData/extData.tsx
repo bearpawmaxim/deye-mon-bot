@@ -5,6 +5,7 @@ import { RootState, useAppDispatch } from "../../stores/store";
 import { createExtData, deleteExtData, fetchExtData } from "../../stores/thunks";
 import { DataTable, ErrorMessage, Page } from "../../components";
 import { ColumnDataType, LookupSchema } from "../../types";
+import { usePageTranslation } from "../../utils";
 import { Column } from "@tanstack/react-table";
 import { Button, Group, Modal, Select, Stack, Switch, Text, Tooltip } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -28,6 +29,7 @@ const mapStateToProps = (state: RootState): ComponentProps => ({
 
 const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
   const dispatch = useAppDispatch();
+  const t = usePageTranslation('extData');
   const [modalOpened, setModalOpened] = useState(false);
   const [formData, setFormData] = useState({
     user_id: null as ObjectId | null,
@@ -58,7 +60,7 @@ const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
     
     return (
       <Select
-        placeholder="All users"
+        placeholder={t('filters.allUsers')}
         data={userLookupOptions}
         value={value || null}
         onChange={(val) => column.setFilterValue(val || undefined)}
@@ -73,10 +75,10 @@ const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
     
     return (
       <Select
-        placeholder="All"
+        placeholder={t('filters.all')}
         data={[
-          { value: 'true', label: '💡 ON' },
-          { value: 'false', label: '🌑 OFF' }
+          { value: 'true', label: t('gridState.optionOn') },
+          { value: 'false', label: t('gridState.optionOff') }
         ]}
         value={value || null}
         onChange={(val) => column.setFilterValue(val || undefined)}
@@ -137,9 +139,9 @@ const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
       return;
     }
     modals.openConfirmModal({
-      title: 'Delete Event',
-      children: `Are you sure you want to delete this event? User: ${getUserName(item.userId)}, State: ${item.gridState ? 'ON' : 'OFF'}`,
-      labels: { confirm: 'Delete', cancel: 'Cancel' },
+      title: t('modal.deleteConfirmTitle'),
+      children: t('modal.deleteConfirmMessage', { user: getUserName(item.userId), state: item.gridState ? t('gridState.on') : t('gridState.off') }),
+      labels: { confirm: t('button.delete') ?? 'Delete', cancel: t('button.cancel') ?? 'Cancel' },
       confirmProps: { color: 'red' },
       onConfirm: () => {
         dispatch(deleteExtData(item.id!))
@@ -149,11 +151,11 @@ const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
           });
       },
     });
-  }, [dispatch, getUserName]);
+  }, [dispatch, getUserName, t]);
 
   const getHeaderButtons = useCallback((): PageHeaderButton[] => [
-    { text: 'Create Event', icon: "add", color: "teal", onClick: handleOpenCreateModal, disabled: false },
-  ], [handleOpenCreateModal]);
+    { text: t('button.createEvent'), icon: "add", color: "teal", onClick: handleOpenCreateModal, disabled: false },
+  ], [handleOpenCreateModal, t]);
 
   const { setHeaderButtons } = useHeaderContent();
   
@@ -175,25 +177,25 @@ const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
           defSort={[{ id: 'received_at', desc: true }]}
           useFilters={true}
           columns={[
-            {
-              id: 'user',
-              header: 'User',
-              accessorKey: 'user',
-              enableSorting: true,
-              enableColumnFilter: true,
-              meta: {
-                dataType: ColumnDataType.Text,
-                filterOptions: {
-                  customFilterCell: UserFilter,
+              {
+                id: 'user',
+                header: t('table.user'),
+                accessorKey: 'user',
+                enableSorting: true,
+                enableColumnFilter: true,
+                meta: {
+                  dataType: ColumnDataType.Text,
+                  filterOptions: {
+                    customFilterCell: UserFilter,
+                  },
                 },
+                cell: ({ row }) => {
+                  return <Text>{getUserName(row.original.userId)}</Text>
+                }
               },
-              cell: ({ row }) => {
-                return <Text>{getUserName(row.original.userId)}</Text>
-              }
-            },
             {
               id: 'grid_state',
-              header: 'Grid State',
+              header: t('table.gridState'),
               accessorKey: 'grid_state',
               enableColumnFilter: true,
               enableSorting: true,
@@ -212,7 +214,7 @@ const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
                 const gridState = row.original.gridState;
                 return (
                   <Group justify="center">
-                    <Tooltip label={gridState ? 'ON' : 'OFF'}>
+                    <Tooltip label={gridState ? t('gridState.tooltipOn') : t('gridState.tooltipOff')}>
                       <FontAwesomeIcon 
                         icon="lightbulb"
                         size="lg"
@@ -228,7 +230,7 @@ const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
             },
             {
               id: 'receivedAt',
-              header: 'Received At',
+              header: t('table.receivedAt'),
               accessorKey: 'receivedAt',
               enableSorting: true,
               enableColumnFilter: true,
@@ -259,11 +261,11 @@ const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
         />
       </Page>
 
-      <Modal opened={modalOpened} onClose={handleCloseModal} title="Create Event">
+      <Modal opened={modalOpened} onClose={handleCloseModal} title={t('modal.createTitle')}>
         <Stack>
           <Select
-            label="User"
-            placeholder="Select user"
+            label={t('modal.userLabel')}
+            placeholder={t('modal.selectUserPlaceholder')}
             data={userLookupOptions}
             value={formData.user_id ? String(formData.user_id) : null}
             onChange={(val) => setFormData({ ...formData, user_id: val })}
@@ -272,25 +274,25 @@ const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
             disabled={lookupLoading}
           />
           <Switch
-            label="Grid State (ON/OFF)"
+            label={t('modal.gridStateLabel')}
             checked={formData.grid_state}
             onChange={(e) => setFormData({ ...formData, grid_state: e.currentTarget.checked })}
             onLabel={<FontAwesomeIcon icon="lightbulb" />}
             offLabel={<FontAwesomeIcon icon="lightbulb" />}
           />
           <DateTimePicker
-            label="Received At (optional, defaults to now)"
-            placeholder="Select date and time"
+            label={t('modal.receivedAtLabel')}
+            placeholder={t('modal.selectUserPlaceholder')}
             value={formData.received_at}
             onChange={(val) => setFormData({ ...formData, received_at: val })}
             clearable
           />
           <Group justify="flex-end" mt="md">
             <Button variant="default" onClick={handleCloseModal}>
-              Cancel
+              {t('button.cancel')}
             </Button>
             <Button onClick={handleCreate} disabled={!formData.user_id}>
-              Create
+              {t('button.create') ?? t('button.add')}
             </Button>
           </Group>
         </Stack>

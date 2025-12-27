@@ -11,6 +11,8 @@ import enStations from './en/stations.json';
 import ukStations from './uk/stations.json';
 import enChats from './en/chats.json';
 import ukChats from './uk/chats.json';
+import enExtData from './en/extData.json';
+import ukExtData from './uk/extData.json';
 
 export const AVAILABLE_LANGUAGES = ['en', 'uk'];
 
@@ -31,6 +33,7 @@ i18n
         bots: enBots,
         stations: enStations,
         chats: enChats,
+        extData: enExtData,
       },
       uk: {
         common: ukCommon,
@@ -38,6 +41,7 @@ i18n
         bots: ukBots,
         stations: ukStations,
         chats: ukChats,
+        extData: ukExtData,
       },
     },
 

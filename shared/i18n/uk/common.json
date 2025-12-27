@@ -49,7 +49,8 @@
     "externalLogs": "Зовнішні події",
     "users": "Користувачі",
     "buildings": "Будівлі",
-    "notFound": "Не знайдено"
+    "notFound": "Не знайдено",
+    "create": "Створити"
   },
   "profile": "Профіль",
   "logOut": "Вихід",
