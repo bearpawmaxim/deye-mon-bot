@@ -2,7 +2,7 @@ import { Provider } from 'react-redux';
 import './App.css'
 import Routes from './routes';
 import { store } from './stores/store';
-import { AuthHeaderInjector } from './components';
+import { AuthHeaderInjector, Snowfall } from './components';
 import { MantineProvider } from '@mantine/core';
 import theme from './theme';
 import { DatesProviderWrapper, LoadingProvider } from './providers';
@@ -31,6 +31,7 @@ function App() {
           <DatesProviderWrapper>
             <LoadingProvider>
               <AuthHeaderInjector />
+              <Snowfall />
               <Routes />
             </LoadingProvider>
           </DatesProviderWrapper>

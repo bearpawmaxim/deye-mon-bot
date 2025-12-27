@@ -1,5 +1,5 @@
 import { Box, Card, Flex, Group, MantineColor, Text, ThemeIcon, useMantineTheme, useMantineColorScheme, getContrastColor, Title, alpha, lighten, parseThemeColor, Progress, ProgressProps, LoadingOverlay } from "@mantine/core"
-import { FC, ReactNode, useMemo } from "react"
+import { FC, ReactNode, useMemo, useRef, useState } from "react"
 import classes from './styles/statCard.module.css';
 
 type Row = {
@@ -9,6 +9,7 @@ type Row = {
 };
 
 type StatsCardProps = {
+  christmasTree: boolean;
   title: string;
   bgColor: MantineColor;
   icon?: ReactNode;
@@ -20,6 +21,7 @@ type StatsCardProps = {
 };
 
 export const StatsCard: FC<StatsCardProps> = ({
+  christmasTree = false,
   title,
   bgColor,
   icon,
@@ -68,11 +70,80 @@ export const StatsCard: FC<StatsCardProps> = ({
     [resolvedStatBgColor, theme],
   );
 
+  const [hovered, setHovered] = useState(false);
+
+  const treesRef = useRef<
+    { scale: number; x: number; opacity: number; zIndex: number }[]
+  >([]);
+
+  if (treesRef.current.length === 0) {
+    const rand = (min: number, max: number) =>
+      // eslint-disable-next-line react-hooks/purity
+      Math.random() * (max - min) + min;
+
+    const TREE_COUNT = 6;
+    const BASE_STEP = 90;
+
+    treesRef.current = Array.from({ length: TREE_COUNT }).map((_, i) => {
+
+      if (i === 0) {
+        return {
+          scale: 1,
+          x: 0,
+          opacity: 1,
+          zIndex: 10,
+        };
+      }
+
+      const scale = rand(0.9, 0.3);
+      const opacity = rand(0.3, 0.6);
+
+      return {
+        scale,
+        x: i * BASE_STEP + rand(-30, 30),
+        opacity: opacity,
+        zIndex: Math.round(scale * 10),
+      };
+    });
+  }
+
   return (    
-    <Card shadow="xs" padding="lg" radius="md" bg={resolvedBgColor}
+    <Card shadow="xs" padding="lg" radius="md"
+      bg={resolvedBgColor}
       className={classes.cardHover}
-      style={{ cursor: onClick ? 'pointer' : 'default' }} onClick={onClick}
+      style={{ cursor: onClick ? 'pointer' : 'default' }}
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
+      {christmasTree && (
+        <Box className={classes.treesContainer}>
+          {treesRef.current.map((t, i) => {
+            const parallaxX = i === 0
+              ? 0
+              : hovered
+                ? (0.5 - t.scale) * 50
+                : 0;
+
+            return <Box
+              key={i}
+              className={classes.treeWrapper}
+              style={{
+                transform: `
+                  translateX(${t.x + parallaxX}px)
+                  scale(${t.scale})
+                `,
+                opacity: t.opacity,
+                zIndex: t.zIndex,
+              }}
+            >
+              <Box className={classes.treeTriangle1} />
+              <Box className={classes.treeTriangle2} />
+              <Box className={classes.treeTriangle3} />
+            </Box>
+          })}
+        </Box>
+      )}
       <Group justify="space-between" pos="relative">
         <Box style={{ borderColor: iconColor }}>
           <Group>

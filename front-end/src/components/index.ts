@@ -13,3 +13,4 @@ export * from './iconButton'
 export * from './langPicker';
 export * from './localizableValueEditor';
 export * from './countryFlag';
+export * from './Snowfall';

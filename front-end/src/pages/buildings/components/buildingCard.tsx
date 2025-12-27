@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconName } from "@fortawesome/free-solid-svg-icons";
 import { openPowerLogsDialog } from "../../../dialogs";
 import { ProgressProps, useMantineTheme } from "@mantine/core";
+import { isChristmasSeason, usePageTranslation } from "../../../utils";
 import i18n from "../../../i18n";
 import { TFunction } from "i18next";
 
@@ -177,8 +178,11 @@ export const BuildingCard: FC<BuildingCardProps> = ({ t, building, buildingSumma
     return null;
   }, [buildingSummary, getBatteryColor]);
 
+  const isChristmas = useMemo(() => isChristmasSeason(), []);
+
   return (
     <StatsCard
+      christmasTree={isChristmas}
       loading={loadingSummary}
       key={`building_${building.id}`}
       title={buildingName}
