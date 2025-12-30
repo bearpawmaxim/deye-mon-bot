@@ -407,7 +407,6 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
           },
           {
             id: 'actions',
-            header: 'Actions',
             meta: {
               dataType: 'actions',
               actions: [

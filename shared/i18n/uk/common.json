@@ -62,5 +62,10 @@
   "table": {
     "refresh": "Оновити",
     "totalRecordsFormat": "Всього: {{totalRecords}}"
+  },
+  "units": {
+    "kW": "кВт",
+    "kWh": "кВт·год",
+    "percent": "%"
   }
 }

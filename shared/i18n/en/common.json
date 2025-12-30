@@ -63,5 +63,10 @@
   "table": {
     "refresh": "Refresh",
     "totalRecordsFormat": "Total: {{totalRecords}}"
+  },
+  "units": {
+    "kW": "kW",
+    "kWh": "kWh",
+    "percent": "%"
   }
 }

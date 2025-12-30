@@ -242,14 +242,13 @@ const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
             },
             {
               id: 'actions',
-              header: 'Actions',
               meta: {
                 dataType: 'actions',
                 actions: [
                   {
                     icon: 'trash',
                     color: 'red',
-                    text: 'Delete',
+                    text: t('button.delete'),
                     onlyIcon: true,
                     clickHandler: (row) => handleDelete(row),
                   },
