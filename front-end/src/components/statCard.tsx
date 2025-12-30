@@ -111,7 +111,11 @@ export const StatsCard: FC<StatsCardProps> = ({
     <Card shadow="xs" padding="lg" radius="md"
       bg={resolvedBgColor}
       className={classes.cardHover}
-      style={{ cursor: onClick ? 'pointer' : 'default' }}
+      style={{
+        cursor: onClick ? 'pointer' : 'default',
+        overflow: 'hidden',
+        position: 'relative',
+      }}
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -124,13 +128,14 @@ export const StatsCard: FC<StatsCardProps> = ({
               : hovered
                 ? (0.5 - t.scale) * 50
                 : 0;
+            const baseY = i === 0 ? 40 : 10;
 
             return <Box
               key={i}
               className={classes.treeWrapper}
               style={{
                 transform: `
-                  translateX(${t.x + parallaxX}px)
+                  translate(${t.x + parallaxX}px, ${baseY}px)
                   scale(${t.scale})
                 `,
                 opacity: t.opacity,

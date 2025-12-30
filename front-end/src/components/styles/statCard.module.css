@@ -58,6 +58,7 @@
   position: absolute;
   left: 0;
   top: 0;
+  height: 300px;
   width: 100%;
   pointer-events: none;
   opacity: 0.3;
@@ -67,8 +68,8 @@
   transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
   position: absolute;
-  bottom: -200px;
-  height: 200px;
+  top: 0;
+  height: 100%;
   left: 0;
   transform-origin: bottom center;
 }
@@ -78,20 +79,20 @@
 }
 .treeTriangle3 {
   position: absolute;
-  width: 250px;
+  width: 190px;
   height: 100px;
-  top: 149px;
-  left: -93px;
+  top: 139px;
+  left: -62px;
   background: white;
   clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
   z-index: 1;
 }
 .treeTriangle2 {
   position: absolute;
-  width: 130px;
-  height: 70px;
-  top: 94px;
-  left: -34px;
+  width: 120px;
+  height: 80px;
+  top: 70px;
+  left: -28px;
   clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
   background: white;
   z-index: 2;
@@ -99,8 +100,8 @@
 .treeTriangle1 {
   position: absolute;
   width: 70px;
-  height: 70px;
-  top: 39px;
+  height: 80px;
+  top: 0;
   left: -4px;
   background: white;
   clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
