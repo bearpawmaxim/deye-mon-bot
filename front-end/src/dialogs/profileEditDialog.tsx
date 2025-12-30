@@ -9,12 +9,14 @@ import { createSelector } from "@reduxjs/toolkit";
 import { editProfile, finishEditingProfile, logout, startEditingProfile } from "../stores/slices";
 import { connect } from "react-redux";
 import { createSearchParams } from "react-router-dom";
+import { TFunction } from "i18next";
 
-export function openProfileEditDialog() {
+export function openProfileEditDialog(t: TFunction) {
   type InnerProps = {
     profile: ProfileEdit;
     userNames: Array<string>;
     loading: boolean;
+    t: TFunction;
   };
 
   const selectAuth = (state: RootState) => state.auth;
@@ -30,13 +32,14 @@ export function openProfileEditDialog() {
     (users) => users.users.map(m => m.name),
   );
 
-  const mapStateToProps = (state: RootState): InnerProps => ({
+  const mapStateToProps = (state: RootState, ownProps: { t: TFunction }): InnerProps => ({
     profile: state.auth.editingProfile!,
     userNames: selectUserNames(state),
     loading: selectLoading(state),
+    t: ownProps.t,
   });
 
-  const Inner: FC<InnerProps> = ({ profile, userNames, loading }) => {
+  const Inner: FC<InnerProps> = ({ profile, userNames, loading, t }) => {
     const dispatch = useAppDispatch();
 
     useEffect(() => {
@@ -79,7 +82,7 @@ export function openProfileEditDialog() {
       fields: [
         {
           name: "userName",
-          title: "Login",
+          title: t ? t('profile.loginLabel') : 'Login',
           required: true,
         },
       ],
@@ -129,20 +132,20 @@ export function openProfileEditDialog() {
           onClick={handleChangePassword}
           disabled={isDirty}
         >
-          Change password
+          {t ? t('profile.changePassword') : 'Change password'}
         </Button>
         <Group justify="flex-end">
           <Button
             onClick={handleSave}
             disabled={!isDirty || !isValid}
           >
-            Save
+            {t ? t('button.save') : 'Save'}
           </Button>
           <Button
             variant="default"
             onClick={handleCancel}
           >
-            Cancel
+            {t ? t('button.cancel') : 'Cancel'}
           </Button>
         </Group>
       </Group>
@@ -152,11 +155,11 @@ export function openProfileEditDialog() {
   const ConnectedInner = connect(mapStateToProps)(Inner);
 
   const id: string | undefined = modals.open({
-    title: "Edit profile",
+    title: t('profile.editTitle'),
     centered: true,
     withCloseButton: false,
     closeOnClickOutside: false,
     closeOnEscape: false,
-    children: <ConnectedInner />,
+    children: <ConnectedInner t={t} />,
   });
 }

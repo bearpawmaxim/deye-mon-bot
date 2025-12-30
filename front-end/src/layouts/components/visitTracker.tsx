@@ -45,18 +45,18 @@ export const VisitTracker: FC = () => {
 
   return (
     <Box fz='xs'>
-      {t('visits.unique')}:
+      {t('visits.unique')}:&nbsp;
       { isMobile
-          ? `${visitData.dailyVisitors} daily, `
+          ? t('visits.dailyMobile', { dailyVisitors: visitData.dailyVisitors })
           : <Badge variant="outline" m="xs">
         <FontAwesomeIcon icon="eye" />&nbsp;
-        {t('visits.daily')}: {visitData.dailyVisitors}
+        {t('visits.daily', { dailyVisitors: visitData.dailyVisitors })}
       </Badge> }
       { isMobile
-        ? `${visitData.totalVisitors} total`
+        ? t('visits.totalMobile', { totalVisitors: visitData.totalVisitors })
           : <Badge variant="outline">
         <FontAwesomeIcon icon="eye" />&nbsp;
-        {t('visits.total')}: {visitData.totalVisitors}
+        {t('visits.total', { totalVisitors: visitData.totalVisitors })}
       </Badge> }
     </Box>
   );

@@ -15,4 +15,64 @@
     "tooltip": "Редагувати ємність батареї",
     "valueLabel": "{{value}} кВт·год"
   }
+  ,
+  "back": "Повернутися до станцій",
+  "timeRange": {
+    "label": "Діапазон часу",
+    "options": {
+      "lastHour": "Остання година",
+      "last6h": "Останні 6 годин",
+      "last12h": "Останні 12 годин",
+      "last24h": "Останні 24 години",
+      "last2Days": "Останні 2 дні",
+      "lastWeek": "Останній тиждень"
+    }
+  },
+  "stationInfo": {
+    "stationId": "ID станції",
+    "connectionStatus": "Статус підключення",
+    "gridType": "Тип мережі",
+    "installedCapacity": "Встановлена потужність",
+    "batteryCapacity": "Ємність батареї",
+    "lastUpdate": "Останнє оновлення",
+    "recordsProcessed": "Оброблені записи"
+  },
+  "currentValues": "Поточні значення",
+  "stat": {
+    "batterySoc": "SOC батареї",
+    "generationPower": "Виробництво",
+    "consumptionPower": "Споживання",
+    "gridPower": "Потужність мережі"
+  },
+  "charts": {
+    "powerDetails": "Деталі потужності",
+    "batterySoc": "Стан заряду батареї",
+    "series": {
+      "generation": "Виробництво",
+      "consumption": "Споживання",
+      "charge": "Заряд",
+      "discharge": "Розряд",
+      "batterySoc": "SOC батареї"
+    }
+  },
+  "summary": {
+    "title": "Статистичне резюме",
+    "columns": {
+      "parameter": "Параметр",
+      "current": "Поточне",
+      "average": "Середнє",
+      "minimum": "Мінімум",
+      "maximum": "Максимум"
+    },
+    "params": {
+      "batterySoc": "SOC батареї (%)",
+      "generationPower": "Виробництво (кВт)",
+      "consumptionPower": "Споживання (кВт)",
+      "chargePower": "Заряд (кВт)",
+      "dischargePower": "Розряд (кВт)",
+      "gridPower": "Потужність мережі (кВт)",
+      "irradiance": "Сонячна радіація (W/m²)"
+    }
+  },
+  "noData": "Немає даних для вибраного діапазону часу"
 }

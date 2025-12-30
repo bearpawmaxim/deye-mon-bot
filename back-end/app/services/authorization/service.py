@@ -8,6 +8,7 @@ from passlib.context import CryptContext
 from app.settings import Settings
 from shared.models import User
 from app.repositories import IUsersRepository
+from shared.services.translation.service import TranslationService
 from shared.utils.jwt_utils import create_access_token, create_refresh_token
 from shared.utils.key_generation import generate_password_reset_token
 
@@ -29,9 +30,9 @@ class AuthorizationService:
 
     async def get_current_user(self, token: str = Depends(oauth2_scheme)) -> str:
         credentials_error = HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
-            headers={"WWW-Authenticate": "Bearer"},
+            status_code = status.HTTP_401_UNAUTHORIZED,
+            detail      = TranslationService.t("common.error.invalidToken"),
+            headers     = {"WWW-Authenticate": "Bearer"},
         )
 
         try:
@@ -48,11 +49,11 @@ class AuthorizationService:
     async def _get_user(self, user_name: str, password: str):
         user = await self._users_repository.get_user(user_name)
         if not user:
-            raise ValueError("User not found")
+            raise ValueError(TranslationService.t("common.error.invalidLoginOrPassword"))
         if user.is_reporter:
-            raise ValueError("Reporter cannot log in")
+            raise ValueError(TranslationService.t("common.error.invalidLoginOrPassword"))
         if not pwd_context.verify(password, user.password):
-            raise ValueError("Invalid password")
+            raise ValueError(TranslationService.t("common.error.invalidLoginOrPassword"))
         return user
 
     async def login(self, user_name: str, password: str):
@@ -78,9 +79,9 @@ class AuthorizationService:
     async def refresh_token(self, user_name):
         user = await self._users_repository.get_user(user_name)
         if not user:
-            raise ValueError("User not found")
+            raise ValueError(TranslationService.t("common.error.userNotFound"))
         if user.is_reporter:
-            raise ValueError("Reporter cannot log in")
+            raise ValueError(TranslationService.t("common.error.userCannotLogIn"))
 
         return create_access_token(
             identity   = user.name,
@@ -101,7 +102,7 @@ class AuthorizationService:
     async def start_change_password(self, user_name: str, hours: int = 1):
         user = await self._users_repository.get_user(user_name)
         if not user:
-            raise ValueError("User not found")
+            raise ValueError(TranslationService.t("common.error.userNotFound"))
         return await self._generate_passwd_reset_token(user, hours)
 
     async def _validate_reset_token(self, user: User):
@@ -112,7 +113,7 @@ class AuthorizationService:
 
         if expiration < datetime.now(timezone.utc):
             await self._users_repository.remove_password_reset_token(user.id)
-            raise ValueError("Token expired")
+            raise ValueError(TranslationService.t('common.error.invalidToken'))
 
         return user
 
@@ -123,14 +124,14 @@ class AuthorizationService:
     async def cancel_change_password(self, user_name: str):
         user = await self._users_repository.get_user(user_name)
         if user is None:
-            raise ValueError(f"Cannot find user '{user_name}'")
+            raise ValueError(TranslationService.t("common.error.userNotFound"))
 
         await self._users_repository.remove_password_reset_token(user.id)
 
     async def change_password(self, token: str, new_password: str):
         user = await self._users_repository.get_user_by_reset_token(token)
         if user is None:
-            raise ValueError("Cannot find user")
+            raise ValueError(TranslationService.t("common.error.userNotFound"))
 
         await self._validate_reset_token(user)
 

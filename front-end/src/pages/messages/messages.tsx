@@ -5,6 +5,7 @@ import { fetchMessages, saveMessageStates } from "../../stores/thunks";
 import { ServerMessageListItem } from "../../stores/types";
 import { useNavigate } from "react-router-dom";
 import { PageHeaderButton, useHeaderContent } from "../../providers";
+import { usePageTranslation } from "../../utils";
 import { DataTable, ErrorMessage, Page } from "../../components";
 import { ColumnDataType, LookupSchema } from "../../types";
 import { selectMessagesChanged } from "../../stores/selectors";
@@ -34,15 +35,20 @@ const Component: FC<ComponentProps> = ({ messages, loading, error, dataChanged }
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   
-  const showUnsavedChangesModal = (confirmAction: () => void) => {
+  const t = usePageTranslation('messages');
+
+  const showUnsavedChangesModal = useCallback((confirmAction: () => void) => {
       modals.openConfirmModal({
-        title: 'Unsaved changes',
-        children: `The page contains unsaved changes, which would be lost. Are you sure?`,
-        labels: { confirm: 'Yes', cancel: 'No' },
+        title: t('unsaved.title'),
+        children: t('unsaved.body'),
+        labels: { 
+          confirm: t('buttons.yes') ?? t('button.confirm'),
+          cancel: t('buttons.no') ?? t('button.cancel'),
+        },
         confirmProps: { color: 'red' },
         onConfirm: confirmAction
       });
-  };
+  }, [t]);
 
   const onCreateClick = useCallback(() => {
     const create = () => navigate(`/messages/create`);
@@ -51,7 +57,7 @@ const Component: FC<ComponentProps> = ({ messages, loading, error, dataChanged }
       return;
     }
     create();
-  }, [dataChanged, navigate]);
+  }, [dataChanged, navigate, showUnsavedChangesModal]);
 
   const onEditClick = (messageId: ObjectId) => {
     const edit = () => navigate(`/messages/edit/${messageId}`);
@@ -65,10 +71,10 @@ const Component: FC<ComponentProps> = ({ messages, loading, error, dataChanged }
   const fetchData = useCallback(() => dispatch(fetchMessages()), [dispatch]);
 
   const getHeaderButtons = useCallback((): PageHeaderButton[] => [
-    { text: 'Create', icon: "add", color: "teal", onClick: () => onCreateClick(), disabled: false, },
-    { text: 'Save', icon: "save", color: "green", onClick: () => dispatch(saveMessageStates()), disabled: !dataChanged, },
-    { text: 'Cancel', icon: "cancel", color: "black", onClick: fetchData, disabled: !dataChanged, },
-  ], [dataChanged, dispatch, fetchData, onCreateClick]);
+    { text: t('button.create') ?? 'Create', icon: "add", color: "teal", onClick: () => onCreateClick(), disabled: false, },
+    { text: t('button.save') ?? 'Save', icon: "save", color: "green", onClick: () => dispatch(saveMessageStates()), disabled: !dataChanged, },
+    { text: t('button.cancel') ?? 'Cancel', icon: "cancel", color: "black", onClick: fetchData, disabled: !dataChanged, },
+  ], [dataChanged, dispatch, fetchData, onCreateClick, t]);
   const { setHeaderButtons, updateButtonAttributes } = useHeaderContent();
   useEffect(() => {
     setHeaderButtons(getHeaderButtons());
@@ -105,19 +111,19 @@ const Component: FC<ComponentProps> = ({ messages, loading, error, dataChanged }
       columns={[
         {
           id: 'name',
-          header: 'Name',
+          header: t('columns.name'),
           accessorKey: 'name',
           enableSorting: true,
         },
         {
           id: 'channel',
-          header: 'Channel',
+          header: t('columns.channel'),
           accessorKey: 'channelName',
           enableSorting: true,
         },
         {
           id: 'stations',
-          header: 'Stations',
+          header: t('columns.stations'),
           accessorKey: 'stations',
           enableSorting: true,
           cell: ({ row }) => <StationsCell stations={row.original.stations} stationsLookup={stations} />,
@@ -138,13 +144,13 @@ const Component: FC<ComponentProps> = ({ messages, loading, error, dataChanged }
         },
         {
           id: 'bot',
-          header: 'Bot',
+          header: t('columns.bot'),
           accessorKey: 'botName',
           enableSorting: true,
         },
         {
           id: 'lastMessageSent',
-          header: 'Last message sent',
+          header: t('columns.lastMessageSent'),
           accessorKey: 'lastSentTime',
           enableSorting: true,
           meta: {
@@ -153,7 +159,7 @@ const Component: FC<ComponentProps> = ({ messages, loading, error, dataChanged }
         },
         {
           id: 'enabled',
-          header: 'Enabled',
+          header: t('columns.enabled'),
           accessorKey: 'enabled',
           enableSorting: true,
           meta: {
@@ -168,7 +174,7 @@ const Component: FC<ComponentProps> = ({ messages, loading, error, dataChanged }
             dataType: 'actions',
             actions: [
               {
-                text: 'Edit',
+                text: t('actions.edit') ?? 'Edit',
                 onlyIcon: true,
                 icon: 'edit',
                 color: 'teal',

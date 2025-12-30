@@ -176,7 +176,7 @@ export const Navbar: FC<NavbarProps> = ({ t, user, isNavbarCollapsed, toggleNavb
               onClick={onProfileClick}
             >
               <FontAwesomeIcon icon="user-md" />
-              Profile
+              {t('profile.title')}
             </Button>
             <Divider orientation="vertical" />
             <Button
@@ -184,7 +184,7 @@ export const Navbar: FC<NavbarProps> = ({ t, user, isNavbarCollapsed, toggleNavb
               onClick={onLogoutClick}
             >
               <FontAwesomeIcon icon="sign-out" />
-              Log out
+              {t('logOut')}
             </Button>
           </Group>
           <Divider hiddenFrom="md"/>

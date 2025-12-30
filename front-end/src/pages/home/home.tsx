@@ -8,6 +8,8 @@ import { ErrorMessage } from "../../components";
 import { ComboboxItem, Select, SimpleGrid } from "@mantine/core";
 import useLocalStorage from "../../hooks/useLocalStorage";
 import { initGA, trackPageView } from "../../utils/analytics";
+import { usePageTranslation } from "../../utils";
+import { TFunction } from "i18next";
 
 type ComponentProps = {
   stationsData: Array<StationDataItem>;
@@ -21,40 +23,21 @@ const mapStateToProps = (state: RootState): ComponentProps => ({
   loading: state.stationsData.loading,
 });
 
-const intervalOptions: ComboboxItem[] = [
-  {
-    label: 'Last 15 minutes',
-    value: '900',
-  },
-  {
-    label: 'Last 30 minutes',
-    value: '1800',
-  },
-  {
-    label: 'Last 1 hour',
-    value: '3600',
-  },
-  {
-    label: 'Last 3 hours',
-    value: (3600 * 3).toString(),
-  },
-  {
-    label: 'Last 6 hours',
-    value: (3600 * 6).toString(),
-  },
-  {
-    label: 'Last day',
-    value: (3600 * 12).toString(),
-  },
-  {
-    label: 'Last two days',
-    value: (3600 * 24).toString(),
-  },
+const buildIntervalOptions = (t: TFunction): ComboboxItem[] => [
+  { label: t('interval.last15'), value: '900' },
+  { label: t('interval.last30'), value: '1800' },
+  { label: t('interval.last1h'), value: '3600' },
+  { label: t('interval.last3h'), value: (3600 * 3).toString() },
+  { label: t('interval.last6h'), value: (3600 * 6).toString() },
+  { label: t('interval.lastDay'), value: (3600 * 12).toString() },
+  { label: t('interval.lastTwoDays'), value: (3600 * 24).toString() },
 ];
 
 const Component: FC<ComponentProps> = ({ stationsData, loading, error }) => {
   const dispatch = useAppDispatch();
+  const t = usePageTranslation('home');
   const [dataInterval, setDataInterval] = useLocalStorage('home_graphs_interval', '1800');
+  const intervalOptions = buildIntervalOptions(t);
 
   useEffect(() => {
     dispatch(fetchStationsData(parseInt(dataInterval)));
@@ -80,13 +63,13 @@ const Component: FC<ComponentProps> = ({ stationsData, loading, error }) => {
   return <>
     <SimpleGrid cols={{ base: 1, sm: 2, md: 2, lg: 4 }}>
       <Select
-        label={'Interval:'}
+        label={t('label.interval')}
         value={dataInterval}
         data={intervalOptions}
         onChange={onDataIntervalChange}
       />
     </SimpleGrid>
-    { !error && stationsData.map(data => <StationChartCard loading={loading} key={`st_data_${data.id}`} data={data} />)}
+    { !error && stationsData.map(data => <StationChartCard t={t} loading={loading} key={`st_data_${data.id}`} data={data} />)}
     { error && <ErrorMessage content={error} />}
   </>;
 }

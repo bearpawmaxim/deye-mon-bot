@@ -15,4 +15,64 @@
     "tooltip": "Edit battery capacity",
     "valueLabel": "{{value}} kWh"
   }
+  ,
+  "back": "Back to Stations",
+  "timeRange": {
+    "label": "Time Range",
+    "options": {
+      "lastHour": "Last Hour",
+      "last6h": "Last 6 Hours",
+      "last12h": "Last 12 Hours",
+      "last24h": "Last 24 Hours",
+      "last2Days": "Last 2 Days",
+      "lastWeek": "Last Week"
+    }
+  },
+  "stationInfo": {
+    "stationId": "Station ID",
+    "connectionStatus": "Connection Status",
+    "gridType": "Grid Type",
+    "installedCapacity": "Installed Capacity",
+    "batteryCapacity": "Battery Capacity",
+    "lastUpdate": "Last Update",
+    "recordsProcessed": "Records Processed"
+  },
+  "currentValues": "Current Values",
+  "stat": {
+    "batterySoc": "Battery SOC",
+    "generationPower": "Generation Power",
+    "consumptionPower": "Consumption Power",
+    "gridPower": "Grid Power"
+  },
+  "charts": {
+    "powerDetails": "Power Details",
+    "batterySoc": "Battery State of Charge",
+    "series": {
+      "generation": "Generation",
+      "consumption": "Consumption",
+      "charge": "Charge",
+      "discharge": "Discharge",
+      "batterySoc": "Battery SOC"
+    }
+  },
+  "summary": {
+    "title": "Statistical Summary",
+    "columns": {
+      "parameter": "Parameter",
+      "current": "Current",
+      "average": "Average",
+      "minimum": "Minimum",
+      "maximum": "Maximum"
+    },
+    "params": {
+      "batterySoc": "Battery SOC (%)",
+      "generationPower": "Generation Power (kW)",
+      "consumptionPower": "Consumption Power (kW)",
+      "chargePower": "Charge Power (kW)",
+      "dischargePower": "Discharge Power (kW)",
+      "gridPower": "Grid Power (kW)",
+      "irradiance": "Solar Irradiance (W/m²)"
+    }
+  },
+  "noData": "No data available for the selected time range"
 }

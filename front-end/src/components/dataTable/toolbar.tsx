@@ -1,5 +1,6 @@
 import { ActionIcon, Badge, Text, Group, Tooltip } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useTranslation } from "react-i18next";
 
 type ToolbarProps = {
   totalRecords: number;
@@ -7,12 +8,14 @@ type ToolbarProps = {
 };
 
 export const Toolbar = ({ totalRecords, refresh }: ToolbarProps) => {
+  const { t } = useTranslation();
+
   return (
     <Group gap={5} justify="flex-end" pb="sm" pr="sm">
       <Tooltip
         label={
           <Text fw={500} fz={13}>
-            Refresh
+            {t('table.refresh')}
           </Text>
         }
       >
@@ -21,7 +24,7 @@ export const Toolbar = ({ totalRecords, refresh }: ToolbarProps) => {
         </ActionIcon>
       </Tooltip>
       <Badge h={22}  color={'teal'} radius={"sm"}>
-        Records: {totalRecords}
+        {t('table.totalRecordsFormat', { totalRecords })}
       </Badge>
     </Group>
   );

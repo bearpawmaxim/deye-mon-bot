@@ -24,6 +24,7 @@ import { StationDetailsData } from "../../stores/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toLocalDateTime } from "../../utils/dateUtils";
 import { ObjectId } from "../../schemas";
+import { usePageTranslation } from "../../utils";
 
 type ComponentProps = {
   detailsData: StationDetailsData | null;
@@ -63,6 +64,7 @@ const Component: FC<ComponentProps> = ({
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { stationId } = useParams<{ stationId: ObjectId }>();
+  const t = usePageTranslation('stations');
   const [timeRange, setTimeRange] = useState<string>("86400"); // 24 hours default
 
   const fetchData = useCallback(() => {
@@ -159,19 +161,19 @@ const Component: FC<ComponentProps> = ({
             variant="light"
             onClick={goBack}
           >
-            Back to Stations
+            {t('back')}
           </Button>
           <Select
-            label="Time Range"
+            label={t('timeRange.label')}
             value={timeRange}
             onChange={(value) => setTimeRange(value || "86400")}
             data={[
-              { value: "3600", label: "Last Hour" },
-              { value: "21600", label: "Last 6 Hours" },
-              { value: "43200", label: "Last 12 Hours" },
-              { value: "86400", label: "Last 24 Hours" },
-              { value: "172800", label: "Last 2 Days" },
-              { value: "604800", label: "Last Week" },
+              { value: "3600", label: t('timeRange.options.lastHour') },
+              { value: "21600", label: t('timeRange.options.last6h') },
+              { value: "43200", label: t('timeRange.options.last12h') },
+              { value: "86400", label: t('timeRange.options.last24h') },
+              { value: "172800", label: t('timeRange.options.last2Days') },
+              { value: "604800", label: t('timeRange.options.lastWeek') },
             ]}
             style={{ width: 200 }}
           />
@@ -186,14 +188,14 @@ const Component: FC<ComponentProps> = ({
               </Title>
               <Grid>
                 <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-                  <Text size="sm" c="dimmed">
-                    Station ID
-                  </Text>
+                      <Text size="sm" c="dimmed">
+                        {t('stationInfo.stationId')}
+                      </Text>
                   <Text fw={500}>{detailsData.station.stationId}</Text>
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
                   <Text size="sm" c="dimmed">
-                    Connection Status
+                        {t('stationInfo.connectionStatus')}
                   </Text>
                   <Badge
                     color={
@@ -207,7 +209,7 @@ const Component: FC<ComponentProps> = ({
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
                   <Text size="sm" c="dimmed">
-                    Grid Type
+                    {t('stationInfo.gridType')}
                   </Text>
                   <Text fw={500}>
                     {detailsData.station.gridInterconnectionType || "N/A"}
@@ -215,23 +217,23 @@ const Component: FC<ComponentProps> = ({
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
                   <Text size="sm" c="dimmed">
-                    Installed Capacity
+                    {t('stationInfo.installedCapacity')}
                   </Text>
                   <Text fw={500}>
-                    {detailsData.station.installedCapacity || 0} kW
+                    {detailsData.station.installedCapacity || 0} {t('units.kW') ?? 'kW'}
                   </Text>
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
                   <Text size="sm" c="dimmed">
-                    Battery Capacity
+                    {t('stationInfo.batteryCapacity')}
                   </Text>
                   <Text fw={500}>
-                    {detailsData.station.batteryCapacity || 0} kWh
+                    {detailsData.station.batteryCapacity || 0} {t('units.kWh') ?? 'kWh'}
                   </Text>
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
                   <Text size="sm" c="dimmed">
-                    Last Update
+                    {t('stationInfo.lastUpdate')}
                   </Text>
                   <Text fw={500}>
                     {detailsData.station.lastUpdateTime
@@ -241,7 +243,7 @@ const Component: FC<ComponentProps> = ({
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
                   <Text size="sm" c="dimmed">
-                    Records Processed
+                    {t('stationInfo.recordsProcessed')}
                   </Text>
                   <Text fw={700} size="lg" c="blue">
                     {detailsData.dataCount}
@@ -253,37 +255,37 @@ const Component: FC<ComponentProps> = ({
             {chartData.length > 0 && statistics ? (
               <>
                 {/* Current Stats */}
-                <Title order={3}>Current Values</Title>
+                <Title order={3}>{t('currentValues')}</Title>
                 <Grid>
                   <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
                     <StatCard
-                      title="Battery SOC"
+                      title={t('stat.batterySoc')}
                       value={statistics.batterySoc.current}
-                      unit="%"
+                      unit={t('units.percent') ?? '%'}
                       color="blue"
                     />
                   </Grid.Col>
                   <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
                     <StatCard
-                      title="Generation Power"
+                      title={t('stat.generationPower')}
                       value={statistics.generationPower.current / 1000}
-                      unit="kW"
+                      unit={t('units.kW') ?? 'kW'}
                       color="green"
                     />
                   </Grid.Col>
                   <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
                     <StatCard
-                      title="Consumption Power"
+                      title={t('stat.consumptionPower')}
                       value={statistics.consumptionPower.current / 1000}
-                      unit="kW"
+                      unit={t('units.kW') ?? 'kW'}
                       color="orange"
                     />
                   </Grid.Col>
                   <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
                     <StatCard
-                      title="Grid Power"
+                      title={t('stat.gridPower')}
                       value={statistics.gridPower.current / 1000}
-                      unit="kW"
+                      unit={t('units.kW') ?? 'kW'}
                       color="violet"
                     />
                   </Grid.Col>
@@ -292,7 +294,7 @@ const Component: FC<ComponentProps> = ({
                 {/* Power Charts */}
                 <Card withBorder radius="md" p="md">
                   <Title order={4} mb="md">
-                    Power Details
+                    {t('charts.powerDetails')}
                   </Title>
                   <Box style={{ height: 300 }}>
                     <AreaChart
@@ -301,22 +303,22 @@ const Component: FC<ComponentProps> = ({
                       series={[
                         {
                           name: "generationPower",
-                          label: "Generation",
+                          label: t('charts.series.generation'),
                           color: "green.6",
                         },
                         {
                           name: "consumptionPower",
-                          label: "Consumption",
+                          label: t('charts.series.consumption'),
                           color: "orange.6",
                         },
                         {
                           name: "chargePower",
-                          label: "Charge",
+                          label: t('charts.series.charge'),
                           color: "cyan.6",
                         },
                         {
                           name: "dischargePower",
-                          label: "Discharge",
+                          label: t('charts.series.discharge'),
                           color: "red.6",
                         },
                       ]}
@@ -334,7 +336,7 @@ const Component: FC<ComponentProps> = ({
                 {/* Battery SOC Chart */}
                 <Card withBorder radius="md" p="md">
                   <Title order={4} mb="md">
-                    Battery State of Charge
+                    {t('charts.batterySoc')}
                   </Title>
                   <Box style={{ height: 250 }}>
                     <AreaChart
@@ -343,7 +345,7 @@ const Component: FC<ComponentProps> = ({
                       series={[
                         {
                           name: "batterySoc",
-                          label: "Battery SOC",
+                          label: t('charts.series.batterySoc'),
                           color: "blue.6",
                         },
                       ]}
@@ -363,22 +365,22 @@ const Component: FC<ComponentProps> = ({
                 {/* Statistics Table */}
                 <Card withBorder radius="md" p="md">
                   <Title order={4} mb="md">
-                    Statistical Summary
+                    {t('summary.title')}
                   </Title>
                   <Table.ScrollContainer minWidth={500}>
                     <Table striped highlightOnHover>
                       <Table.Thead>
                         <Table.Tr>
-                          <Table.Th>Parameter</Table.Th>
-                          <Table.Th>Current</Table.Th>
-                          <Table.Th>Average</Table.Th>
-                          <Table.Th>Minimum</Table.Th>
-                          <Table.Th>Maximum</Table.Th>
+                          <Table.Th>{t('summary.columns.parameter')}</Table.Th>
+                            <Table.Th>{t('summary.columns.current')}</Table.Th>
+                            <Table.Th>{t('summary.columns.average')}</Table.Th>
+                            <Table.Th>{t('summary.columns.minimum')}</Table.Th>
+                            <Table.Th>{t('summary.columns.maximum')}</Table.Th>
                         </Table.Tr>
                       </Table.Thead>
                       <Table.Tbody>
                       <Table.Tr>
-                        <Table.Td>Battery SOC (%)</Table.Td>
+                        <Table.Td>{t('summary.params.batterySoc')}</Table.Td>
                         <Table.Td>
                           {statistics.batterySoc.current.toFixed(2)}
                         </Table.Td>
@@ -393,7 +395,7 @@ const Component: FC<ComponentProps> = ({
                         </Table.Td>
                       </Table.Tr>
                       <Table.Tr>
-                        <Table.Td>Generation Power (kW)</Table.Td>
+                        <Table.Td>{t('summary.params.generationPower')}</Table.Td>
                         <Table.Td>
                           {(statistics.generationPower.current / 1000).toFixed(
                             2
@@ -410,7 +412,7 @@ const Component: FC<ComponentProps> = ({
                         </Table.Td>
                       </Table.Tr>
                       <Table.Tr>
-                        <Table.Td>Consumption Power (kW)</Table.Td>
+                        <Table.Td>{t('summary.params.consumptionPower')}</Table.Td>
                         <Table.Td>
                           {(statistics.consumptionPower.current / 1000).toFixed(
                             2
@@ -427,7 +429,7 @@ const Component: FC<ComponentProps> = ({
                         </Table.Td>
                       </Table.Tr>
                       <Table.Tr>
-                        <Table.Td>Charge Power (kW)</Table.Td>
+                        <Table.Td>{t('summary.params.chargePower')}</Table.Td>
                         <Table.Td>
                           {(
                             Math.abs(statistics.chargePower.current) / 1000
@@ -450,7 +452,7 @@ const Component: FC<ComponentProps> = ({
                         </Table.Td>
                       </Table.Tr>
                       <Table.Tr>
-                        <Table.Td>Discharge Power (kW)</Table.Td>
+                        <Table.Td>{t('summary.params.dischargePower')}</Table.Td>
                         <Table.Td>
                           {(statistics.dischargePower.current / 1000).toFixed(
                             2
@@ -467,7 +469,7 @@ const Component: FC<ComponentProps> = ({
                         </Table.Td>
                       </Table.Tr>
                       <Table.Tr>
-                        <Table.Td>Grid Power (kW)</Table.Td>
+                        <Table.Td>{t('summary.params.gridPower')}</Table.Td>
                         <Table.Td>
                           {(statistics.gridPower.current / 1000).toFixed(2)}
                         </Table.Td>
@@ -482,7 +484,7 @@ const Component: FC<ComponentProps> = ({
                         </Table.Td>
                       </Table.Tr>
                       <Table.Tr>
-                        <Table.Td>Solar Irradiance (W/m²)</Table.Td>
+                        <Table.Td>{t('summary.params.irradiance')}</Table.Td>
                         <Table.Td>
                           {statistics.irradiateIntensity.current.toFixed(2)}
                         </Table.Td>
@@ -504,7 +506,7 @@ const Component: FC<ComponentProps> = ({
             ) : (
               <Card withBorder radius="md" p="lg">
                 <Text ta="center" c="dimmed">
-                  No data available for the selected time range
+                  {t('noData')}
                 </Text>
               </Card>
             )}

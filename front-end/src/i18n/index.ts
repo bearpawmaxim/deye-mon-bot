@@ -2,8 +2,8 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import enCommon from './en/common.json';
-import enDashboard from './en/dashboard.json';
 import ukCommon from './uk/common.json';
+import enDashboard from './en/dashboard.json';
 import ukDashboard from './uk/dashboard.json';
 import enBots from './en/bots.json';
 import ukBots from './uk/bots.json';
@@ -13,6 +13,12 @@ import enChats from './en/chats.json';
 import ukChats from './uk/chats.json';
 import enExtData from './en/extData.json';
 import ukExtData from './uk/extData.json';
+import enUsers from './en/users.json';
+import ukUsers from './uk/users.json';
+import enHome from './en/home.json';
+import ukHome from './uk/home.json';
+import enMessages from './en/messages.json';
+import ukMessages from './uk/messages.json';
 
 export const AVAILABLE_LANGUAGES = ['en', 'uk'];
 
@@ -34,6 +40,9 @@ i18n
         stations: enStations,
         chats: enChats,
         extData: enExtData,
+        users: enUsers,
+        home: enHome,
+        messages: enMessages,
       },
       uk: {
         common: ukCommon,
@@ -42,6 +51,9 @@ i18n
         stations: ukStations,
         chats: ukChats,
         extData: ukExtData,
+        users: ukUsers,
+        home: ukHome,
+        messages: ukMessages,
       },
     },
 

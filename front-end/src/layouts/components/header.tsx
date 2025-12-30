@@ -175,7 +175,7 @@ export const Header: FC<HeaderProps> = ({ t, user, opened, toggle, caption, butt
                   leftSection={<FontAwesomeIcon icon='user-md' />}
                   onClick={onProfileClick}
                 >
-                  {t('profile')}
+                  {t('profile.title')}
                 </Menu.Item>
                 <Menu.Item
                   leftSection={<FontAwesomeIcon icon='sign-out' />}

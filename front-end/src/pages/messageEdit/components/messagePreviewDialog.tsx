@@ -7,6 +7,7 @@ import { modals } from '@mantine/modals'
 import { connect } from "react-redux";
 import { MessagePreview } from "./messagePreview";
 import { ObjectId } from "../../../schemas";
+import { TFunction } from "i18next";
 
 type OpenMessagePreviewOptions = {
   name: string,
@@ -14,6 +15,7 @@ type OpenMessagePreviewOptions = {
   shouldSendTemplate: string;
   timeoutTemplate: string;
   messageTemplate: string;
+  t: TFunction;
 };
 
 export function openMessagePreviewDialog({
@@ -22,24 +24,28 @@ export function openMessagePreviewDialog({
   shouldSendTemplate,
   timeoutTemplate,
   messageTemplate,
+  t,
 }: OpenMessagePreviewOptions) {
 
   type InnerProps = {
     templatePreview?: TemplatePreview;
     loadingPreview: boolean;
     previewError?: string;
+    t: TFunction;
   };
 
-  const mapStateToProps = (state: RootState): InnerProps => ({
+  const mapStateToProps = (state: RootState, ownProps: { t: TFunction }): InnerProps => ({
     templatePreview: state.messages.templatePreview,
     loadingPreview: state.messages.loadingPreview,
     previewError: state.messages.previewError,
+    t: ownProps.t,
   });
 
   const Inner: FC<InnerProps> = ({ 
     templatePreview,
     loadingPreview,
     previewError,
+    t,
    }) => {
     const dispatch = useAppDispatch();
 
@@ -63,6 +69,7 @@ export function openMessagePreviewDialog({
             {!previewError && <MessagePreview
                 handleClose={handleClose}
                 preview={templatePreview!}
+                t={t}
               />}
           </Stack>
         )}
@@ -73,9 +80,9 @@ export function openMessagePreviewDialog({
   const ConnectedInner = connect(mapStateToProps)(Inner);
 
   const id: string | undefined = modals.open({
-    title: `Message '${name}' preview`,
+    title: t ? t('preview.title', { name }) : `Message '${name}' preview`,
     centered: true,
     size: 'lg',
-    children: <ConnectedInner />,
+    children: <ConnectedInner t={t} />,
   });
 }

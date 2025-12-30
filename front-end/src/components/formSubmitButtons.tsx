@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, Group } from "@mantine/core";
 import { FC } from "react";
+import { useTranslation } from "react-i18next";
 
 export type FormSubmitButtonsProps = {
   isDirty: boolean;
@@ -15,6 +16,8 @@ export const FormSubmitButtons: FC<FormSubmitButtonsProps> = ({
   isValid,
   handleReset,
 }) => {
+  const { t } = useTranslation();
+
   return <Group justify="flex-end">
     <Button
       type="submit"
@@ -22,7 +25,7 @@ export const FormSubmitButtons: FC<FormSubmitButtonsProps> = ({
       disabled={!isDirty || !isValid}
       leftSection={<FontAwesomeIcon icon='save' />}
     >
-      Save
+      {t('button.save')}
     </Button>
     <Button
       type="button"
@@ -31,7 +34,7 @@ export const FormSubmitButtons: FC<FormSubmitButtonsProps> = ({
       disabled={!isDirty || !isEdit}
       leftSection={<FontAwesomeIcon icon='cancel' />}
     >
-      Cancel
+      {t('button.cancel')}
     </Button>
   </Group>;
 };

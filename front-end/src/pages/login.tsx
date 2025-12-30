@@ -11,6 +11,7 @@ import { ErrorMessage } from '../components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { AuthData } from '../types';
 import { authDataSelector } from '../stores/selectors';
+import { useTranslation } from 'react-i18next';
 
 type ComponentProps = {
   loading: boolean;
@@ -29,6 +30,7 @@ const Component: FC<ComponentProps> = ({ loading, error, authData }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { setLoading } = useLoading();
+  const { t } = useTranslation();
 
   const returnUrl = new URLSearchParams(location.search).get("returnUrl") || "/";
 
@@ -66,18 +68,19 @@ const Component: FC<ComponentProps> = ({ loading, error, authData }) => {
     fetchDataAction: () => {},
     saveAction: changePassword,
     validationSchema: loginSchema,
+    errorFormatter: (error) => t(error),
   });
 
   return <form onSubmit={handleFormSubmit}>
       <TextInput
-        placeholder={'User name'}
+        placeholder={t('userName')}
         required
         radius="md"
         leftSection={<FontAwesomeIcon icon={'user-md'} />}
         {...registerControl('userName')}
       />
       <PasswordInput
-        placeholder={'Password'}
+        placeholder={t('password')}
         required
         mt="md"
         radius="md"
@@ -87,7 +90,7 @@ const Component: FC<ComponentProps> = ({ loading, error, authData }) => {
       <ErrorMessage content={error} ta="center" size="sm" />
 
       <Button type='submit' fullWidth mt="xl" radius="md" disabled={!isValid}>
-        {'Log in'}
+        {t('logIn')}
       </Button>
     </form>;
 };

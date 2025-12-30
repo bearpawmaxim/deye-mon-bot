@@ -57,7 +57,7 @@ const Component: FC<ComponentProps> = ({ authData, profile }) => {
   };
 
   const onProfileEditClick = () => {
-    openProfileEditDialog();
+    openProfileEditDialog(t);
   };
 
   return (
