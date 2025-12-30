@@ -59,5 +59,9 @@
   "profile": "Profile",
   "logOut": "Log out",
   "navShort": "NAV",
-  "navFull": "NAVIGATION"
+  "navFull": "NAVIGATION",
+  "table": {
+    "refresh": "Refresh",
+    "totalRecordsFormat": "Total: {{totalRecords}}"
+  }
 }

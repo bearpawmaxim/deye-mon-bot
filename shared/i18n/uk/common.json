@@ -58,5 +58,9 @@
   },
   "profile": "Профіль",
   "logOut": "Вихід",
-  "navFull": "НАВІГАЦІЯ"
+  "navFull": "НАВІГАЦІЯ",
+  "table": {
+    "refresh": "Оновити",
+    "totalRecordsFormat": "Всього: {{totalRecords}}"
+  }
 }
