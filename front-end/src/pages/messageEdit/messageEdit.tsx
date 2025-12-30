@@ -15,6 +15,7 @@ import { messageEditSchema, MessageEdit, ObjectId } from "../../schemas";
 import { Controller } from "react-hook-form";
 import { openMessagePreviewDialog, TemplateEditor } from "./components";
 import { LookupSchema } from "../../types";
+import { usePageTranslation } from "../../utils";
 
 type ComponentOwnProps = {
   isEdit: boolean;
@@ -47,6 +48,7 @@ const mapStateToProps = (state: RootState, ownProps: ComponentOwnProps): Compone
 
 const Component: FC<ComponentProps> = ({ isEdit, bots, message, loading, stationsLoading }: ComponentProps) => {
   const dispatch = useAppDispatch();
+  const t = usePageTranslation('messages');
   const { messageId } = useParams();
 
   const messageRef = useRef(message);
@@ -112,12 +114,12 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, message, loading, station
     fields: [
       {
         name: 'name',
-        title: 'Name',
+        title: t('columns.name'),
         required: true,
       },
       {
         name: 'enabled',
-        title: 'Enabled',
+        title: t('columns.enabled'),
         render: (context) => {
           const cbProps = {
             ...context.helpers.registerControl('enabled'),
@@ -134,7 +136,7 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, message, loading, station
       },
       {
         name: 'botId',
-        title: 'Bot',
+        title: t('columns.bot'),
         required: true,
         render: (context) => {
           return <Controller
@@ -159,7 +161,7 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, message, loading, station
       },
       {
         name: 'stations',
-        title: 'Stations',
+        title: t('columns.stations'),
         required: true,
         render: (context) => {
           return <Controller
@@ -191,7 +193,7 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, message, loading, station
       },
       {
         name: 'channelId',
-        title: "Channel",
+        title: t('columns.channel'),
         required: true,
         render: (context) => {
           const channelId = context.helpers.getControlValue('channelId') as string;
@@ -214,9 +216,12 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, message, loading, station
   const { setHeaderText } = useHeaderContent();
   
   useEffect(() => {
-    setHeaderText(`${isEdit ? 'Editing' : 'Creating'} message ${message?.name ?? ''}`);
+    const headerText = isEdit
+      ? t('header.editing', { name: message?.name ?? '' })
+      : t('header.creating');
+    setHeaderText(headerText);
     return () => setHeaderText('');
-  }, [isEdit, message?.name, setHeaderText]);
+  }, [isEdit, message?.name, setHeaderText, t]);
 
 
   const createTemplateTab = useCallback((
@@ -244,10 +249,10 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, message, loading, station
 
   const tabs = useMemo(
     () => [
-      createTemplateTab('shouldSendTemplate', 'Should send template'),
-      createTemplateTab('timeoutTemplate', 'Timeout template'),
-      createTemplateTab('messageTemplate', 'Message template'),
-    ], [createTemplateTab],
+      createTemplateTab('shouldSendTemplate', t('templates.shouldSend')),
+      createTemplateTab('timeoutTemplate', t('templates.timeout')),
+      createTemplateTab('messageTemplate', t('templates.message')),
+    ], [createTemplateTab, t],
   );
   const tabPanels = useMemo(
     () => [
@@ -269,6 +274,7 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, message, loading, station
       shouldSendTemplate,
       timeoutTemplate,
       messageTemplate,
+      t,
     });
   };
 
@@ -286,8 +292,8 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, message, loading, station
       <Badge>{message?.channelName ?? ''}</Badge>
       <Divider mt='xs' mb='xs'/>
       <Title order={4}>
-        Templates
-        <Button ml='md' size="xs" color="orange" onClick={onOpenPreview} disabled={!isValid}>Preview</Button>
+        {t('templates.message')}
+        <Button ml='md' size="xs" color="orange" onClick={onOpenPreview} disabled={!isValid}>{t('button.preview')}</Button>
       </Title>
       <Tabs defaultValue={`messageTemplate`} mb='xs'>
         <Tabs.List mb='xs'>

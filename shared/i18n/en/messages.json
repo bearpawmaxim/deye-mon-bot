@@ -1,0 +1,41 @@
+{
+  "unsaved": {
+    "title": "Unsaved changes",
+    "body": "The page contains unsaved changes, which would be lost. Are you sure?"
+  },
+  "columns": {
+    "name": "Name",
+    "channel": "Channel",
+    "stations": "Stations",
+    "bot": "Bot",
+    "lastMessageSent": "Last message sent",
+    "enabled": "Enabled",
+    "actions": "Actions"
+  },
+  "actions": {
+    "edit": "Edit"
+  },
+  "header": {
+    "creating": "Creating message",
+    "editing": "Editing message {{name}}"
+  },
+  "templates": {
+    "shouldSend": "Should send template",
+    "timeout": "Timeout template",
+    "message": "Message template"
+  },
+  "noData": "No data",
+  "preview": {
+    "title": "Message '{{name}}' preview"
+  }
+  ,
+  "previewLabels": {
+    "shouldSend": "Should send:",
+    "timeout": "Timeout (seconds):",
+    "message": "Message:"
+  },
+  "button": {
+    "create": "Create",
+    "preview": "Preview"
+  }
+}
