@@ -99,14 +99,14 @@ const Routes: FC = () => {
   
   const changePasswordRoute = {
     path: "/changePassword",
-    element: (<AnonymousLayout caption="Change password">
+    element: (<AnonymousLayout caption="routes.changePassword">
       <ChangePasswordPage />
     </AnonymousLayout>),
   } as RouteObject;
 
   const loginRoute = {
     path: "/login",
-    element: (<AnonymousLayout caption="Log in to your account">
+    element: (<AnonymousLayout caption="routes.logIn">
       <LoginPage/>
     </AnonymousLayout>),
   } as RouteObject;

@@ -24,7 +24,16 @@
     "getApp": "Додаток"
   },
   "validation": {
-    "localizableValue.required": "Локалізоване значення обов'язкове"
+    "localizableValue.required": "Локалізоване значення обов'язкове",
+    "userName.required": "Ім'я користувача обов'язкове",
+    "password.required": "Пароль обов'язковий",
+    "password.toShort": "Пароль занадто короткий",
+    "password.toLong": "Пароль занадто довгий",
+    "password.needLowerCase": "Пароль повинен містити велику літеру",
+    "password.needUpperCase": "Пароль повинен містити велику літеру",
+    "password.needDigit": "Пароль повинен містити цифру",
+    "password.needSpecCharacter": "Пароль повинен містити спеціальний символ",
+    "repeatPassword.doNotMatch": "Паролі не співпадають"
   },
   "error": {
     "generic": "Помилка: {{error}}"
@@ -50,13 +59,18 @@
     "users": "Користувачі",
     "buildings": "Будівлі",
     "notFound": "Не знайдено",
-    "create": "Створити"
+    "create": "Створити",
+    "logIn": "Увійдіть до свого облікового запису",
+    "changePassword": "Змінити пароль"
   },
   "actions": {
     "edit": "Редагувати",
     "delete": "Видалити"
   },
+  "logIn": "Увійти",
   "logOut": "Вихід",
+  "userName": "Ім'я користувача",
+  "password": "Пароль",
   "navFull": "НАВІГАЦІЯ",
   "table": {
     "refresh": "Оновити",
@@ -72,5 +86,15 @@
     "editTitle": "Редагувати профіль",
     "loginLabel": "Логін",
     "changePassword": "Змінити пароль"
+  }  ,
+  "changePassword": {
+    "newPassword": "Новий пароль",
+    "repeatNewPassword": "Повторіть новий пароль",
+    "invalidRequest": "Некоректний запит",
+    "successTitle": "Пароль успішно змінено!",
+    "successBody": "Тепер ви можете увійти з новим паролем.",
+    "goToLogin": "Перейти до входу",
+    "intro": "Ласкаво просимо! Будь ласка, встановіть пароль для доступу до свого облікового запису.",
+    "setPassword": "Встановити пароль"
   }
 }

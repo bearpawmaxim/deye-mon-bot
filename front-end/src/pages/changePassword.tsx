@@ -7,6 +7,7 @@ import { useFormHandler } from '../hooks';
 import { Button, PasswordInput, Text } from '@mantine/core';
 import { ErrorMessage } from '../components';
 import { logout } from '../stores/slices';
+import { usePageTranslation } from '../utils';
 
 export const ChangePasswordPage: FC = () => {
   const [ error, setError ] = useState<string | null>(null);
@@ -14,6 +15,7 @@ export const ChangePasswordPage: FC = () => {
   const [ searchParams ] = useSearchParams();
   const username = searchParams.get('username');
   const token = searchParams.get('token');
+  const t = usePageTranslation('common');
 
   const invalidRequest = !username || !token;
 
@@ -49,6 +51,7 @@ export const ChangePasswordPage: FC = () => {
     fetchDataAction: () => {},
     saveAction: handleSave,
     validationSchema: passwordEditSchema,
+    errorFormatter: (error) => t(error),
     defaultRender: (name, title) => <PasswordInput
         placeholder={title}
         disabled={invalidRequest || success}
@@ -59,44 +62,44 @@ export const ChangePasswordPage: FC = () => {
     fields: [
       {
         name: 'newPassword',
-        title: 'New password',
+        title: t('changePassword.newPassword'),
         required: true,
       },
       {
         name: 'repeatNewPassword',
-        title: 'Repeat new password',
+        title: t('changePassword.repeatNewPassword'),
         required: true,
       }
     ]
   });
 
   useEffect(() => {
-    setTimeout(() => setError(invalidRequest ? 'Invalid request' : null), 0);
-  }, [invalidRequest]);
+    setTimeout(() => setError(invalidRequest ? t('changePassword.invalidRequest') : null), 0);
+  }, [invalidRequest, t]);
 
   if (success) {
     return <>
       <Text size="lg" fw={500} ta="center" c="green" mb="md">
-        Password successfully changed!
+        {t('changePassword.successTitle')}
       </Text>
       <Text size="sm" ta="center" mb="md">
-        You can now log in with your new password.
+        {t('changePassword.successBody')}
       </Text>
       <Button fullWidth mt="xl" radius="md" onClick={() => navigate('/login')}>
-        Go to Login
+        {t('changePassword.goToLogin')}
       </Button>
     </>;
   }
 
   return <form onSubmit={handleFormSubmit}>
       <Text size="sm" c="dimmed" mb="md" ta="center">
-        Welcome! Please set your password to access your account.
-      </Text>
+          {t('changePassword.intro')}
+        </Text>
       {renderField('newPassword')}
       {renderField('repeatNewPassword')}
       <ErrorMessage content={error} ta="center" size="sm"/>
       <Button type='submit' fullWidth mt="xl" radius="md" disabled={!isValid || invalidRequest}>
-        Set Password
+        {t('changePassword.setPassword')}
       </Button>
     </form>;
 };

@@ -24,7 +24,16 @@
     "getApp": "Get the app"
   },
   "validation": {
-    "localizableValue.required": "Localized value is required"
+    "localizableValue.required": "Localized value is required",
+    "userName.required": "User name is required",
+    "password.required": "Password is required",
+    "password.toShort": "Password is too short",
+    "password.toLong": "Password is too long",
+    "password.needLowerCase": "Password must contain a lower-case letter",
+    "password.needUpperCase": "Password must contain an upper-case letter",
+    "password.needDigit": "Password must contain a digit",
+    "password.needSpecCharacter": "Password must contain a special character",
+    "repeatPassword.doNotMatch": "Passwords does not match"
   },
   "error": {
     "generic": "Error: {{error}}"
@@ -50,13 +59,18 @@
     "users": "Users",
     "buildings": "Buildings",
     "notFound": "Not found",
-    "create": "Create"
+    "create": "Create",
+    "logIn": "Log in to your account",
+    "changePassword": "Change password"
   },
   "actions": {
     "edit": "Edit",
     "delete": "Delete"
   },
+  "logIn": "Log in",
   "logOut": "Log out",
+  "userName": "User name",
+  "password": "Password",
   "navShort": "NAV",
   "navFull": "NAVIGATION",
   "table": {
@@ -73,5 +87,15 @@
     "editTitle": "Edit profile",
     "loginLabel": "Login",
     "changePassword": "Change password"
+  },
+  "changePassword": {
+    "newPassword": "New password",
+    "repeatNewPassword": "Repeat new password",
+    "invalidRequest": "Invalid request",
+    "successTitle": "Password successfully changed!",
+    "successBody": "You can now log in with your new password.",
+    "goToLogin": "Go to Login",
+    "intro": "Welcome! Please set your password to access your account.",
+    "setPassword": "Set Password"
   }
 }
