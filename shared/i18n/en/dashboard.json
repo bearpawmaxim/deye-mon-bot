@@ -73,8 +73,8 @@
       "endTime": "End time",
       "state": "State",
       "duration": "Duration",
-      "gridOnState": "Grid available",
-      "gridOffState": "Grid unavailable"
+      "gridOnState": "Available",
+      "gridOffState": "Unavailable"
     }
   }
 }
