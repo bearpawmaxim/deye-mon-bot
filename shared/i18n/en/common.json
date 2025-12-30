@@ -40,8 +40,10 @@
   },
   "visits": {
     "unique": "Unique visitors",
-    "daily": "Daily",
-    "total": "Total"
+    "daily": "Daily: {{dailyVisitors}}",
+    "total": "Total: {{totalVisitors}}",
+    "dailyMobile": "{{dailyVisitors}} total, ",
+    "totalMobile": "{{totalVisitors}} daily"
   },
   "authors": {
     "label": "Co-authored by <0>{{author1}}</0> and <1>{{author2}}</1>"

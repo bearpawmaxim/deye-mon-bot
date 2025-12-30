@@ -40,8 +40,10 @@
   },
   "visits": {
     "unique": "Унікальних відвідувачів",
-    "daily": "День",
-    "total": "Всього"
+    "daily": "День: {{dailyVisitors}}",
+    "total": "Всього: {{totalVisitors}}",
+    "dailyMobile": "{{dailyVisitors}} всього, ",
+    "totalMobile": "{{totalVisitors}} за день"
   },
   "authors": {
     "label": "Розроблено <0>{{author1}}</0> та <1>{{author2}}</1>"
