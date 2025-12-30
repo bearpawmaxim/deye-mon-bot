@@ -14,6 +14,7 @@ import { modals } from "@mantine/modals";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { generatePasswordResetLink, getApiBaseUrl, getCurlExample, getCurlExampleOneLine, getHomeAssistantExample, integrationNotes } from "../../utils";
 import { ObjectId } from "../../schemas";
+import { usePageTranslation } from "../../utils";
 
 
 type ComponentProps = {
@@ -41,6 +42,7 @@ const mapStateToProps = (state: RootState): ComponentProps => ({
 
 const Component: FC<ComponentProps> = ({ users, loading, error, changed }: ComponentProps) => {
   const dispatch = useAppDispatch();
+  const t = usePageTranslation('users');
   const [opened, { open, close }] = useDisclosure(false);
   const [tokenModalOpened, { open: openTokenModal, close: closeTokenModal }] = useDisclosure(false);
   const [integrationModalOpened, { open: openIntegrationModal, close: closeIntegrationModal }] = useDisclosure(false);
@@ -89,56 +91,56 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
           if (result.resetToken && !formData.isReporter) {
             const baseUrl = getApiBaseUrl();
             const link = baseUrl + generatePasswordResetLink(formData.name, result.resetToken);
-            modals.open({
-              title: "User Created - Password Reset Link",
-              size: "lg",
-              children: <>
-                <Text size="sm" mb="md">
-                  User <Text span fw={600}>"{formData.name}"</Text> has been created successfully!
-                </Text>
-                <Text size="sm" fw={500} mb="xs">
-                  <FontAwesomeIcon icon="share" /> Share this link with the user to set their password:
-                </Text>
-                <Textarea 
-                  value={link} 
-                  autosize 
-                  minRows={3}
-                  styles={{
-                    input: {
-                      fontFamily: 'monospace',
-                      fontSize: '12px',
-                    }
-                  }}
-                  readOnly
-                  onClick={(e) => e.currentTarget.select()}
-                />
-                <Text c='red.8' mt="md" size="sm">
-                  <FontAwesomeIcon icon="exclamation-triangle" />
-                  &nbsp;Important: This link expires in 2.5 hours!
-                </Text>
-                <Group justify="space-between" mt="xl">
-                  <CopyButton value={link}>
-                    {({ copied, copy }) => (
-                      <Button                    
-                        leftSection={<FontAwesomeIcon icon={copied ? 'check' : 'copy'} />}
-                        color={copied ? 'teal' : 'blue'}
-                        onClick={copy}
-                        variant={copied ? 'light' : 'filled'}
-                      >
-                        {copied ? 'Link Copied!' : 'Copy Link to Share'}
-                      </Button>
-                    )}
-                  </CopyButton>
-                  <Button variant="default" onClick={() => modals.closeAll()}>
-                    Close
-                  </Button>
-                </Group>
-              </>
-            });
+                  modals.open({
+                    title: t('modal.userCreatedTitle'),
+                    size: "lg",
+                    children: <>
+                      <Text size="sm" mb="md">
+                        {t('modal.userCreatedMessage', { name: formData.name })}
+                      </Text>
+                      <Text size="sm" fw={500} mb="xs">
+                        <FontAwesomeIcon icon="share" /> {t('modal.userCreatedShare')}
+                      </Text>
+                      <Textarea 
+                        value={link} 
+                        autosize 
+                        minRows={3}
+                        styles={{
+                          input: {
+                            fontFamily: 'monospace',
+                            fontSize: '12px',
+                          }
+                        }}
+                        readOnly
+                        onClick={(e) => e.currentTarget.select()}
+                      />
+                      <Text c='red.8' mt="md" size="sm">
+                        <FontAwesomeIcon icon="exclamation-triangle" />
+                        &nbsp;{t('modal.userCreatedExpiration')}
+                      </Text>
+                      <Group justify="space-between" mt="xl">
+                        <CopyButton value={link}>
+                          {({ copied, copy }) => (
+                            <Button                    
+                              leftSection={<FontAwesomeIcon icon={copied ? 'check' : 'copy'} />}
+                              color={copied ? 'teal' : 'blue'}
+                              onClick={copy}
+                              variant={copied ? 'light' : 'filled'}
+                            >
+                              {copied ? t('button.linkCopied') : t('button.copyLink')}
+                            </Button>
+                          )}
+                        </CopyButton>
+                        <Button variant="default" onClick={() => modals.closeAll()}>
+                          {t('button.close')}
+                        </Button>
+                      </Group>
+                    </>
+                  });
           }
         });
     }
-  }, [editingUser, formData, dispatch, close]);
+  }, [editingUser, dispatch, formData.name, formData.isReporter, formData.isActive, close, t]);
 
   const handleCancel = useCallback(() => {
     if (!editingUser) {
@@ -149,35 +151,35 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
 
   const handleDelete = useCallback((user: UserItem) => {
     modals.openConfirmModal({
-      title: 'Delete User',
-      children: `Are you sure you want to delete user "${user.name}"?`,
-      labels: { confirm: 'Delete', cancel: 'Cancel' },
+      title: t('modal.deleteUserTitle'),
+      children: t('modal.deleteUserConfirm', { name: user.name }),
+      labels: { confirm: t('button.delete'), cancel: t('button.cancel') },
       confirmProps: { color: 'red' },
       onConfirm: () => dispatch(deleteUser(user.id)),
     });
-  }, [dispatch]);
+  }, [dispatch, t]);
 
   const handleGenerateToken = useCallback((user: UserItem) => {
     modals.openConfirmModal({
-      title: 'Generate API Token',
+      title: t('modal.generateTokenTitle'),
       children: user.apiKey 
-        ? `User "${user.name}" already has a token. Generate a new one? This will replace the existing token.`
-        : `Generate API token for user "${user.name}"?`,
-      labels: { confirm: 'Generate', cancel: 'Cancel' },
+        ? t('modal.generateTokenConfirmExisting', { name: user.name })
+        : t('modal.generateTokenConfirm', { name: user.name }),
+      labels: { confirm: t('button.generate'), cancel: t('button.cancel') },
       confirmProps: { color: 'blue' },
       onConfirm: () => dispatch(generateUserToken(user.id)),
     });
-  }, [dispatch]);
+  }, [dispatch, t]);
 
   const handleDeleteToken = useCallback((user: UserItem) => {
     modals.openConfirmModal({
-      title: 'Delete API Token',
-      children: `Are you sure you want to delete API token for user "${user.name}"?`,
-      labels: { confirm: 'Delete', cancel: 'Cancel' },
+      title: t('modal.deleteTokenTitle'),
+      children: t('modal.deleteTokenConfirm', { name: user.name }),
+      labels: { confirm: t('button.delete'), cancel: t('button.cancel') },
       confirmProps: { color: 'red' },
       onConfirm: () => dispatch(deleteUserToken(user.id)),
     });
-  }, [dispatch]);
+  }, [dispatch, t]);
 
   const handleViewToken = useCallback((user: UserItem) => {
     setViewingToken(user.apiKey || null);
@@ -197,10 +199,10 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
   }, [openIntegrationModal]);
 
   const getHeaderButtons = useCallback((dataChanged: boolean): PageHeaderButton[] => [
-    { text: 'Create', icon: "add", color: "teal", onClick: () => openCreateDialog(), disabled: false, },
-    { text: 'Save', icon: "save", color: "green", onClick: () => dispatch(saveUsers()), disabled: !dataChanged, },
-    { text: 'Cancel', icon: "cancel", color: "black", onClick: () => dispatch(cancelUsersEditing()), disabled: !dataChanged, },
-  ], [openCreateDialog, dispatch]);
+    { text: t('form.create'), icon: "add", color: "teal", onClick: () => openCreateDialog(), disabled: false, },
+    { text: t('button.save'), icon: "save", color: "green", onClick: () => dispatch(saveUsers()), disabled: !dataChanged, },
+    { text: t('button.cancel'), icon: "cancel", color: "black", onClick: () => dispatch(cancelUsersEditing()), disabled: !dataChanged, },
+  ], [openCreateDialog, dispatch, t]);
 
   const { setHeaderButtons, updateButtonAttributes } = useHeaderContent();
   const updateButtonAttributesRef = useRef(updateButtonAttributes);
@@ -240,14 +242,14 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
           const baseUrl = getApiBaseUrl();
           const link = baseUrl + generatePasswordResetLink(editingUser.name, token);
           const id = modals.open({
-            title: "Password Reset Link",
+            title: t('modal.passwordResetTitle'),
             size: "lg",
             children: <>
               <Text size="sm" mb="md">
-                A password reset link has been generated for user <Text span fw={600}>"{editingUser.name}"</Text>.
+                {t('modal.passwordResetMessage', { name: editingUser.name })}
               </Text>
               <Text size="sm" fw={500} mb="xs">
-                <FontAwesomeIcon icon="share" /> Share this link to allow password change:
+                <FontAwesomeIcon icon="share" /> {t('modal.passwordResetShare')}
               </Text>
               <Textarea 
                 value={link} 
@@ -264,7 +266,7 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
               />
               <Text c='red.8' mt="md" size="sm">
                 <FontAwesomeIcon icon="exclamation-triangle" />
-                &nbsp;Important: This link expires in 2.5 hours!
+                &nbsp;{t('modal.userCreatedExpiration')}
               </Text>
               <Group justify="space-between" mt="xl">
                 <Group>
@@ -276,7 +278,7 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
                         onClick={copy}
                         variant={copied ? 'light' : 'filled'}
                       >
-                        {copied ? 'Link Copied!' : 'Copy Link'}
+                        {copied ? t('button.linkCopied') : t('button.copyLink')}
                       </Button>
                     )}
                   </CopyButton>
@@ -285,9 +287,9 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
                     color="red"
                     onClick={() => {
                       modals.openConfirmModal({
-                        title: 'Cancel password reset',
-                        children: `Are you sure you want to cancel password reset for user ${editingUser.name}?`,
-                        labels: { confirm: 'Yes, Cancel Reset', cancel: 'No, Keep Link' },
+                        title: t('modal.cancelPasswordResetTitle'),
+                        children: t('modal.cancelPasswordResetConfirm', { name: editingUser.name }),
+                        labels: { confirm: t('form.cancelReset'), cancel: t('button.close') },
                         confirmProps: { color: 'red' },
                         onConfirm: () => {
                           modals.close(id);
@@ -297,11 +299,11 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
                     }}
                   >
                     <FontAwesomeIcon icon="times" />
-                    &nbsp;Cancel Reset
+                    &nbsp;{t('form.cancelReset')}
                   </Button>
                 </Group>
                 <Button variant="default" onClick={() => modals.close(id)}>
-                  Close
+                  {t('button.close')}
                 </Button>
               </Group>
             </>
@@ -317,18 +319,18 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
         fetchAction={fetchData}
         defSort={[{ id: 'name', desc: false }]}
         columns={[
-          {
-            id: 'name',
-            header: 'Username',
-            enableSorting: true,
-            accessorKey: 'name',
-            meta: {
-              dataType: ColumnDataType.Text,
-            },
-          },
+              {
+                id: 'name',
+                header: t('table.username'),
+                enableSorting: true,
+                accessorKey: 'name',
+                meta: {
+                  dataType: ColumnDataType.Text,
+                },
+              },
           {
             id: 'isActive',
-            header: 'Active',
+            header: t('table.active'),
             enableSorting: false,
             accessorKey: 'isActive',
             meta: {
@@ -339,7 +341,7 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
           },
           {
             id: 'isReporter',
-            header: 'Is Reporter',
+            header: t('table.isReporter'),
             enableSorting: false,
             accessorKey: 'isReporter',
             meta: {
@@ -350,7 +352,7 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
           },
           {
             id: 'apiKey',
-            header: 'API Token',
+            header: t('table.apiToken'),
             enableSorting: false,
             accessorKey: 'apiKey',
             cell: ({ row }) => {
@@ -362,7 +364,7 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
                     variant="light"
                     color="gray"
                   >
-                    N/A
+                    {t('badge.na')}
                   </Badge>
                 );
               }
@@ -374,9 +376,9 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
                       variant="light"
                       color="orange"
                       style={{ cursor: 'not-allowed' }}
-                      title="Please save changes before generating a token"
+                      title={t('misc.saveChangesBeforeGenerating')}
                     >
-                      Save First
+                      {t('badge.saveFirst')}
                     </Badge>
                   );
                 }
@@ -387,7 +389,7 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
                     style={{ cursor: 'pointer' }}
                     onClick={() => handleGenerateToken(user)}
                   >
-                    Generate Token
+                    {t('badge.generateToken')}
                   </Badge>
                 );
               }
@@ -398,7 +400,7 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
                   style={{ cursor: 'pointer' }}
                   onClick={() => handleViewToken(user)}
                 >
-                  Show Token
+                  {t('badge.showToken')}
                 </Badge>
               );
             },
@@ -412,14 +414,14 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
                 {
                   icon: 'edit',
                   color: 'blue',
-                  text: 'Edit',
+                  text: t('actions.edit'),
                   onlyIcon: true,
                   clickHandler: (row) => openEditDialog(row),
                 },
                 {
                   icon: 'trash',
                   color: 'red',
-                  text: 'Delete',
+                  text: t('actions.delete'),
                   onlyIcon: true,
                   clickHandler: (row) => handleDelete(row),
                 },
@@ -431,22 +433,22 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
       />
     </Page>
 
-    <Modal opened={opened} onClose={handleCancel} title={editingUser ? "Edit User" : "Create User"}>
+      <Modal opened={opened} onClose={handleCancel} title={editingUser ? t('modal.editUserTitle') : t('modal.createUserTitle')}>
       <Stack>
         <TextInput
-          label="Username"
-          placeholder="Enter username"
+          label={t('form.usernameLabel')}
+          placeholder={t('form.usernamePlaceholder')}
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           required
         />
         <Switch
-          label="Active"
+          label={t('form.activeLabel')}
           checked={formData.isActive}
           onChange={(e) => setFormData({ ...formData, isActive: e.currentTarget.checked })}
         />
         <Switch
-          label="Is Reporter (cannot login via UI)"
+          label={t('form.isReporterLabel')}
           checked={formData.isReporter}
           onChange={(e) => setFormData({ ...formData, isReporter: e.currentTarget.checked })}
         />
@@ -456,22 +458,22 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
             disabled={formData.isReporter}
             onClick={handleChangePassword}
           >
-            Change password
+            {t('form.changePassword')}
           </Button>}
           <Group justify="flex-end" ml="auto">
-            <Button variant="default" onClick={handleCancel}>Cancel</Button>
+            <Button variant="default" onClick={handleCancel}>{t('button.close')}</Button>
             <Button onClick={handleSave} disabled={!formData.name}>
-              {editingUser ? 'Update' : 'Create'}
+              {editingUser ? t('form.update') : t('form.create')}
             </Button>
           </Group>
         </Group>
       </Stack>
     </Modal>
 
-    <Modal opened={tokenModalOpened} onClose={closeTokenModal} title="API Token" size="lg">
+    <Modal opened={tokenModalOpened} onClose={closeTokenModal} title={t('modal.apiTokenTitle')} size="lg">
       <Stack>
         <TextInput
-          label="Full Token"
+          label={t('modalExtra.fullTokenLabel')}
           value={viewingToken || ''}
           readOnly
           styles={{
@@ -492,7 +494,7 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
               variant="light"
               onClick={handleDeleteFromModal}
             >
-              Delete
+              {t('button.delete')}
             </Button>
             <Button
               leftSection={<FontAwesomeIcon icon="code" />}
@@ -500,7 +502,7 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
               variant="light"
               onClick={handleShowIntegration}
             >
-              Show Integration
+              {t('button.showIntegration')}
             </Button>
           </Group>
           <Group>
@@ -511,31 +513,31 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
                   color={copied ? 'teal' : 'blue'}
                   onClick={copy}
                 >
-                  {copied ? 'Copied!' : 'Copy to Clipboard'}
+                  {copied ? t('button.copied') : t('button.copy')}
                 </Button>
               )}
             </CopyButton>
-            <Button variant="default" onClick={closeTokenModal}>Close</Button>
+            <Button variant="default" onClick={closeTokenModal}>{t('button.close')}</Button>
           </Group>
         </Group>
       </Stack>
     </Modal>
 
-    <Modal opened={integrationModalOpened} onClose={closeIntegrationModal} title="API Integration Examples" size="xl">
+    <Modal opened={integrationModalOpened} onClose={closeIntegrationModal} title={t('integration.title')} size="xl">
       <Tabs defaultValue="curl">
         <Tabs.List>
           <Tabs.Tab value="curl" leftSection={<FontAwesomeIcon icon="terminal" />}>
-            cURL
+            {t('integration.curl.title')}
           </Tabs.Tab>
           <Tabs.Tab value="homeassistant" leftSection={<FontAwesomeIcon icon="home" />}>
-            Home Assistant
+            {t('integration.homeassistant.title')}
           </Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="curl" pt="md">
           <Stack gap="md">
             <Text size="sm" c="dimmed">
-              {integrationNotes.curl.description}
+              {t(integrationNotes.curl.descriptionKey)}
             </Text>
             <Code block style={{ position: 'relative' }}>
               {getCurlExample(viewingToken || 'YOUR_API_TOKEN')}
@@ -548,12 +550,12 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
                   color={copied ? 'teal' : 'blue'}
                   onClick={copy}
                 >
-                  {copied ? 'Copied!' : 'Copy cURL Command'}
+                  {copied ? t('button.copied') : t('integration.copyCurl')}
                 </Button>
               )}
             </CopyButton>
             <Text size="xs" c="dimmed">
-              Note: {integrationNotes.curl.note}
+              {t('integration.note')} {t(integrationNotes.curl.noteKey)}
             </Text>
           </Stack>
         </Tabs.Panel>
@@ -561,7 +563,7 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
         <Tabs.Panel value="homeassistant" pt="md">
           <Stack gap="md">
             <Text size="sm" c="dimmed">
-              {integrationNotes.homeAssistant.description}
+              {t(integrationNotes.homeAssistant.descriptionKey)}
             </Text>
             <Code block>
               {getHomeAssistantExample(viewingToken || 'YOUR_API_TOKEN')}
@@ -574,18 +576,18 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
                   color={copied ? 'teal' : 'blue'}
                   onClick={copy}
                 >
-                  {copied ? 'Copied!' : 'Copy Home Assistant Configuration'}
+                  {copied ? t('button.copied') : t('integration.copyHA')}
                 </Button>
               )}
             </CopyButton>
             <Text size="xs" c="dimmed">
-              Note: {integrationNotes.homeAssistant.note}
+              {t('integration.note')} {t(integrationNotes.homeAssistant.noteKey)}
             </Text>
           </Stack>
         </Tabs.Panel>
       </Tabs>
       <Group justify="flex-end" mt="xl">
-        <Button variant="default" onClick={closeIntegrationModal}>Close</Button>
+        <Button variant="default" onClick={closeIntegrationModal}>{t('button.close')}</Button>
       </Group>
     </Modal>
   </>

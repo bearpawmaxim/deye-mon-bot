@@ -52,6 +52,10 @@
     "notFound": "Not found",
     "create": "Create"
   },
+  "actions": {
+    "edit": "Edit",
+    "delete": "Delete"
+  },
   "profile": "Profile",
   "logOut": "Log out",
   "navShort": "NAV",

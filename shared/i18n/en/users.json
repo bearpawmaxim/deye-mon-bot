@@ -1,0 +1,77 @@
+{
+  "table": {
+    "username": "Username",
+    "active": "Active",
+    "isReporter": "Is Reporter",
+    "apiToken": "API Token",
+    "actions": "Actions"
+  },
+  "badge": {
+    "na": "N/A",
+    "saveFirst": "Save First",
+    "generateToken": "Generate Token",
+    "showToken": "Show Token"
+  },
+  "modal": {
+    "userCreatedTitle": "User Created - Password Reset Link",
+    "userCreatedMessage": "User \"{{name}}\" has been created successfully!",
+    "userCreatedShare": "Share this link with the user to set their password:",
+    "userCreatedExpiration": "Important: This link expires in 2.5 hours!",
+    "deleteUserTitle": "Delete User",
+    "deleteUserConfirm": "Are you sure you want to delete user \"{{name}}\"?",
+    "generateTokenTitle": "Generate API Token",
+    "generateTokenConfirmExisting": "User \"{{name}}\" already has a token. Generate a new one? This will replace the existing token.",
+    "generateTokenConfirm": "Generate API token for user \"{{name}}\"?",
+    "deleteTokenTitle": "Delete API Token",
+    "deleteTokenConfirm": "Are you sure you want to delete API token for user \"{{name}}\"?",
+    "passwordResetTitle": "Password Reset Link",
+    "passwordResetMessage": "A password reset link has been generated for user \"{{name}}\".",
+    "passwordResetShare": "Share this link to allow password change:",
+    "cancelPasswordResetTitle": "Cancel password reset",
+    "cancelPasswordResetConfirm": "Are you sure you want to cancel password reset for user {{name}}?",
+    "editUserTitle": "Edit User",
+    "createUserTitle": "Create User",
+    "apiTokenTitle": "API Token",
+    "createEventTitle": "Create Event"
+  },
+  "misc": {
+    "saveChangesBeforeGenerating": "Please save changes before generating a token"
+  },
+  "modalExtra": {
+    "fullTokenLabel": "Full Token"
+  },
+  "form": {
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "Enter username",
+    "activeLabel": "Active",
+    "isReporterLabel": "Is Reporter (cannot login via UI)",
+    "changePassword": "Change password",
+    "cancelReset": "Cancel Reset",
+    "update": "Update",
+    "create": "Create"
+  },
+  "button": {
+    "copyLink": "Copy Link to Share",
+    "linkCopied": "Link Copied!",
+    "copy": "Copy to Clipboard",
+    "copied": "Copied!",
+    "showIntegration": "Show Integration",
+    "generate": "Generate"
+  },
+  "integration": {
+    "title": "API Integration Examples",
+    "copyCurl": "Copy cURL Command",
+    "copyHA": "Copy Home Assistant Configuration",
+    "note": "Note:",
+    "curl": {
+      "title": "cURL",
+      "description": "Use this cURL command to send grid power state to the API:",
+      "note": "Set \"state\" to true when grid is available, false when grid is down."
+    },
+    "homeassistant": {
+      "title": "Home Assistant",
+      "description": "Add this automation to your Home Assistant configuration.yaml or automations.yaml:",
+      "note": "Replace sensor.inverter_work_state with your actual inverter/grid sensor entity ID. Adjust the state logic based on your sensor values (offgrid/bypass/etc)."
+    }
+  }
+}

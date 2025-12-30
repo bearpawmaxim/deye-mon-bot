@@ -1,0 +1,77 @@
+{
+  "table": {
+    "username": "Ім'я користувача",
+    "active": "Активний",
+    "isReporter": "Репортер",
+    "apiToken": "API токен",
+    "actions": "Дії"
+  },
+  "badge": {
+    "na": "Н/Д",
+    "saveFirst": "Збережіть спочатку",
+    "generateToken": "Згенерувати токен",
+    "showToken": "Показати токен"
+  },
+  "modal": {
+    "userCreatedTitle": "Користувача створено - посилання для скидання пароля",
+    "userCreatedMessage": "Користувача \"{{name}}\" успішно створено!",
+    "userCreatedShare": "Поділіться цим посиланням з користувачем, щоб встановити пароль:",
+    "userCreatedExpiration": "Важливо: це посилання дійсне 2.5 години!",
+    "deleteUserTitle": "Видалити користувача",
+    "deleteUserConfirm": "Ви впевнені, що хочете видалити користувача \"{{name}}\"?",
+    "generateTokenTitle": "Згенерувати API токен",
+    "generateTokenConfirmExisting": "Користувач \"{{name}}\" вже має токен. Згенерувати новий? Це замінить наявний токен.",
+    "generateTokenConfirm": "Згенерувати API токен для користувача \"{{name}}\"?",
+    "deleteTokenTitle": "Видалити API токен",
+    "deleteTokenConfirm": "Ви впевнені, що хочете видалити API токен для користувача \"{{name}}\"?",
+    "passwordResetTitle": "Посилання для скидання пароля",
+    "passwordResetMessage": "Посилання для скидання пароля було згенеровано для користувача \"{{name}}\".",
+    "passwordResetShare": "Поділіться цим посиланням для зміни пароля:",
+    "cancelPasswordResetTitle": "Скасувати скидання пароля",
+    "cancelPasswordResetConfirm": "Ви впевнені, що хочете скасувати скидання пароля для користувача {{name}}?",
+    "editUserTitle": "Редагувати користувача",
+    "createUserTitle": "Створити користувача",
+    "apiTokenTitle": "API токен",
+    "createEventTitle": "Створити подію"
+  },
+  "misc": {
+    "saveChangesBeforeGenerating": "Будь ласка, спочатку збережіть зміни перед генерацією токена"
+  },
+  "modalExtra": {
+    "fullTokenLabel": "Повний токен"
+  },
+  "form": {
+    "usernameLabel": "Ім'я користувача",
+    "usernamePlaceholder": "Введіть ім'я користувача",
+    "activeLabel": "Активний",
+    "isReporterLabel": "Репортер (не може увійти через UI)",
+    "changePassword": "Змінити пароль",
+    "cancelReset": "Скасувати",
+    "update": "Оновити",
+    "create": "Створити"
+  },
+  "button": {
+    "copyLink": "Копіювати посилання",
+    "linkCopied": "Посилання скопійовано!",
+    "copy": "Копіювати",
+    "copied": "Скопійовано!",
+    "showIntegration": "Показати інтеграцію",
+    "generate": "Згенерувати"
+  },
+  "integration": {
+    "title": "Приклади інтеграції API",
+    "copyCurl": "Копіювати cURL команду",
+    "copyHA": "Копіювати конфігурацію Home Assistant",
+    "note": "Примітка:",
+    "curl": {
+      "title": "cURL",
+      "description": "Використовуйте цю cURL команду для відправки стану мережі до API:",
+      "note": "Встановіть \"state\" в true коли мережа доступна, false коли мережа відсутня."
+    },
+    "homeassistant": {
+      "title": "Home Assistant",
+      "description": "Додайте цю автоматизацію до вашого configuration.yaml або automations.yaml Home Assistant:",
+      "note": "Замініть sensor.inverter_work_state на ваш фактичний entity ID інвертора/сенсора мережі. Налаштуйте логіку стану згідно значень вашого сенсора (offgrid/bypass/тощо)."
+    }
+  }
+}

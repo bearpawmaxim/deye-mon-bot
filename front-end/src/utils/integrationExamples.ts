@@ -63,12 +63,12 @@ automation:
 
 export const integrationNotes = {
   curl: {
-    description: 'Use this cURL command to send grid power state to the API:',
-    note: 'Set "state" to true when grid is available, false when grid is down.',
+    descriptionKey: 'integration.curl.description',
+    noteKey: 'integration.curl.note',
   },
   homeAssistant: {
-    description: 'Add this automation to your Home Assistant configuration.yaml or automations.yaml:',
-    note: 'Replace sensor.inverter_work_state with your actual inverter/grid sensor entity ID. Adjust the state logic based on your sensor values (offgrid/bypass/etc).',
+    descriptionKey: 'integration.homeassistant.description',
+    noteKey: 'integration.homeassistant.note',
   },
 };
 

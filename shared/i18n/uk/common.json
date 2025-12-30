@@ -37,7 +37,7 @@
   "authors": {
     "label": "Розроблено <0>{{author1}}</0> та <1>{{author2}}</1>"
   },
-    "routes": {
+  "routes": {
     "home": "Головна",
     "bots": "Боти",
     "stations": "Станції",
@@ -51,6 +51,10 @@
     "buildings": "Будівлі",
     "notFound": "Не знайдено",
     "create": "Створити"
+  },
+  "actions": {
+    "edit": "Редагувати",
+    "delete": "Видалити"
   },
   "profile": "Профіль",
   "logOut": "Вихід",
