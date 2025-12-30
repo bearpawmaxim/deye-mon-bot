@@ -60,7 +60,7 @@
     "outagesScheduleQueueRequired": "Outages schedule queue is required."
   },
   "powerLogs": {
-    "dialogTitle": "Power Statistics: {{name}}",
+    "dialogTitle": "Grid statistic: {{name}}",
     "customFilterTitle": "Custom",
     "totalGridOnTitle": "Total Grid On",
     "totalGridOffTitle": "Total Grid Off",
