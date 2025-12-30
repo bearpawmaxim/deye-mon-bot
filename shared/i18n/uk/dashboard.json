@@ -72,8 +72,8 @@
       "endTime": "Час завершення",
       "state": "Стан",
       "duration": "Тривалість",
-      "gridOnState": "Мережа наявна",
-      "gridOffState": "Мережа відсутня"
+      "gridOnState": "Наявна",
+      "gridOffState": "Відсутня"
     }
   }
 }
