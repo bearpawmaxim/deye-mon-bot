@@ -1,7 +1,7 @@
 import { FC, ReactElement, ReactNode } from "react";
-import { Box, Center, Container, Divider, Group, Image, Stack, Text, useMantineColorScheme } from "@mantine/core";
+import { Box, Button, Center, Container, Divider, Group, Image, Menu, Stack, Text, useMantineColorScheme } from "@mantine/core";
 import classes from './styles/anonymousLayout.module.css';
-import { Page, ThemePicker } from "../components";
+import { CountryFlag, LangPicker, Page, ThemePicker } from "../components";
 import iconDark from "../assets/icon_dark_with_text.png";
 import iconLight from "../assets/icon_light_with_text.png";
 import { useTranslation } from "react-i18next";
@@ -37,6 +37,16 @@ export const AnonymousLayout: FC<AnonymousLayoutProps> = ({ caption, children })
         <Divider mt="md"/>
         <Group mt="md" justify="space-between">
           <ThemePicker isNavbarCollapsed={false} size="xs"/>
+            <Menu shadow="md" trigger="click">
+            <Menu.Target>
+              <Button px={6} variant="subtle" leftSection={<CountryFlag />}>
+                {t('title.language')}
+              </Button>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <LangPicker />
+            </Menu.Dropdown>
+          </Menu>
         </Group>
       </Page>
     </Container>
