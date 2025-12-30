@@ -15,6 +15,8 @@ import enExtData from './en/extData.json';
 import ukExtData from './uk/extData.json';
 import enUsers from './en/users.json';
 import ukUsers from './uk/users.json';
+import enHome from './en/home.json';
+import ukHome from './uk/home.json';
 
 export const AVAILABLE_LANGUAGES = ['en', 'uk'];
 
@@ -37,6 +39,7 @@ i18n
         chats: enChats,
         extData: enExtData,
         users: enUsers,
+        home: enHome,
       },
       uk: {
         common: ukCommon,
@@ -46,6 +49,7 @@ i18n
         chats: ukChats,
         extData: ukExtData,
         users: ukUsers,
+        home: ukHome,
       },
     },
 

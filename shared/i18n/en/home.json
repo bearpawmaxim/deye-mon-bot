@@ -1,0 +1,21 @@
+{
+  "label": {
+    "interval": "Interval:"
+  },
+  "interval": {
+    "last15": "Last 15 minutes",
+    "last30": "Last 30 minutes",
+    "last1h": "Last 1 hour",
+    "last3h": "Last 3 hours",
+    "last6h": "Last 6 hours",
+    "lastDay": "Last day",
+    "lastTwoDays": "Last two days"
+  },
+  "chart": {
+    "chargePower": "Charge power",
+    "dischargePower": "Discharge power",
+    "consumptionPower": "Consumption power",
+    "batterySoc": "Battery SOC",
+    "noData": "No data"
+  }
+}
