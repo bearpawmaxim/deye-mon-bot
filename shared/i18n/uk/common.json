@@ -36,7 +36,11 @@
     "repeatPassword.doNotMatch": "Паролі не співпадають"
   },
   "error": {
-    "generic": "Помилка: {{error}}"
+    "generic": "Помилка: {{error}}",
+    "userNotFound": "Користувача не знайдено",
+    "userCannotLogIn": "Вхід заборонено",
+    "invalidToken": "Недійсний або прострочений токен",
+    "invalidLoginOrPassword": "Невірне ім'я користувача або пароль"
   },
   "visits": {
     "unique": "Унікальних відвідувачів",

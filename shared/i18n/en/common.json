@@ -36,7 +36,11 @@
     "repeatPassword.doNotMatch": "Passwords does not match"
   },
   "error": {
-    "generic": "Error: {{error}}"
+    "generic": "Error: {{error}}",
+    "userNotFound": "User not found",
+    "userCannotLogIn": "Log in denied",
+    "invalidToken": "Invalid or expired token",
+    "invalidLoginOrPassword": "Invalid user name or password"
   },
   "visits": {
     "unique": "Unique visitors",
