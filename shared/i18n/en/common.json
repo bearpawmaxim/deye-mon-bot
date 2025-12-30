@@ -56,7 +56,6 @@
     "edit": "Edit",
     "delete": "Delete"
   },
-  "profile": "Profile",
   "logOut": "Log out",
   "navShort": "NAV",
   "navFull": "NAVIGATION",
@@ -68,5 +67,11 @@
     "kW": "kW",
     "kWh": "kWh",
     "percent": "%"
+  },
+  "profile": {
+    "title": "Profile",
+    "editTitle": "Edit profile",
+    "loginLabel": "Login",
+    "changePassword": "Change password"
   }
 }

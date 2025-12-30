@@ -56,7 +56,6 @@
     "edit": "Редагувати",
     "delete": "Видалити"
   },
-  "profile": "Профіль",
   "logOut": "Вихід",
   "navFull": "НАВІГАЦІЯ",
   "table": {
@@ -67,5 +66,11 @@
     "kW": "кВт",
     "kWh": "кВт·год",
     "percent": "%"
+  },
+  "profile": {
+    "title": "Профіль",
+    "editTitle": "Редагувати профіль",
+    "loginLabel": "Логін",
+    "changePassword": "Змінити пароль"
   }
 }
