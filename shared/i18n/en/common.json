@@ -46,8 +46,8 @@
     "unique": "Unique visitors",
     "daily": "Daily: {{dailyVisitors}}",
     "total": "Total: {{totalVisitors}}",
-    "dailyMobile": "{{dailyVisitors}} total, ",
-    "totalMobile": "{{totalVisitors}} daily"
+    "dailyMobile": "{{dailyVisitors}} daily, ",
+    "totalMobile": "{{totalVisitors}} total"
   },
   "authors": {
     "label": "Co-authored by <0>{{author1}}</0> and <1>{{author2}}</1>"
