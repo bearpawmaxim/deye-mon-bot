@@ -59,10 +59,10 @@
     "outagesScheduleQueueRequired": "Черга розкладу відключень є обов'язковою."
   },
   "powerLogs": {
-    "dialogTitle": "Статистика наявності мережі: {{name}}",
+    "dialogTitle": "Статистика мережі: {{name}}",
     "customFilterTitle": "Довільний",
-    "totalGridOnTitle": "Всього наявності мережі",
-    "totalGridOffTitle": "Всього відсутності мережі",
+    "totalGridOnTitle": "Всього наявності",
+    "totalGridOffTitle": "Всього відсутності",
     "dateRangeTitle": "Проміжок дат",
     "dateRangePlaceholder": "Оберіть проміжок дат",
     "validation.dateRangeInvalid": "Будь ласка, оберіть дати старту та кінця",
