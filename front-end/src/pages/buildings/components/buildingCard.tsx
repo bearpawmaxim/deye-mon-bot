@@ -33,6 +33,12 @@ export const BuildingCard: FC<BuildingCardProps> = ({ t, building, buildingSumma
   const getBatteryIcon = (summary: BuildingSummaryItem): ReactNode | null => {
     const batteryPercent = summary.batteryPercent ?? 0;
     let icon: IconName | null = null;
+    if (summary.isOffline) {
+      return <span className="fa-layers fa-fw">
+        <FontAwesomeIcon icon='battery-0' />
+        <FontAwesomeIcon icon='slash' />
+      </span>
+    }
     if (batteryPercent > 75) {
       icon = 'battery-5';
     } else if (batteryPercent > 50) {
@@ -75,6 +81,9 @@ export const BuildingCard: FC<BuildingCardProps> = ({ t, building, buildingSumma
     
   const getOperationText = (summary: BuildingSummaryItem) => {
     const statuses: Array<string> = [];
+    if (summary.isOffline) {
+      return t('battery.offline');
+    }
     if (summary.isCharging) {
       statuses.push(t('battery.charging'));
     }
@@ -111,8 +120,8 @@ export const BuildingCard: FC<BuildingCardProps> = ({ t, building, buildingSumma
       icon: getBatteryIcon(buildingSummary),
       left: <>{t('battery.title')}: </>,
       right: <>
-        {getOperationText(buildingSummary)}{buildingSummary.batteryPercent}%
-        {buildingSummary.batteryDischargeTime && 
+        {getOperationText(buildingSummary)}{!buildingSummary.isOffline && `${buildingSummary.batteryPercent}%`}
+        {buildingSummary.batteryDischargeTime && !buildingSummary.isOffline &&
           <>, {t('battery.estimate.discharge', { time: buildingSummary.batteryDischargeTime })}</>}</>,
     });
   }

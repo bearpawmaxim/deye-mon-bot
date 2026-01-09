@@ -73,6 +73,7 @@ class BuildingSummaryResponse(BaseModel):
     has_mixed_reporter_states: Optional[bool] = Field(None, alias="hasMixedReporterStates")
     is_charging: Optional[bool] = Field(None, alias="isCharging")
     is_discharging: Optional[bool] = Field(None, alias="isDischarging")
+    is_offline: Optional[bool] = Field(None, alias="isOffline")
     battery_percent: Optional[float] = Field(None, alias="batteryPercent")
     consumption_power: Optional[str] = Field(None, alias="consumptionPower")
     battery_discharge_time: Optional[str] = Field(None, alias="batteryDischargeTime")

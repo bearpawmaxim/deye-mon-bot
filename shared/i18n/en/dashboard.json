@@ -43,6 +43,7 @@
     "title": "Battery",
     "charging": "Charging",
     "discharging": "Discharging",
+    "offline": "Offline",
     "estimate": {
       "discharge": "~{{time}} left"
     }
