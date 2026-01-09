@@ -169,6 +169,7 @@ class DashboardService(BaseService):
             is_discharging = (station_data.discharge_power or 0) > 200
             is_charging = (station_data.charge_power or 0) * -1 > 200
 
+            result.is_offline = building.station.connection_status == 'ALL_OFFLINE'
             result.is_charging = is_charging
             result.is_discharging = is_discharging
             result.battery_percent = station_data.battery_soc

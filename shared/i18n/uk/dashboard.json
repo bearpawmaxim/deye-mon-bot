@@ -42,6 +42,7 @@
     "title": "Батарея",
     "charging": "Заряджається",
     "discharging": "Розряджається",
+    "offline": "Не в мережі",
     "estimate": {
       "discharge": "~{{time}} залиш."
     }

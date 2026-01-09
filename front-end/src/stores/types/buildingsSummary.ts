@@ -11,6 +11,7 @@ export type BuildingSummaryItem = {
   hasMixedReporterStates?: boolean;
   isDischarging: boolean;
   isCharging: boolean;
+  isOffline: boolean;
 };
 
 export type BuildingsSummaryState = BaseState & {
