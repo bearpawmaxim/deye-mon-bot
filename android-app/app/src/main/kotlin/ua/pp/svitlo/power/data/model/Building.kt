@@ -15,7 +15,8 @@ data class Building(
     val isDischarging: Boolean,
     val isGridAvailable: Boolean? = null,
     val batteryDischargeTime: String? = null,
-    val hasMixedReporterStates: Boolean? = null
+    val hasMixedReporterStates: Boolean? = null,
+    val isOffline: Boolean? = null
 ) {
     fun getDisplayName(): String = name.en ?: name.uk ?: "Unknown"
     
@@ -23,6 +24,7 @@ data class Building(
     
     fun getPowerStatus(): PowerStatus {
         return when {
+            isOffline == true -> PowerStatus.OFFLINE
             isCharging -> PowerStatus.CHARGING
             isDischarging -> PowerStatus.DISCHARGING
             isGridAvailable == true -> PowerStatus.GRID_AVAILABLE
@@ -61,6 +63,7 @@ enum class PowerStatus {
     CHARGING,
     DISCHARGING,
     GRID_AVAILABLE,
-    IDLE
+    IDLE,
+    OFFLINE
 }
 

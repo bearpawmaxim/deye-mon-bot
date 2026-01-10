@@ -121,12 +121,14 @@ fun BuildingCard(
 ) {
     val hasMixedStates = building.hasMixedReporterStates == true
     val isGridOff = building.isGridAvailable == false
+    val isOffline = building.isOffline == true
     
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = when {
+                isOffline -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                 isGridOff -> PowerRed.copy(alpha = 0.1f)
                 hasMixedStates -> PowerOrange.copy(alpha = 0.1f)
                 else -> MaterialTheme.colorScheme.surface
@@ -362,6 +364,7 @@ fun PowerStatusBadge(status: PowerStatus) {
         PowerStatus.DISCHARGING -> Triple("Discharging", PowerYellow, Icons.Default.BatteryAlert)
         PowerStatus.GRID_AVAILABLE -> Triple("Grid", PowerGreen, Icons.Default.Power)
         PowerStatus.IDLE -> Triple("Idle", MaterialTheme.colorScheme.outline, Icons.Default.PowerOff)
+        PowerStatus.OFFLINE -> Triple("Offline", MaterialTheme.colorScheme.outline, Icons.Default.CloudOff)
     }
     
     Surface(
