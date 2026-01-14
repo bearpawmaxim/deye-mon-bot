@@ -1,9 +1,10 @@
 import { FC, useMemo } from "react";
-import { StationDataItem } from "../../../stores/types";
+import { StationDataItem, StationDataRecord } from "../../../stores/types";
 import { Card, Text, Box, LoadingOverlay } from "@mantine/core";
 import { AreaChart } from "@mantine/charts";
 import { TFunction } from "i18next";
 import i18n from "../../../i18n";
+import { Payload } from "recharts/types/component/DefaultTooltipContent";
 
 type StationChartCardProps = {
   data: StationDataItem;
@@ -11,12 +12,36 @@ type StationChartCardProps = {
   t?: TFunction;
 };
 
+type StationDataChartRecord = StationDataRecord & {
+  time: string;
+  tooltipTime: string;
+};
+
 export const StationChartCard: FC<StationChartCardProps> = ({ data, loading, t }) => {
-  const formatTimeValue = (value: Date) => new Date(value).toLocaleTimeString(i18n.language);
+  const formatAxisTime = (value: Date) => new Date(value).toLocaleTimeString(i18n.language, { hour12: false });
+  const formatTooltipTime = (value: Date) =>
+    new Date(value).toLocaleString(i18n.language, {
+      hour12: false,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+
   const dataArray = useMemo(() => data?.data ?? [], [data]);
   const dataLength = dataArray.length;
 
-  const processedData = useMemo(() => dataArray.map((d) => ({ ...d, time: formatTimeValue(d.date) })), [dataArray]);
+  const processedData: Array<StationDataChartRecord> = useMemo(
+    () =>
+      dataArray.map((d: StationDataRecord) => ({
+        ...d,
+        time: formatAxisTime(d.date),
+        tooltipTime: formatTooltipTime(d.date),
+      })),
+    [dataArray],
+  );
 
   const powerSeries = useMemo(
     () => [
@@ -36,7 +61,7 @@ export const StationChartCard: FC<StationChartCardProps> = ({ data, loading, t }
         color: '#FFC225',
       },
     ],
-    [t]
+    [t],
   );
 
   const socSeries = useMemo(
@@ -47,8 +72,13 @@ export const StationChartCard: FC<StationChartCardProps> = ({ data, loading, t }
         color: '#67C2FE',
       },
     ],
-    [t]
+    [t],
   );
+
+  const labelFormatter = (
+    _: string,
+    p: ReadonlyArray<Payload<keyof StationDataChartRecord, keyof StationChartCardProps>>
+  ) => p.length > 0 ? p[0].payload['tooltipTime'] : null;
 
   return (
     <Card withBorder radius="md" p="sm" mt="sm" style={{ width: '100%' }}>
@@ -78,6 +108,9 @@ export const StationChartCard: FC<StationChartCardProps> = ({ data, loading, t }
               yAxisProps={{
                 domain: [0, 100],
               }}
+              tooltipProps={{
+                labelFormatter: labelFormatter,
+              }}
               gridProps={{ strokeDasharray: '3 2' }}
               areaChartProps={{ syncId: String(data.id) }}
             />
@@ -95,6 +128,9 @@ export const StationChartCard: FC<StationChartCardProps> = ({ data, loading, t }
               withGradient
               withDots={false}
               fillOpacity={0.6}
+              tooltipProps={{
+                labelFormatter: labelFormatter,
+              }}
               gridProps={{ strokeDasharray: '3 2' }}
               areaChartProps={{ syncId: String(data.id) }}
             />

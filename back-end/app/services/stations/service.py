@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 from typing import List
 from injector import inject
 
@@ -29,6 +30,10 @@ class StationsService(BaseService):
     async def _get_station_data(self, station: Station, last_seconds: int):
         station_data = await self._stations_data.get_full_station_data(station.id, last_seconds)
         return station, station_data
+    
+    async def _get_station_data_range(self, station: Station, start_date: datetime, end_date: datetime):
+        station_data = await self._stations_data.get_full_station_data_range(station.id, start_date, end_date)
+        return station, station_data
 
     async def get_station_data(self, station_id: str, last_seconds: int) -> tuple[Station, List[StationData]]:
         station = await self._stations.get_station(station_id)
@@ -41,6 +46,15 @@ class StationsService(BaseService):
         stations = await self._stations.get_stations()
         tasks = [
             asyncio.create_task(self._get_station_data(station, last_seconds))
+            for station in stations
+        ]
+
+        return await asyncio.gather(*tasks)
+
+    async def get_stations_data_range(self, start_date: datetime, end_date: datetime) -> List[tuple[Station, List[StationData]]]:
+        stations = await self._stations.get_stations()
+        tasks = [
+            asyncio.create_task(self._get_station_data_range(station, start_date, end_date))
             for station in stations
         ]
 

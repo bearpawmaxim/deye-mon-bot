@@ -1,6 +1,7 @@
 {
   "label": {
-    "interval": "Interval:"
+    "interval": "Interval:",
+    "customInterval": "Custom interval:"
   },
   "interval": {
     "last15": "Last 15 minutes",
@@ -9,7 +10,8 @@
     "last3h": "Last 3 hours",
     "last6h": "Last 6 hours",
     "lastDay": "Last day",
-    "lastTwoDays": "Last two days"
+    "lastTwoDays": "Last two days",
+    "custom": "Custom"
   },
   "chart": {
     "chargePower": "Charge power",

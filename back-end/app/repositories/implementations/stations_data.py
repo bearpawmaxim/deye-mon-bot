@@ -58,6 +58,40 @@ class StationsDataRepository(IStationsDataRepository):
         except Exception as e:
             print(f"Error fetching station data: {e}")
             return []
+        
+    async def get_full_station_data_range(
+        self,
+        station_id: str,
+        start_date: datetime,
+        end_date: datetime,
+    ) -> List[StationData]:
+        try:
+            if start_date.tzinfo is None:
+                start_date = start_date.replace(tzinfo=timezone.utc)
+            else:
+                start_date = start_date.astimezone(timezone.utc)
+
+            if end_date.tzinfo is None:
+                end_date = end_date.replace(tzinfo=timezone.utc)
+            else:
+                end_date = end_date.astimezone(timezone.utc)
+
+            stations = await (
+                StationData.find(
+                    StationData.station_id == station_id,
+                    StationData.last_update_time >= start_date,
+                    StationData.last_update_time <= end_date,
+                )
+                .sort(StationData.last_update_time)
+                .to_list()
+            )
+
+            return stations
+
+        except Exception as e:
+            print(f"Error fetching station data range: {e}")
+            return []
+
 
     async def get_last_station_data(
         self,
