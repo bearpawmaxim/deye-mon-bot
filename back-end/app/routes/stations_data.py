@@ -1,31 +1,73 @@
-from typing import List
+from datetime import timedelta, timezone
+from statistics import mean
 from fastapi import FastAPI, Depends, HTTPException, Body, Path
 from fastapi_injector import Injected
 from app.services import StationsService
 from app.utils.jwt_dependencies import jwt_required
+from app.models.api import StationsDataRequest
 
 def register(app: FastAPI):
 
     @app.post("/api/stationsData/stationsData")
     async def get_stations_data(
-        payload: dict = Body(...),
+        body: StationsDataRequest,
         _ = Depends(jwt_required),
         stations = Injected(StationsService)
     ):
-        last_seconds: int = payload.get("lastSeconds", 3600)
-        stations_data = await stations.get_stations_data(last_seconds)
+        is_range_request = body.start_date is not None and body.end_date is not None
+        stations_data = await (
+            stations.get_stations_data_range(
+                body.start_date,
+                body.end_date,
+            ) if is_range_request
+            else stations.get_stations_data(body.last_seconds)
+        )
+
+        def downsample_data(data, max_records):
+            if not max_records or len(data) <= max_records:
+                return data
+
+            result = [data[0]]
+            n_segments = max_records - 2
+            if n_segments <= 0:
+                return [data[0], data[-1]]
+
+            chunk_size = len(data) / n_segments
+            start_time = data[0].last_update_time
+            end_time = data[-1].last_update_time
+            total_duration = (end_time - start_time).total_seconds()
+
+            for i in range(n_segments):
+                start_idx = int(i * chunk_size)
+                end_idx = int((i + 1) * chunk_size)
+                chunk = data[start_idx:end_idx]
+                if not chunk:
+                    continue
+
+                avg_record = {
+                    "battery_soc": mean(d.battery_soc for d in chunk),
+                    "discharge_power": mean(d.discharge_power or 0 for d in chunk),
+                    "charge_power": mean(abs(d.charge_power) if d.charge_power else 0 for d in chunk),
+                    "consumption_power": mean(d.consumption_power or 0 for d in chunk),
+                    "last_update_time": start_time + timedelta(seconds=((i + 1) * total_duration / (n_segments + 1)))
+                }
+                result.append(avg_record)
+
+            result.append(data[-1])
+            return result
 
         def get_station_data(station, station_data):
+            station_data = downsample_data(station_data, body.records_count)
             return {
                 "id": str(station.id),
                 "name": station.station_name,
                 "data": [
                     {
-                        "batterySoc": d.battery_soc,
-                        "dischargePower": d.discharge_power or 0,
-                        "chargePower": abs(d.charge_power) if d.charge_power else 0,
-                        "consumptionPower": d.consumption_power or 0,
-                        "date": d.last_update_time,
+                        "batterySoc": d["battery_soc"] if isinstance(d, dict) else d.battery_soc,
+                        "dischargePower": d["discharge_power"] if isinstance(d, dict) else (d.discharge_power or 0),
+                        "chargePower": d["charge_power"] if isinstance(d, dict) else (abs(d.charge_power) if d.charge_power else 0),
+                        "consumptionPower": d["consumption_power"] if isinstance(d, dict) else (d.consumption_power or 0),
+                        "date": (d["last_update_time"] if isinstance(d, dict) else d.last_update_time).replace(tzinfo=timezone.utc).isoformat()
                     }
                     for d in station_data
                 ]

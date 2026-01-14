@@ -20,6 +20,15 @@ class IStationsDataRepository(ABC):
         ...
 
     @abstractmethod
+    async def get_full_station_data_range(
+        self,
+        station_id: str,
+        start_date: datetime,
+        end_date: datetime,
+    ) -> List[StationData]:
+        ...
+
+    @abstractmethod
     async def get_last_station_data(self, station_id: PydanticObjectId) -> StationData:
         ...
 

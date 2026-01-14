@@ -1,15 +1,18 @@
-import { FC, useEffect } from "react"
+import { FC, useEffect, useMemo } from "react"
 import { StationDataItem } from "../../stores/types";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { StationChartCard } from "./components";
 import { connect } from "react-redux";
 import { fetchStationsData } from "../../stores/thunks";
 import { ErrorMessage } from "../../components";
-import { ComboboxItem, Select, SimpleGrid } from "@mantine/core";
+import { Box, ComboboxItem, InputLabel, Select, SimpleGrid } from "@mantine/core";
 import useLocalStorage from "../../hooks/useLocalStorage";
 import { initGA, trackPageView } from "../../utils/analytics";
 import { usePageTranslation } from "../../utils";
 import { TFunction } from "i18next";
+import { DateRange } from "../../types";
+import dayjs from "dayjs";
+import DateRangePicker from "../../components/dateRangePicker";
 
 type ComponentProps = {
   stationsData: Array<StationDataItem>;
@@ -31,19 +34,28 @@ const buildIntervalOptions = (t: TFunction): ComboboxItem[] => [
   { label: t('interval.last6h'), value: (3600 * 6).toString() },
   { label: t('interval.lastDay'), value: (3600 * 12).toString() },
   { label: t('interval.lastTwoDays'), value: (3600 * 24).toString() },
+  { label: t('interval.custom'), value: 'custom' },
 ];
 
 const Component: FC<ComponentProps> = ({ stationsData, loading, error }) => {
   const dispatch = useAppDispatch();
   const t = usePageTranslation('home');
-  const [dataInterval, setDataInterval] = useLocalStorage('home_graphs_interval', '1800');
-  const intervalOptions = buildIntervalOptions(t);
+  const [dataInterval, setDataInterval] = useLocalStorage<string | 'custom'>('home_graphs_interval', '1800');
+  const [customRange, setCustomRange] = useLocalStorage<DateRange>('home_graphs_custom_range', {
+    from: dayjs().utc().add(-1, 'day').toDate(),
+    to: dayjs().utc().toDate()
+  });
+  const intervalOptions = useMemo(() => buildIntervalOptions(t), [t]);
+  const isCustomRange = useMemo(() => dataInterval === 'custom', [dataInterval]);
 
   useEffect(() => {
-    dispatch(fetchStationsData(parseInt(dataInterval)));
-    const interval = setInterval(() => dispatch(fetchStationsData(parseInt(dataInterval))), 30000);
+    const action = isCustomRange && customRange.from && customRange.to
+      ? () => dispatch(fetchStationsData({ value: null, startDate: customRange.from!, endDate: customRange.to!, }))
+      : () => dispatch(fetchStationsData({ value: parseInt(dataInterval), startDate: null, endDate: null, }));
+    action();
+    const interval = setInterval(() => action, 30000);
     return () => clearInterval(interval);
-  }, [dispatch, dataInterval]);
+  }, [dispatch, dataInterval, isCustomRange, customRange.from, customRange.to]);
 
   // Google Analytics
   useEffect(() => {
@@ -52,8 +64,20 @@ const Component: FC<ComponentProps> = ({ stationsData, loading, error }) => {
   }, []);
 
   const onDataIntervalChange = (_: unknown, option: ComboboxItem) => {
+    if (option.value === 'custom') {
+      setDataInterval(option.value);
+      return;
+    }
     const interval = parseInt(option.value);
     setDataInterval(interval.toString());
+  };
+
+  const onCustomRangeChange = (value: DateRange | string) => {
+    const range = value as DateRange;
+    if (range?.from && range?.to) {
+      range.to = dayjs(range.to).utc().add(1, 'day').add(-1, 'second').toDate();
+      setCustomRange(range);
+    }
   };
 
   if (error) {
@@ -68,6 +92,12 @@ const Component: FC<ComponentProps> = ({ stationsData, loading, error }) => {
         data={intervalOptions}
         onChange={onDataIntervalChange}
       />
+      { isCustomRange && 
+        <Box>
+          <InputLabel>{t('label.customInterval')}</InputLabel>
+          <DateRangePicker value={customRange} onChange={onCustomRangeChange} />
+        </Box>
+      }
     </SimpleGrid>
     { !error && stationsData.map(data => <StationChartCard t={t} loading={loading} key={`st_data_${data.id}`} data={data} />)}
     { error && <ErrorMessage content={error} />}
