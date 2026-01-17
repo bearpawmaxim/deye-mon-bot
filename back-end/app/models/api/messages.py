@@ -63,6 +63,7 @@ class MessageUpdateRequest(MessageCreateRequest):
 
 
 class MessagePreviewRequest(BaseModel):
+    id: Optional[PydanticObjectId] = Field(None)
     name: str
     message_template: str = Field(alias="messageTemplate")
     timeout_template: str = Field(alias="timeoutTemplate")

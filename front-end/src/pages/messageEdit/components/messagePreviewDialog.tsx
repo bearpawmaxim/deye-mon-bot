@@ -10,6 +10,7 @@ import { ObjectId } from "../../../schemas";
 import { TFunction } from "i18next";
 
 type OpenMessagePreviewOptions = {
+  message_id?: ObjectId;
   name: string,
   stations: ObjectId[];
   shouldSendTemplate: string;
@@ -19,6 +20,7 @@ type OpenMessagePreviewOptions = {
 };
 
 export function openMessagePreviewDialog({
+  message_id,
   name,
   stations,
   shouldSendTemplate,
@@ -50,7 +52,9 @@ export function openMessagePreviewDialog({
     const dispatch = useAppDispatch();
 
     useEffect(() => {
-      dispatch(getTemplatePreview({ name, stations, shouldSendTemplate, timeoutTemplate, messageTemplate }));
+      dispatch(getTemplatePreview({
+        id: message_id, name, stations, shouldSendTemplate, timeoutTemplate, messageTemplate,
+      }));
     }, [dispatch]);
 
     const handleClose = () => {
