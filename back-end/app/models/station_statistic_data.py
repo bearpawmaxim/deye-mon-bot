@@ -1,6 +1,7 @@
 from datetime import timezone
 from shared.models import StationData
 
+
 class StationStatisticData:
     _previous: StationData
     _current: StationData

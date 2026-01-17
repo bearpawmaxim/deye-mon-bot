@@ -1,5 +1,17 @@
+from enum import Enum
 from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, Field
+
+# change connection_status to Enum: DeyeConnectionStatus
+# connection_status values:
+# NORMAL, NO_DEVICE, ALL_OFFLINE, PARTIAL_OFFLINE
+
+
+class DeyeConnectionStatus(str, Enum):
+    NORMAL = "NORMAL"
+    NO_DEVICE = "NO_DEVICE"
+    ALL_OFFLINE = "ALL_OFFLINE"
+    PARTIAL_OFFLINE = "PARTIAL_OFFLINE"
 
 
 class DeyeStation(BaseModel):
@@ -7,7 +19,7 @@ class DeyeStation(BaseModel):
     name: str
     owner_name: Optional[str] = Field(None, alias="ownerName")
     battery_soc: Optional[float] = Field(None, alias="batterySOC")
-    connection_status: Optional[str] = Field(None, alias="connectionStatus")
+    connection_status: Optional[DeyeConnectionStatus] = Field(None, alias="connectionStatus")
     contact_phone: Optional[str] = Field(None, alias="contactPhone")
     created_date: Optional[float] = Field(None, alias="createdDate")
     generation_power: Optional[float] = Field(None, alias="generationPower")
@@ -21,7 +33,10 @@ class DeyeStation(BaseModel):
     region_timezone: Optional[str] = Field(None, alias="regionTimezone")
     start_operating_time: Optional[float] = Field(None, alias="startOperatingTime")
 
-    model_config = ConfigDict(extra='ignore', populate_by_name=True)
+    model_config = ConfigDict(
+        extra='ignore',
+        populate_by_name=True,
+    )
 
 
 class DeyeStationList(BaseModel):
@@ -32,7 +47,10 @@ class DeyeStationList(BaseModel):
     success: bool
     total: int
 
-    model_config = ConfigDict(extra='ignore', populate_by_name=True)
+    model_config = ConfigDict(
+        extra='ignore',
+        populate_by_name=True,
+    )
 
 
 class DeyeStationData(BaseModel):

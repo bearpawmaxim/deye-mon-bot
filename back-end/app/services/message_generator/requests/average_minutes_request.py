@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from attr import dataclass
+from dataclasses import dataclass
 from injector import Injector
 
 from ..models import NumericTemplateRequest

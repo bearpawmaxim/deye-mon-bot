@@ -5,7 +5,7 @@ from typing import List, Optional
 from beanie import PydanticObjectId
 
 from shared.models import Station, StationData
-from app.models import StationStatisticData
+from app.models import AssumedStationStatus, StationStatisticData
 from app.models.deye import DeyeStationData
 
 
@@ -26,6 +26,10 @@ class IStationsDataRepository(ABC):
         start_date: datetime,
         end_date: datetime,
     ) -> List[StationData]:
+        ...
+
+    @abstractmethod
+    async def get_assumed_connection_status(self, station_id: int) -> AssumedStationStatus:
         ...
 
     @abstractmethod

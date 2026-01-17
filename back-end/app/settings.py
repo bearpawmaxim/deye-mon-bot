@@ -33,6 +33,9 @@ class Settings(BaseSettings, BaseAppSettings, BaseJWTSettings, BaseMongoSettings
     DEYE_FETCH_INTERVAL: int = Field(default=120)
     DEYE_SYNC_STATIONS_ON_POLL: bool = Field(default=False)
 
+    DEYE_REPORT_INTERVAL: int = Field(default=300)
+    DEYE_ASSUMED_OFFLINE_REPORTS: int = Field(default=2)
+
     # -------------------------
     # Telegram
     # -------------------------

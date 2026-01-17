@@ -269,6 +269,7 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, message, loading, station
     const timeoutTemplate = getControlValue('timeoutTemplate') as string;
     const messageTemplate = getControlValue('messageTemplate') as string;
     openMessagePreviewDialog({
+      message_id: isEdit ? messageId : undefined,
       name,
       stations,
       shouldSendTemplate,

@@ -3,14 +3,23 @@ import traceback
 from typing import List, Optional, get_origin, get_args
 
 from beanie import PydanticObjectId
+from injector import inject
 
-from app.models import StationStatisticData
+from app.settings import Settings
+from app.models import AssumedStationStatus, StationStatisticData
 from ..interfaces.stations_data import IStationsDataRepository
 from shared.models import Station, StationData
 from app.models.deye import DeyeStationData
 
 
+@inject
 class StationsDataRepository(IStationsDataRepository):
+
+    def __init__(
+        self,
+        settings: Settings,
+    ):
+        self._settings = settings
 
     async def add_station_data(self, station: Station, station_data: DeyeStationData):
         try:
@@ -189,3 +198,28 @@ class StationsDataRepository(IStationsDataRepository):
         await StationData.find(
             StationData.last_update_time < timeout
         ).delete()
+
+    async def get_assumed_connection_status(self, station_id: int) -> AssumedStationStatus:
+        station_data = await StationData.find(
+            StationData.station_id == station_id
+        ).sort(
+            -StationData.last_update_time
+        ).limit(1).to_list()
+
+        if not station_data:
+            return AssumedStationStatus.OFFLINE
+
+        report_interval_seconds: int = self._settings.DEYE_REPORT_INTERVAL
+        offline_reports_cnt: int = self._settings.DEYE_ASSUMED_OFFLINE_REPORTS
+
+        latest_update = station_data[0].last_update_time.replace(tzinfo=timezone.utc)
+        current_time = datetime.now(timezone.utc)
+
+        time_elapsed = (current_time - latest_update).total_seconds()
+
+        offline_threshold = report_interval_seconds * offline_reports_cnt
+
+        if time_elapsed > offline_threshold:
+            return AssumedStationStatus.OFFLINE
+
+        return AssumedStationStatus.NORMAL

@@ -11,6 +11,7 @@ from app.utils import generate_message, get_send_timeout, get_should_send
 from app.repositories import IMessagesRepository, IStationsDataRepository
 from ..interfaces import IMessageGeneratorService, MessageItem
 from .requests import (
+    AssumedStateRequest,
     AverageMinutesRequest,
     AverageRequest,
 )
@@ -76,8 +77,18 @@ class MessageGeneratorService(IMessageGeneratorService):
                     station_id=station_id,
                     start_date=last_sent_time,
                 ).bind(context, mode)
-                station_data['get_average_all'] = TemplateMethod(AverageRequest, station_id=station_id).bind(context, mode)
-                station_data['get_average_minutes'] = TemplateMethod(AverageMinutesRequest, station_id=station_id).bind(context, mode)
+                station_data['get_average_all'] = TemplateMethod(
+                    AverageRequest,
+                    station_id=station_id
+                ).bind(context, mode)
+                station_data['get_average_minutes'] = TemplateMethod(
+                    AverageMinutesRequest,
+                    station_id=station_id
+                ).bind(context, mode)
+                station_data['get_assumed_state'] = TemplateMethod(
+                    AssumedStateRequest,
+                    station_id=station_id
+                ).bind(context, mode)
         if 'station' in template_data and template_data['station'] is not None and 'current' in template_data['station']:
             station_id = template_data['station']['current']['station_id']
             template_data['station']['get_average'] = TemplateMethod(
@@ -85,8 +96,18 @@ class MessageGeneratorService(IMessageGeneratorService):
                 station_id=station_id,
                 start_date=last_sent_time,
             ).bind(context, mode)
-            template_data['station']['get_average_all'] = TemplateMethod(AverageRequest, station_id=station_id).bind(context, mode)
-            template_data['station']['get_average_minutes'] = TemplateMethod(AverageMinutesRequest, station_id=station_id).bind(context, mode)
+            template_data['station']['get_average_all'] = TemplateMethod(
+                AverageRequest,
+                station_id=station_id
+            ).bind(context, mode)
+            template_data['station']['get_average_minutes'] = TemplateMethod(
+                AverageMinutesRequest,
+                station_id=station_id
+            ).bind(context, mode)
+            template_data['station']['get_assumed_state'] = TemplateMethod(
+                AssumedStateRequest,
+                station_id=station_id
+            ).bind(context, mode)
 
 
     async def generate_message(self, message: Message, force = False, include_data = False) -> MessageItem | None:
@@ -94,6 +115,7 @@ class MessageGeneratorService(IMessageGeneratorService):
             'stations': [],
             'now': datetime.now(self._message_timezone),
             'timedelta': timedelta,
+            'last_sent_time': message.last_sent_time.replace(tzinfo=timezone.utc).astimezone(self._message_timezone) if message.last_sent_time else None,
         }
 
         stations = sorted(message.stations, key=lambda s: s.order)
@@ -126,5 +148,5 @@ class MessageGeneratorService(IMessageGeneratorService):
             message = message_content,
             should_send = should_send,
             timeout = timeout,
-            next_send_time = next_send_time
+            next_send_time = next_send_time,
         )

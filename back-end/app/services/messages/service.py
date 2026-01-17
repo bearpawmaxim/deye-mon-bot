@@ -1,5 +1,6 @@
 import asyncio
 from contextlib import redirect_stdout
+from datetime import datetime
 import io
 from typing import List
 from beanie import PydanticObjectId
@@ -124,6 +125,13 @@ class MessagesService(BaseService):
         server_stations = await self._stations.get_stations(True)
         id_set = set(message_preview.stations)
         stations = [s for s in server_stations if s.id in id_set]
+        
+        last_sent_time: datetime = None
+
+        if message_preview.id is not None:
+            existing_message = await self._messages.get_message(message_preview.id)
+            if existing_message is not None:
+                last_sent_time = existing_message.last_sent_time
 
         message = Message(
             name                 = message_preview.name,
@@ -131,6 +139,7 @@ class MessagesService(BaseService):
             timeout_template     = message_preview.timeout_template,
             should_send_template = message_preview.should_send_template,
             stations             = stations,
+            last_sent_time       = last_sent_time,
         )
 
         stdout_buffer = io.StringIO()
