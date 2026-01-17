@@ -32,6 +32,7 @@
   "previewLabels": {
     "shouldSend": "Should send:",
     "timeout": "Timeout (seconds):",
+    "nextSendTime": "Next send time:",
     "message": "Message:"
   },
   "button": {

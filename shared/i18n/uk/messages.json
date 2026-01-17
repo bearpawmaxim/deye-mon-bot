@@ -33,6 +33,7 @@
   "previewLabels": {
     "shouldSend": "Потрібно відправити:",
     "timeout": "Таймаут (секунди):",
+    "nextSendTime": "Наступна дата відправки:",
     "message": "Повідомлення:"
   },
   "button": {

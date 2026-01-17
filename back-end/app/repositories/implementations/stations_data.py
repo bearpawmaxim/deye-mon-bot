@@ -130,8 +130,7 @@ class StationsDataRepository(IStationsDataRepository):
 
         origin = get_origin(field_type)
         if origin is not None:
-            args = get_args(field_type)
-            field_type = args[0]
+            field_type = get_args(field_type)[0]
 
         if field_type not in (int, float):
             raise TypeError(
@@ -140,26 +139,38 @@ class StationsDataRepository(IStationsDataRepository):
 
         match: dict = {
             "station_id": station_id,
-            column_name: { "$ne": None, "$ne": 0 },
         }
 
-        if start_date:
-            match["last_update_time"] = {"$gte": start_date}
-        if end_date:
-            match.setdefault("last_update_time", {})
-            match["last_update_time"]["$lte"] = end_date
+        if start_date or end_date:
+            match["last_update_time"] = {}
+            if start_date:
+                match["last_update_time"]["$gte"] = start_date
+            if end_date:
+                match["last_update_time"]["$lte"] = end_date
+
+            if not match["last_update_time"]:
+                del match["last_update_time"]
 
         pipeline = [
-            { "$match": match },
-            { "$group": { "_id": None, "avg_value": { "$avg": f"${column_name}" } } },
+            {"$match": match},
+            {
+                "$group": {
+                    "_id": None,
+                    "avg_value": {
+                        "$avg": {
+                            "$ifNull": [f"${column_name}", 0]
+                        }
+                    },
+                }
+            },
         ]
 
         result = await StationData.aggregate(pipeline).to_list()
 
-        if not result:
+        if not result or result[0].get("avg_value") is None:
             return 0.0
 
-        return float(result[0].get("avg_value", 0.0))
+        return float(result[0]["avg_value"])
 
     async def get_station_data_tuple(
         self,
