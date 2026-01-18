@@ -21,7 +21,6 @@ def create_app(settings: Settings = None):
     )
 
     config = EventsServiceConfig(str(settings.REDIS_URI), settings.DEBUG)
-    print(config)
     events = EventsService(config)
     app.state.events = events
     register_routes(app, events, settings)

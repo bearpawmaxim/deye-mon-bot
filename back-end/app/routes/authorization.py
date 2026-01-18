@@ -35,7 +35,6 @@ def register(app: FastAPI):
         authorization: AuthorizationService = Injected(AuthorizationService),
     ):
         try:
-            print(f"{body}")
             access_token, refresh_token = await authorization.login(
                 body.user_name, body.password
             )

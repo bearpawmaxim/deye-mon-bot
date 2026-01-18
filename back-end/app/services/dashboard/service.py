@@ -16,6 +16,7 @@ from app.repositories import (
     IStationsDataRepository,
     IUsersRepository,
 )
+from app.models import AssumedStationStatus
 from app.models.api import (
     BuildingResponse,
     BuildingSummaryResponse,
@@ -169,7 +170,8 @@ class DashboardService(BaseService):
             is_discharging = (station_data.discharge_power or 0) > 200
             is_charging = (station_data.charge_power or 0) * -1 > 200
 
-            result.is_offline = building.station.connection_status == 'ALL_OFFLINE'
+            assumed_offline = await self._stations_data.get_assumed_connection_status(station_id) == AssumedStationStatus.OFFLINE
+            result.is_offline = building.station.connection_status == 'ALL_OFFLINE' or assumed_offline
             result.is_charging = is_charging
             result.is_discharging = is_discharging
             result.battery_percent = station_data.battery_soc

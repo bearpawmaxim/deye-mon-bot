@@ -117,9 +117,6 @@ def register(app: FastAPI):
             start_date = start_date.replace(tzinfo=timezone.utc) if start_date.tzinfo is None else start_date
             end_date = end_date.replace(tzinfo=timezone.utc) if end_date.tzinfo is None else end_date
 
-            print(start_date)
-            print(end_date)
-
             if start_date >= end_date:
                 raise HTTPException(status_code=400, detail="startDate must be before endDate")
         except Exception as e:
