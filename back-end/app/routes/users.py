@@ -70,7 +70,6 @@ def register(app: FastAPI):
         _=Depends(jwt_required),
         users = Injected(UsersService),
     ):
-        print(f"user_id = {user_id}")
         token = await users.create_reporter_token(user_id)
 
         if not token:
