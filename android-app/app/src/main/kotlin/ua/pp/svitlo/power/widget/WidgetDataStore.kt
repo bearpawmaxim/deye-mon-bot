@@ -19,6 +19,7 @@ object WidgetDataStore {
     private val UPDATED_ON_KEY = stringPreferencesKey("updated_on")
     private val IS_ERROR_KEY = booleanPreferencesKey("is_error")
     private val ERROR_MESSAGE_KEY = stringPreferencesKey("error_message")
+    private val IS_EMERGENCY_KEY = booleanPreferencesKey("is_emergency")
     
     // Current slot
     private val CURRENT_SLOT_TIME_RANGE_KEY = stringPreferencesKey("current_slot_time_range")
@@ -46,6 +47,7 @@ object WidgetDataStore {
             prefs[UPDATED_ON_KEY] = data.updatedOn
             prefs[IS_ERROR_KEY] = data.isError
             prefs[ERROR_MESSAGE_KEY] = data.errorMessage
+            prefs[IS_EMERGENCY_KEY] = data.isEmergency
             
             // Current slot
             data.currentSlot?.let { slot ->
@@ -114,7 +116,8 @@ object WidgetDataStore {
                         totalMinutes = prefs[TODAY_TOTAL_MINUTES_KEY] ?: 0
                     ),
                     isError = prefs[IS_ERROR_KEY] ?: false,
-                    errorMessage = prefs[ERROR_MESSAGE_KEY] ?: ""
+                    errorMessage = prefs[ERROR_MESSAGE_KEY] ?: "",
+                    isEmergency = prefs[IS_EMERGENCY_KEY] ?: false
                 )
             }.first()
         }

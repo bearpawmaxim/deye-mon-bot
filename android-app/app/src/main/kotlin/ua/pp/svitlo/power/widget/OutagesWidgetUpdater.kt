@@ -69,6 +69,23 @@ class OutagesWidgetUpdateWorker(
             scheduleDate.isEqual(today)
         }
         
+        // Check if today has Emergency status
+        val isEmergency = todaySchedule?.status == "EmergencyShutdowns"
+        
+        // If emergency - no scheduled outages apply
+        if (isEmergency) {
+            return WidgetData(
+                queue = queue,
+                updatedOn = response.updatedOn,
+                currentSlot = null,
+                nextSlot = null,
+                upcomingSlots = emptyList(),
+                todayStats = TodayStats(),
+                isError = false,
+                isEmergency = true
+            )
+        }
+        
         var currentSlot: SlotInfo? = null
         var nextSlot: SlotInfo? = null
         val upcomingSlots = mutableListOf<SlotInfo>()
@@ -115,7 +132,8 @@ class OutagesWidgetUpdateWorker(
             nextSlot = nextSlot,
             upcomingSlots = upcomingSlots,
             todayStats = todayStats,
-            isError = false
+            isError = false,
+            isEmergency = false
         )
     }
     

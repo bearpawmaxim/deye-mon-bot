@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.PowerOff
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -589,10 +590,11 @@ fun TimeSlotRow(slot: TimeSlot, isToday: Boolean, currentTime: Long) {
 
 @Composable
 fun StatusBadge(status: String) {
-    val (text, color) = when (status) {
-        "ScheduleApplies" -> "Active" to MaterialTheme.colorScheme.primary
-        "WaitingForSchedule" -> "Pending" to MaterialTheme.colorScheme.tertiary
-        else -> status to MaterialTheme.colorScheme.secondary
+    val (text, color, icon) = when (status) {
+        "ScheduleApplies" -> Triple("Active", MaterialTheme.colorScheme.primary, null)
+        "WaitingForSchedule" -> Triple("Pending", MaterialTheme.colorScheme.tertiary, null)
+        "EmergencyShutdowns" -> Triple("Emergency", PowerRed, Icons.Default.Warning)
+        else -> Triple(status, MaterialTheme.colorScheme.secondary, null)
     }
     
     Surface(
@@ -600,13 +602,26 @@ fun StatusBadge(status: String) {
         shape = MaterialTheme.shapes.small,
         border = androidx.compose.foundation.BorderStroke(1.dp, color)
     ) {
-        Text(
-            text = text,
+        Row(
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold,
-            color = color
-        )
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = color,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = color
+            )
+        }
     }
 }
 

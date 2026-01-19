@@ -130,6 +130,21 @@ private fun SmallWidgetContent(data: WidgetData) {
                             )
                         )
                     }
+                    data.isEmergency -> {
+                        Text(
+                            text = "🚨",
+                            style = TextStyle(fontSize = 32.sp)
+                        )
+                        Spacer(modifier = GlanceModifier.height(4.dp))
+                        Text(
+                            text = "Emergency",
+                            style = TextStyle(
+                                color = ColorProvider(Color(0xFFFF5449)),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                    }
                     data.currentSlot != null -> {
                         Text(
                             text = "⚡",
@@ -259,6 +274,14 @@ private fun MediumWidgetContent(data: WidgetData) {
             // Current status or error
             if (!data.isError) {
                 when {
+                    data.isEmergency -> {
+                        StatusCard(
+                            icon = "🚨",
+                            title = "Emergency",
+                            subtitle = "No schedule applies",
+                            color = Color(0xFFFF5449)
+                        )
+                    }
                     data.currentSlot != null -> {
                         StatusCard(
                             icon = "⚡",
@@ -287,30 +310,33 @@ private fun MediumWidgetContent(data: WidgetData) {
                     }
                 }
                 
-                Spacer(modifier = GlanceModifier.height(8.dp))
-                
-                // Today's stats
-                Row(
-                    modifier = GlanceModifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    StatItem(
-                        value = data.todayStats.completed,
-                        label = "Done",
-                        color = Color(0xFF6C757D)
-                    )
-                    Spacer(modifier = GlanceModifier.width(12.dp))
-                    StatItem(
-                        value = data.todayStats.active,
-                        label = "Active",
-                        color = Color(0xFFFB8C00)
-                    )
-                    Spacer(modifier = GlanceModifier.width(12.dp))
-                    StatItem(
-                        value = data.todayStats.upcoming,
-                        label = "Next",
-                        color = Color(0xFFFF5449)
-                    )
+                // Don't show stats for Emergency
+                if (!data.isEmergency) {
+                    Spacer(modifier = GlanceModifier.height(8.dp))
+                    
+                    // Today's stats
+                    Row(
+                        modifier = GlanceModifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        StatItem(
+                            value = data.todayStats.completed,
+                            label = "Done",
+                            color = Color(0xFF6C757D)
+                        )
+                        Spacer(modifier = GlanceModifier.width(12.dp))
+                        StatItem(
+                            value = data.todayStats.active,
+                            label = "Active",
+                            color = Color(0xFFFB8C00)
+                        )
+                        Spacer(modifier = GlanceModifier.width(12.dp))
+                        StatItem(
+                            value = data.todayStats.upcoming,
+                            label = "Next",
+                            color = Color(0xFFFF5449)
+                        )
+                    }
                 }
             } else {
                 // Error state
@@ -415,6 +441,43 @@ private fun LargeWidgetContent(data: WidgetData) {
             if (!data.isError) {
                 // Current status
                 when {
+                    data.isEmergency -> {
+                        // Emergency status - no schedule applies
+                        Box(
+                            modifier = GlanceModifier
+                                .fillMaxWidth()
+                                .background(ColorProvider(Color(0xFFFF5449).copy(alpha = 0.15f)))
+                                .padding(16.dp)
+                                .cornerRadius(12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "🚨",
+                                    style = TextStyle(fontSize = 36.sp)
+                                )
+                                Spacer(modifier = GlanceModifier.height(8.dp))
+                                Text(
+                                    text = "Emergency Shutdowns",
+                                    style = TextStyle(
+                                        color = ColorProvider(Color(0xFFFF5449)),
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+                                Spacer(modifier = GlanceModifier.height(4.dp))
+                                Text(
+                                    text = "Schedule does not apply",
+                                    style = TextStyle(
+                                        color = ColorProvider(Color(0xFFCAC4D0)),
+                                        fontSize = 12.sp
+                                    )
+                                )
+                            }
+                        }
+                    }
                     data.currentSlot != null -> {
                         DetailedStatusCard(
                             icon = "⚡",
@@ -445,75 +508,78 @@ private fun LargeWidgetContent(data: WidgetData) {
                     }
                 }
                 
-                Spacer(modifier = GlanceModifier.height(10.dp))
-                
-                // Upcoming outages list (if more than one)
-                if (data.upcomingSlots.size > 1) {
-                    Text(
-                        text = "Upcoming Outages",
-                        style = TextStyle(
-                            color = ColorProvider(Color(0xFFCAC4D0)),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    )
-                    Spacer(modifier = GlanceModifier.height(6.dp))
+                // Don't show upcoming slots and stats for Emergency
+                if (!data.isEmergency) {
+                    Spacer(modifier = GlanceModifier.height(10.dp))
                     
-                    // Show up to 3 upcoming outages (skip first if it's already shown as nextSlot)
-                    val slotsToShow = data.upcomingSlots.drop(1).take(3)
-                    slotsToShow.forEach { slot ->
-                        UpcomingSlotRow(slot)
-                        Spacer(modifier = GlanceModifier.height(4.dp))
+                    // Upcoming outages list (if more than one)
+                    if (data.upcomingSlots.size > 1) {
+                        Text(
+                            text = "Upcoming Outages",
+                            style = TextStyle(
+                                color = ColorProvider(Color(0xFFCAC4D0)),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        )
+                        Spacer(modifier = GlanceModifier.height(6.dp))
+                        
+                        // Show up to 3 upcoming outages (skip first if it's already shown as nextSlot)
+                        val slotsToShow = data.upcomingSlots.drop(1).take(3)
+                        slotsToShow.forEach { slot ->
+                            UpcomingSlotRow(slot)
+                            Spacer(modifier = GlanceModifier.height(4.dp))
+                        }
+                        
+                        Spacer(modifier = GlanceModifier.height(6.dp))
                     }
                     
-                    Spacer(modifier = GlanceModifier.height(6.dp))
-                }
-                
-                // Today's stats - compact version
-                Row(
-                    modifier = GlanceModifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    StatItem(
-                        value = data.todayStats.completed,
-                        label = "Done",
-                        color = Color(0xFF6C757D)
-                    )
-                    Spacer(modifier = GlanceModifier.width(16.dp))
-                    StatItem(
-                        value = data.todayStats.active,
-                        label = "Active",
-                        color = Color(0xFFFB8C00)
-                    )
-                    Spacer(modifier = GlanceModifier.width(16.dp))
-                    StatItem(
-                        value = data.todayStats.upcoming,
-                        label = "Next",
-                        color = Color(0xFFFF5449)
-                    )
-                    
-                    if (data.todayStats.totalMinutes > 0) {
+                    // Today's stats - compact version
+                    Row(
+                        modifier = GlanceModifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        StatItem(
+                            value = data.todayStats.completed,
+                            label = "Done",
+                            color = Color(0xFF6C757D)
+                        )
                         Spacer(modifier = GlanceModifier.width(16.dp))
-                        val hours = data.todayStats.totalMinutes / 60
-                        val minutes = data.todayStats.totalMinutes % 60
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m",
-                                style = TextStyle(
-                                    color = ColorProvider(Color(0xFFFF5449)),
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Bold
+                        StatItem(
+                            value = data.todayStats.active,
+                            label = "Active",
+                            color = Color(0xFFFB8C00)
+                        )
+                        Spacer(modifier = GlanceModifier.width(16.dp))
+                        StatItem(
+                            value = data.todayStats.upcoming,
+                            label = "Next",
+                            color = Color(0xFFFF5449)
+                        )
+                        
+                        if (data.todayStats.totalMinutes > 0) {
+                            Spacer(modifier = GlanceModifier.width(16.dp))
+                            val hours = data.todayStats.totalMinutes / 60
+                            val minutes = data.todayStats.totalMinutes % 60
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m",
+                                    style = TextStyle(
+                                        color = ColorProvider(Color(0xFFFF5449)),
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
                                 )
-                            )
-                            Text(
-                                text = "Total",
-                                style = TextStyle(
-                                    color = ColorProvider(Color(0xFFCAC4D0)),
-                                    fontSize = 9.sp
+                                Text(
+                                    text = "Total",
+                                    style = TextStyle(
+                                        color = ColorProvider(Color(0xFFCAC4D0)),
+                                        fontSize = 9.sp
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 }

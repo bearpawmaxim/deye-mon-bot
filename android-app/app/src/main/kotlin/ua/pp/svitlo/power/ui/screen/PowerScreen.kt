@@ -125,13 +125,13 @@ fun BuildingCard(
     
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors = CardDefaults.cardColors(
             containerColor = when {
                 isOffline -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                 isGridOff -> PowerRed.copy(alpha = 0.1f)
                 hasMixedStates -> PowerOrange.copy(alpha = 0.1f)
-                else -> MaterialTheme.colorScheme.surface
+                else -> MaterialTheme.colorScheme.surfaceContainerLow
             }
         ),
         onClick = onClick

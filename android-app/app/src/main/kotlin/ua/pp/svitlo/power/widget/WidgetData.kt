@@ -14,7 +14,8 @@ data class WidgetData(
     val upcomingSlots: List<SlotInfo> = emptyList(), // All upcoming slots for large widget
     val todayStats: TodayStats = TodayStats(),
     val isError: Boolean = false,
-    val errorMessage: String = ""
+    val errorMessage: String = "",
+    val isEmergency: Boolean = false // EmergencyShutdowns status - no schedule applies
 )
 
 data class SlotInfo(
