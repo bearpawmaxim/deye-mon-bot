@@ -11,6 +11,7 @@ class MessageItem:
     timeout: int
     should_send: bool
     next_send_time: datetime
+    data: dict | None = None
 
 
 class IMessageGeneratorService(ABC):

@@ -3,15 +3,15 @@ from shared.models import StationData
 
 
 class StationStatisticData:
-    _previous: StationData
-    _current: StationData
+    previous: StationData
+    current: StationData
 
     def __init__(self, previous: StationData, current: StationData):
-        self._previous = previous
-        self._current = current
+        self.previous = previous
+        self.current = current
 
     def to_dict(self, tz=timezone.utc):
         return {
-            'previous': self._previous.to_dict(tz) if self._previous else None,
-            'current': self._current.to_dict(tz) if self._current else None
+            'previous': self.previous.to_dict(tz) if self.previous else None,
+            'current': self.current.to_dict(tz) if self.current else None
         }

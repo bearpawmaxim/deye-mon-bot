@@ -41,8 +41,8 @@ class StationData(Document):
 
     def to_dict(self, tz=timezone.utc):
         return {
-            'id': self.id,
-            'station_id': self.station_id,
+            'id': str(self.id),
+            'station_id': str(self.station_id),
             'battery_power': self.battery_power,
             'battery_soc': self.battery_soc,
             'charge_power': self.charge_power,

@@ -82,6 +82,7 @@ class MessagePreviewResponse(BaseModel):
     should_send: bool = Field(alias="shouldSend")
     timeout: int
     next_send_time: datetime = Field(alias="nextSendTime")
+    data: dict | None
 
     model_config = {
         "populate_by_name": True,

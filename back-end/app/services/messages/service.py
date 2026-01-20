@@ -2,6 +2,7 @@ import asyncio
 from contextlib import redirect_stdout
 from datetime import datetime
 import io
+import json
 from typing import List
 from beanie import PydanticObjectId
 from injector import inject
@@ -147,18 +148,21 @@ class MessagesService(BaseService):
         try:
             info = None
             with redirect_stdout(stdout_buffer):
-                info = await self._message_generator.generate_message(message, True)
+                info = await self._message_generator.generate_message(message, True, True)
 
             if info is None:
                 captured_output = stdout_buffer.getvalue()
                 raise Exception(captured_output)
+
+            print(info.data)
 
             return MessagePreviewResponse(
                 success        = True,
                 message        = info.message,
                 should_send    = info.should_send,
                 timeout        = info.timeout,
-                next_send_time = info.next_send_time
+                next_send_time = info.next_send_time,
+                data           = info.data if info.data is not None else None,
             )
         except Exception as e:
             raise e
