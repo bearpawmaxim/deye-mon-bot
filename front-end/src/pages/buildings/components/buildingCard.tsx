@@ -91,7 +91,7 @@ export const BuildingCard: FC<BuildingCardProps> = ({ t, building, buildingSumma
   const getOperationText = (summary: BuildingSummaryItem) => {
     const statuses: Array<string> = [];
     if (!summary.isCharging && !summary.isDischarging) {
-      return 'battery.idle';
+      return t('battery.idle');
     }
     if (summary.isCharging) {
       switch (summary.chargeSource) {
