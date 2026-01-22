@@ -30,7 +30,7 @@ class StationsService(BaseService):
     async def _get_station_data(self, station: Station, last_seconds: int):
         station_data = await self._stations_data.get_full_station_data(station.id, last_seconds)
         return station, station_data
-    
+
     async def _get_station_data_range(self, station: Station, start_date: datetime, end_date: datetime):
         station_data = await self._stations_data.get_full_station_data_range(station.id, start_date, end_date)
         return station, station_data
@@ -83,7 +83,7 @@ class StationsService(BaseService):
 
     async def sync_stations_data(self):
         stations = await self._stations.get_stations()
-        
+
         for station in stations:
             station_data = await self._deye_api.get_station_data(station.station_id)
             if station_data is None:

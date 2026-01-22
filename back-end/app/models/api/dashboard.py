@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Optional, List
 from beanie import PydanticObjectId
 from pydantic import BaseModel, ConfigDict, Field
@@ -65,6 +66,11 @@ class BuildingsSummaryRequest(BaseModel):
         from_attributes  = True,
     )
 
+class ChargeSource(str, Enum):
+    NONE      = "None"
+    GRID      = "Grid"
+    GENERATOR = "Generator"
+    SOLAR     = "Solar"
 
 class BuildingSummaryResponse(BaseModel):
     id: PydanticObjectId
@@ -77,6 +83,8 @@ class BuildingSummaryResponse(BaseModel):
     battery_percent: Optional[float] = Field(None, alias="batteryPercent")
     consumption_power: Optional[str] = Field(None, alias="consumptionPower")
     battery_discharge_time: Optional[str] = Field(None, alias="batteryDischargeTime")
+    battery_charge_time: Optional[str] = Field(None, alias="batteryChargeTime")
+    charge_source: Optional[ChargeSource] = Field(ChargeSource.NONE, alias="chargeSource")
 
     model_config = ConfigDict(
         populate_by_name = True,
@@ -114,6 +122,7 @@ class PowerLogsResponse(BaseModel):
 
 __all__ = [
     "BuildingResponse",
+    "ChargeSource",
     "BuildingSummaryResponse",
     "BuildingsSummaryRequest",
     "BuildingWithSummaryResponse",

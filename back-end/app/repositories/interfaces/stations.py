@@ -32,7 +32,3 @@ class IStationsRepository(ABC):
     @abstractmethod
     async def add_station(self, station: DeyeStation):
         ...
-
-    
-
-    

@@ -51,7 +51,10 @@ import {
   faDownload,
   faChartBar,
   faCalendarCheck,
-  faMobile
+  faMobile,
+  faArrowTrendDown,
+  faArrowTrendUp,
+  faPause,
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add([
@@ -108,7 +111,10 @@ library.add([
   faDownload,
   faChartBar,
   faCalendarCheck,
-  faMobile
+  faMobile,
+  faArrowTrendDown,
+  faArrowTrendUp,
+  faPause,
 ]);
 
 export default library;
