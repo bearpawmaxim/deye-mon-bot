@@ -40,16 +40,26 @@
   },
   "battery": {
     "title": "Батарея",
-    "charging": "Заряджається",
-    "discharging": "Розряджається",
+    "charging": {
+      "grid": "Зарядка від мережі",
+      "solar": "Зарядка від сонця",
+      "generator": "Зарядка від генератора"
+    },
+    "idle": "Простій",
+    "discharging": "Розряджається ({{power}} кВт)",
     "offline": "Не в мережі",
     "estimate": {
       "discharge": "~{{time}} залиш."
     }
   },
-  "consumption": {
-    "title": "Споживання",
-    "valueLabel": "{{value}} кВт"
+  "operation": {
+    "title": "Статус"
+  },
+  "timeTo": {
+    "fullTitle": "До повної зарядки",
+    "fullValue": "{{timeToFull}}",
+    "emptyTitle": "До повного розряду",
+    "emptyValue": "{{timeToEmpty}}"
   },
   "validation": {
     "nameRequired": "Назва будівлі є обов'язковою.",

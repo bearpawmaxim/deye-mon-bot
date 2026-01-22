@@ -21,6 +21,7 @@ from app.models.api import (
     BuildingResponse,
     BuildingSummaryResponse,
     BuildingWithSummaryResponse,
+    ChargeSource,
     DashboardConfigResponse,
     EditBuildingResponse,
     PeriodResponse,
@@ -28,7 +29,7 @@ from app.models.api import (
     SaveBuildingRequest,
     SaveDashboardConfigRequest,
 )
-from app.utils import get_estimate_discharge_time
+from app.utils import get_estimate_charge_time, get_estimate_discharge_time
 
 
 @inject
@@ -185,11 +186,23 @@ class DashboardService(BaseService):
 
             result.consumption_power = f"{(average_consumption_w / 1000):.2f}"
 
+            batt_capacity = building.station.battery_capacity
+            batt_soc = station_data.battery_soc
+            if is_charging and (station_data.charge_power or 0) != 0:
+                result.charge_source = ChargeSource.GENERATOR if (station_data.generation_power or 0) > 0 and (station_data.wire_power or 0) == 0 else ChargeSource.GRID
+                result.battery_charge_time = get_estimate_charge_time(
+                    batt_capacity,
+                    batt_soc,
+                    ((station_data.charge_power or 0) / 1000.0) * -1,
+                    97,
+                )
+
             if is_discharging and average_consumption_w > 0:
-                batt_capacity = building.station.battery_capacity
-                soc = station_data.battery_soc
                 estimate_discharge_time = get_estimate_discharge_time(
-                    batt_capacity, soc, average_consumption_w / 1000
+                    batt_capacity,
+                    batt_soc,
+                    average_consumption_w / 1000,
+                    10
                 )
                 result.battery_discharge_time = estimate_discharge_time
 
