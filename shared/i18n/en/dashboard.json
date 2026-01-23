@@ -41,16 +41,26 @@
   },
   "battery": {
     "title": "Battery",
-    "charging": "Charging",
-    "discharging": "Discharging",
+    "charging": {
+      "grid": "Charging from grid",
+      "solar": "Charging from solar",
+      "generator": "Charging from generator"
+    },
+    "idle": "Idle",
+    "discharging": "Discharging ({{power}} kW)",
     "offline": "Offline",
     "estimate": {
       "discharge": "~{{time}} left"
     }
   },
-  "consumption": {
-    "title": "Consumption",
-    "valueLabel": "{{value}} kW"
+  "operation": {
+    "title": "Operation"
+  },
+  "timeTo": {
+    "fullTitle": "Time to full charge",
+    "fullValue": "{{timeToFull}}",
+    "emptyTitle": "Time to full discharge",
+    "emptyValue": "{{timeToEmpty}}"
   },
   "validation": {
     "nameRequired": "Name is required.",

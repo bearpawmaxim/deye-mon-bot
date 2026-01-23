@@ -1,5 +1,5 @@
 import { FC, ReactNode, useCallback, useMemo } from "react"
-import { BuildingListItem, BuildingSummaryItem } from "../../../stores/types";
+import { BuildingListItem, BuildingSummaryItem, ChargeSource } from "../../../stores/types";
 import { StatsCard } from "../../../components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconName } from "@fortawesome/free-solid-svg-icons";
@@ -28,7 +28,6 @@ export const BuildingCard: FC<BuildingCardProps> = ({ t, building, buildingSumma
       });
     }
   }, [building.id, buildingName, t]);
-
 
   const getBatteryIcon = (summary: BuildingSummaryItem): ReactNode | null => {
     const batteryPercent = summary.batteryPercent ?? 0;
@@ -66,11 +65,11 @@ export const BuildingCard: FC<BuildingCardProps> = ({ t, building, buildingSumma
 
   const getHeaderGridIcon = (summary?: BuildingSummaryItem): ReactNode => {
     if (!summary) return <FontAwesomeIcon icon='lightbulb' />;
-    
+
     if (summary.hasMixedReporterStates) {
       return <FontAwesomeIcon icon='lightbulb' style={{ color: 'white' }} />;
     }
-    
+
     return summary.isGridAvailable
       ? <FontAwesomeIcon icon='lightbulb' />
       : <span className="fa-layers fa-fw">
@@ -78,21 +77,41 @@ export const BuildingCard: FC<BuildingCardProps> = ({ t, building, buildingSumma
         <FontAwesomeIcon icon='slash' />
       </span>;
   }
-    
-  const getOperationText = (summary: BuildingSummaryItem) => {
-    const statuses: Array<string> = [];
-    if (summary.isOffline) {
-      return t('battery.offline');
-    }
+
+  const getOperationIcon = (summary: BuildingSummaryItem): ReactNode | null => {
     if (summary.isCharging) {
-      statuses.push(t('battery.charging'));
+      return <FontAwesomeIcon icon='arrow-trend-up' />;
     }
     if (summary.isDischarging) {
-      statuses.push(t('battery.discharging'));
+      return <FontAwesomeIcon icon='arrow-trend-down' />;
+    }
+    return <FontAwesomeIcon icon='pause' />;
+  }
+
+  const getOperationText = (summary: BuildingSummaryItem) => {
+    const statuses: Array<string> = [];
+    if (!summary.isCharging && !summary.isDischarging) {
+      return t('battery.idle');
+    }
+    if (summary.isCharging) {
+      switch (summary.chargeSource) {
+        case ChargeSource.GRID:
+          statuses.push(t('battery.charging.grid'));
+          break;
+        case ChargeSource.GENERATOR:
+          statuses.push(t('battery.charging.generator'));
+          break;
+        case ChargeSource.SOLAR:
+          statuses.push(t('battery.charging.solar'));
+          break;
+      }
+    }
+    if (summary.isDischarging) {
+      statuses.push(t('battery.discharging', { power: summary.consumptionPower }));
     }
     const joined = statuses.join(', ');
-    if (joined.length > 0) {
-      return joined + ', ';
+    if (joined.length > 1) {
+      return joined;
     }
     return joined;
   }
@@ -120,16 +139,33 @@ export const BuildingCard: FC<BuildingCardProps> = ({ t, building, buildingSumma
       icon: getBatteryIcon(buildingSummary),
       left: <>{t('battery.title')}: </>,
       right: <>
-        {getOperationText(buildingSummary)}{!buildingSummary.isOffline && `${buildingSummary.batteryPercent}%`}
-        {buildingSummary.batteryDischargeTime && !buildingSummary.isOffline &&
-          <>, {t('battery.estimate.discharge', { time: buildingSummary.batteryDischargeTime })}</>}</>,
+          {!buildingSummary.isOffline && `${buildingSummary.batteryPercent}%`}
+          {buildingSummary.isOffline && t('battery.offline')}
+        </>,
     });
   }
-  if (buildingSummary?.consumptionPower) {
+  if (buildingSummary && !buildingSummary.isOffline) {
+    const operationText = getOperationText(buildingSummary);
+
     rows.push({
-      icon: <FontAwesomeIcon icon='bolt' />,
-      left: <>{t('consumption.title')}: </>,
-      right: <>{t('consumption.valueLabel', { value: buildingSummary.consumptionPower ?? '--' })}</>
+      icon: getOperationIcon(buildingSummary),
+      left: <>{t('operation.title')}: </>,
+      right: <>{operationText || t('operation.idle')}</>,
+    });
+  }
+
+  if (buildingSummary?.isCharging && !buildingSummary.isOffline) {
+    rows.push({
+      icon: <FontAwesomeIcon icon='clock' />,
+      left: <>{t('timeTo.fullTitle')}: </>,
+      right: <>{t('timeTo.fullValue', { timeToFull: buildingSummary?.batteryChargeTime })}</>,
+    });
+  }
+  if (buildingSummary?.isDischarging && !buildingSummary.isOffline) {
+    rows.push({
+      icon: <FontAwesomeIcon icon='clock' />,
+      left: <>{t('timeTo.emptyTitle')}: </>,
+      right: <>{t('timeTo.emptyValue', { timeToEmpty: buildingSummary?.batteryDischargeTime })}</>,
     });
   }
 
@@ -176,7 +212,7 @@ export const BuildingCard: FC<BuildingCardProps> = ({ t, building, buildingSumma
 
 
   const progress: ProgressProps | null = useMemo(() => {
-    if (buildingSummary?.batteryPercent) {
+    if (buildingSummary?.batteryPercent && !buildingSummary.isOffline) {
       return {
         value: buildingSummary.batteryPercent,
         striped: true,
