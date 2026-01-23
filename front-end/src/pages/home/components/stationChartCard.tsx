@@ -1,4 +1,4 @@
-import { FC, useMemo } from "react";
+import { FC, useMemo, ReactNode } from "react";
 import { StationDataItem, StationDataRecord } from "../../../stores/types";
 import { Card, Text, Box, LoadingOverlay } from "@mantine/core";
 import { AreaChart } from "@mantine/charts";
@@ -76,9 +76,9 @@ export const StationChartCard: FC<StationChartCardProps> = ({ data, loading, t }
   );
 
   const labelFormatter = (
-    _: string,
+    _: ReactNode,
     p: ReadonlyArray<Payload<keyof StationDataChartRecord, keyof StationChartCardProps>>
-  ) => p.length > 0 ? p[0].payload['tooltipTime'] : null;
+  ): ReactNode => p.length > 0 ? p[0].payload['tooltipTime'] : null;
 
   return (
     <Card withBorder radius="md" p="sm" mt="sm" style={{ width: '100%' }}>
