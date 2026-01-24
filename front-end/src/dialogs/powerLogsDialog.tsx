@@ -47,7 +47,14 @@ const getDateRange = (filter: DateFilter, customDates?: DateRange) => {
     const customStart = new Date(customDates.from);
     const customEnd = new Date(customDates.to);
     customStart.setHours(0, 0, 0, 0);
-    customEnd.setHours(23, 59, 59, 999);
+    
+    const isEndDateToday = customEnd.toDateString() === now.toDateString();
+    if (isEndDateToday) {
+      customEnd.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+    } else {
+      customEnd.setHours(23, 59, 59, 999);
+    }
+    
     return {
       startDate: customStart.toISOString(),
       endDate: customEnd.toISOString(),
@@ -174,12 +181,13 @@ export function openPowerLogsDialog({ buildingId, buildingName, t }: OpenPowerLo
     }, [paddedPeriods, dateFilter, currentTime]);
 
     const rows = useMemo(() => {
-      if (!paddedPeriods.length) return [];
-      
+      if (!paddedPeriods.length) {
+        return [];
+      }
       const isDark = colorScheme === 'dark';
       const isToday = dateFilter === 'today';
       const colors = getColorScheme(isDark);
-      
+
       return [...paddedPeriods].reverse().map((period, index) => {
         const isLastPeriod = index === 0;
         const isOngoing = checkIsOngoing(period, isLastPeriod, isToday, currentTime);
