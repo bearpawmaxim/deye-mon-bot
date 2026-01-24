@@ -1,0 +1,16 @@
+[
+  {
+    "client_id": "client-1",
+    "station_id": 123456,
+    "deye": {
+      "base_url": "https://eu.deyecloud.com",
+      "app_id": "your-app-id",
+      "app_secret": "your-app-secret",
+      "email": "user@example.com",
+      "password": "your-password"
+    },
+    "poll_interval": 240,
+    "ext_data_url": "https://your-host/api/ext-data/grid-power",
+    "ext_data_token": "your-token"
+  }
+]
