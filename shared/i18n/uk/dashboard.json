@@ -74,6 +74,7 @@
     "customFilterTitle": "Довільний",
     "totalGridOnTitle": "Всього наявності",
     "totalGridOffTitle": "Всього відсутності",
+    "totalGeneratorChargeTimeTitle": "Час зарядки від генератора",
     "dateRangeTitle": "Проміжок дат",
     "dateRangePlaceholder": "Оберіть проміжок дат",
     "validation.dateRangeInvalid": "Будь ласка, оберіть дати старту та кінця",

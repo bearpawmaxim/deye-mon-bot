@@ -12,6 +12,7 @@ export type PowerLogsData = {
   periods: PowerLogPeriod[];
   totalAvailableSeconds: number;
   totalUnavailableSeconds: number;
+  totalGeneratorSeconds: number;
   totalSeconds: number;
 };
 

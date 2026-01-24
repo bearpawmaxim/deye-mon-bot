@@ -112,6 +112,7 @@ class PowerLogsResponse(BaseModel):
     periods: List[PeriodResponse]
     total_available_seconds: int = Field(alias="totalAvailableSeconds")
     total_unavailable_seconds: int = Field(alias="totalUnavailableSeconds")
+    total_generator_seconds: Optional[int] = Field(None, alias="totalGeneratorSeconds")
     total_seconds: int = Field(alias="totalSeconds")
 
     model_config = ConfigDict(

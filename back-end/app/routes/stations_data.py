@@ -45,7 +45,7 @@ def register(app: FastAPI):
                     continue
 
                 avg_record = {
-                    "battery_soc": mean(d.battery_soc for d in chunk),
+                    "battery_soc": mean(d.battery_soc or 0 for d in chunk),
                     "discharge_power": mean(d.discharge_power or 0 for d in chunk),
                     "charge_power": mean(abs(d.charge_power) if d.charge_power else 0 for d in chunk),
                     "consumption_power": mean(d.consumption_power or 0 for d in chunk),
