@@ -453,7 +453,7 @@ const Component: FC<ComponentProps> = ({ users, loading, error, changed }: Compo
         />
         <Group justify="space-between" mt="md">
           {editingUser && <Button
-            color='orange'
+            
             disabled={formData.isReporter}
             onClick={handleChangePassword}
           >

@@ -27,7 +27,7 @@ export default createTheme({
       "#101113",
     ],
   },
-  primaryColor: "orange",
+  primaryColor: "yellow",
   defaultRadius: "md",
   fontFamily: "Roboto, sans-serif",
   headings: {

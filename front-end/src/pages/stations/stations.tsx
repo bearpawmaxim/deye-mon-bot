@@ -157,7 +157,7 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
                 }
               >
                 <ActionIcon
-                  color={'orange'}
+                  color="teal"
                   onClick={() => openBatteryCapacityEditDialog({
                     batteryCapacity: row.original.batteryCapacity,
                     t,

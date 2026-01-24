@@ -294,7 +294,7 @@ const Component: FC<ComponentProps> = ({ isEdit, bots, message, loading, station
       <Divider mt='xs' mb='xs'/>
       <Title order={4}>
         {t('templates.message')}
-        <Button ml='md' size="xs" color="orange" onClick={onOpenPreview} disabled={!isValid}>{t('button.preview')}</Button>
+        <Button ml='md' size="xs"  onClick={onOpenPreview} disabled={!isValid}>{t('button.preview')}</Button>
       </Title>
       <Tabs defaultValue={`messageTemplate`} mb='xs'>
         <Tabs.List mb='xs'>

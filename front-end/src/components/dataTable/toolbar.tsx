@@ -19,7 +19,7 @@ export const Toolbar = ({ totalRecords, refresh }: ToolbarProps) => {
           </Text>
         }
       >
-        <ActionIcon size="sm" color={'orange'} onClick={refresh} radius={"sm"}>
+        <ActionIcon size="sm" onClick={refresh} radius={"sm"}>
           <FontAwesomeIcon icon='refresh' size="xs" />
         </ActionIcon>
       </Tooltip>
