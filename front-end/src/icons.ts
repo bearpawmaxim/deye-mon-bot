@@ -55,6 +55,7 @@ import {
   faArrowTrendDown,
   faArrowTrendUp,
   faPause,
+  faPlug,
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add([
@@ -115,6 +116,7 @@ library.add([
   faArrowTrendDown,
   faArrowTrendUp,
   faPause,
+  faPlug,
 ]);
 
 export default library;
