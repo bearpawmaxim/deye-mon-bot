@@ -224,7 +224,7 @@ class DashboardService(BaseService):
 
         async def process_building(building: Building) -> BuildingWithSummaryResponse:
             res = await self._process_building_summary(building, minutes)
-            
+
             return BuildingWithSummaryResponse(
                 **res.model_dump(),
                 name  = building.name,
@@ -232,6 +232,31 @@ class DashboardService(BaseService):
             )
 
         return [await process_building(b) for b in buildings]
+
+
+    async def _compute_total_generator_time(
+        self,
+        station_id: str,
+        start_date: datetime,
+        end_date: datetime,
+    ) -> int:
+        data = await self._stations_data.get_full_station_data_range(
+            station_id,
+            start_date,
+            end_date,
+        )
+        if data and len(data) > 1:
+            total_seconds = 0
+            for i in range(1, len(data)):
+                prev = data[i - 1]
+                curr = data[i]
+
+                if (prev.charge_power or 0) * -1 > 200 and (prev.generation_power or 0) > 0 and (prev.wire_power or 0) == 0:
+                    delta = (curr.last_update_time - prev.last_update_time).total_seconds()
+                    total_seconds += delta
+
+            return total_seconds
+        return 0
 
 
     async def get_power_logs(
@@ -246,19 +271,25 @@ class DashboardService(BaseService):
 
         if not building.report_users or len(building.report_users) == 0:
             return None
-        
+
         all_records_by_user = await asyncio.gather(
             *(self._ext_data.get_ext_data_statistics(report_user.id, start_date, end_date)
               for report_user in building.report_users)
         )
-        
+
         last_before_by_user = await asyncio.gather(
             *(self._ext_data.get_last_ext_data_before_date(report_user.id, start_date)
               for report_user in building.report_users)
         )
-        
+
+        total_generator_seconds = await self._compute_total_generator_time(
+            building.station.id,
+            start_date,
+            end_date
+        ) if building.station else 0
+
         all_events = []
-        
+
         for user_idx, records in enumerate(all_records_by_user):
             if records:
                 for record in records:
@@ -267,11 +298,11 @@ class DashboardService(BaseService):
                         'user_idx': user_idx,
                         'grid_state': record.grid_state
                     })
-        
+
         if not all_events:
             initial_state = any(last and last.grid_state for last in last_before_by_user if last)
             duration_seconds = (end_date - start_date).total_seconds()
-            
+
             return PowerLogsResponse(
                 periods = [PeriodResponse(
                     start_time       = start_date.isoformat(),
@@ -281,9 +312,9 @@ class DashboardService(BaseService):
                 )],
                 total_available_seconds   = int(duration_seconds) if initial_state else 0,
                 total_unavailable_seconds = int(duration_seconds) if not initial_state else 0,
+                total_generator_seconds   = int(total_generator_seconds),
                 total_seconds             = int(duration_seconds)
             )
-        
 
         all_events.sort(key=lambda e: e['timestamp'])
 
@@ -291,7 +322,7 @@ class DashboardService(BaseService):
             (last.grid_state if last else False) 
             for last in last_before_by_user
         ]
-        
+
         if all_events[0]['timestamp'] > start_date:
             initial_aggregate_state = any(reporter_states)
             all_events.insert(0, {
@@ -300,61 +331,62 @@ class DashboardService(BaseService):
                 'grid_state': initial_aggregate_state,
                 'is_synthetic': True
             })
-        
+
         periods = []
         total_available_seconds = 0
         total_unavailable_seconds = 0
-        
+
         current_time = start_date
         current_aggregate_state = any(reporter_states)  # OR logic (pessimistic strategy)
-        
+
         for event in all_events:
             event_time = event['timestamp']
-            
+
             if event['user_idx'] >= 0:
                 reporter_states[event['user_idx']] = event['grid_state']
-            
+
             new_aggregate_state = any(reporter_states)
-            
+
             if new_aggregate_state != current_aggregate_state or event_time == start_date:
                 if event_time > current_time:
                     duration_seconds = (event_time - current_time).total_seconds()
-                    
+
                     periods.append(PeriodResponse(
                         start_time       = current_time.isoformat(),
                         end_time         = event_time.isoformat(),
                         is_available     = current_aggregate_state,
                         duration_seconds = int(duration_seconds)
                     ))
-                    
+
                     if current_aggregate_state:
                         total_available_seconds += duration_seconds
                     else:
                         total_unavailable_seconds += duration_seconds
-                
+
                 current_time = event_time
                 current_aggregate_state = new_aggregate_state
-        
+
         if current_time < end_date:
             duration_seconds = (end_date - current_time).total_seconds()
-            
+
             periods.append(PeriodResponse(
                 start_time       = current_time.isoformat(),
                 end_time         = end_date.isoformat(),
                 is_available     = current_aggregate_state,
                 duration_seconds = int(duration_seconds)
             ))
-            
+
             if current_aggregate_state:
                 total_available_seconds += duration_seconds
             else:
                 total_unavailable_seconds += duration_seconds
-        
+
         total_seconds = int(total_available_seconds + total_unavailable_seconds)
 
         return PowerLogsResponse(
             periods                   = periods,
             total_available_seconds   = int(total_available_seconds),
             total_unavailable_seconds = int(total_unavailable_seconds),
+            total_generator_seconds   = int(total_generator_seconds),
             total_seconds             = total_seconds,
         )

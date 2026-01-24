@@ -75,6 +75,7 @@
     "customFilterTitle": "Custom",
     "totalGridOnTitle": "Total Grid On",
     "totalGridOffTitle": "Total Grid Off",
+    "totalGeneratorChargeTimeTitle": "Generator charge time",
     "dateRangeTitle": "Date range",
     "dateRangePlaceholder": "Pick dates range",
     "validation.dateRangeInvalid": "Please select both start and end dates",

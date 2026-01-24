@@ -25,6 +25,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toLocalDateTime } from "../../utils/dateUtils";
 import { ObjectId } from "../../schemas";
 import { usePageTranslation } from "../../utils";
+import useLocalStorage from "../../hooks/useLocalStorage";
 
 type ComponentProps = {
   detailsData: StationDetailsData | null;
@@ -65,7 +66,12 @@ const Component: FC<ComponentProps> = ({
   const navigate = useNavigate();
   const { stationId } = useParams<{ stationId: ObjectId }>();
   const t = usePageTranslation('stations');
-  const [timeRange, setTimeRange] = useState<string>("86400"); // 24 hours default
+
+  // 24 hours default
+  const [timeRange, setTimeRange] = useLocalStorage<string>(
+    `station_details_${stationId}`,
+    "86400",
+  );
 
   const fetchData = useCallback(() => {
     if (stationId) {

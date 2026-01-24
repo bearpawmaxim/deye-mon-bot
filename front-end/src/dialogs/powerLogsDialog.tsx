@@ -136,6 +136,13 @@ export function openPowerLogsDialog({ buildingId, buildingName, t }: OpenPowerLo
       data?.periods ? padPeriodsToFullDay(data.periods) : []
     , [data]);
 
+    const totalGeneratorTime = useMemo(() => {
+      if (!data) {
+        return formatDuration(0, true);
+      }
+      return formatDuration(data.totalGeneratorSeconds, true);
+    }, [data]);
+
     const { totalAvailable, totalUnavailable } = useMemo(() => {
       if (!paddedPeriods.length) {
         return {
@@ -278,12 +285,28 @@ export function openPowerLogsDialog({ buildingId, buildingName, t }: OpenPowerLo
           <>
             <Stack gap="xs">
               <Group justify="space-between">
-                <Text fw={600}>{t('powerLogs.totalGridOnTitle')}:</Text>
-                <Text c={isDark ? 'teal.4' : 'teal.7'}>{totalAvailable}</Text>
+                <Text fw={600}>
+                  {t('powerLogs.totalGridOnTitle')}:
+                </Text>
+                <Text c={isDark ? 'teal.4' : 'teal.7'}>
+                  {totalAvailable}
+                </Text>
               </Group>
               <Group justify="space-between">
-                <Text fw={600}>{t('powerLogs.totalGridOffTitle')}:</Text>
-                <Text c={isDark ? 'red.4' : 'red.7'}>{totalUnavailable}</Text>
+                <Text fw={600}>
+                  {t('powerLogs.totalGridOffTitle')}:
+                </Text>
+                <Text c={isDark ? 'red.4' : 'red.7'}>
+                  {totalUnavailable}
+                </Text>
+              </Group>
+              <Group justify="space-between">
+                <Text fw={600}>
+                  {t('powerLogs.totalGeneratorChargeTimeTitle')}:
+                </Text>
+                <Text c={isDark ? 'yellow.4' : 'yellow.7'}>
+                  {totalGeneratorTime}
+                </Text>
               </Group>
             </Stack>
 
