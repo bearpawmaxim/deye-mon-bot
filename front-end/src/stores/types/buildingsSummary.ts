@@ -5,7 +5,8 @@ export enum ChargeSource {
   NONE = "None",
   GRID = "Grid",
   GENERATOR = "Generator",
-  SOLAR = "Solar"
+  SOLAR = "Solar",
+  RECUPERATION = "Recuperation"
 };
 
 export type BuildingSummaryItem = {
@@ -21,6 +22,7 @@ export type BuildingSummaryItem = {
   isCharging: boolean;
   isOffline: boolean;
   chargeSource: ChargeSource;
+  chargePower?: number;
 };
 
 export type BuildingsSummaryState = BaseState & {

@@ -89,32 +89,29 @@ export const BuildingCard: FC<BuildingCardProps> = ({ t, building, buildingSumma
   }
 
   const getOperationText = (summary: BuildingSummaryItem) => {
-    const statuses: Array<string> = [];
     if (!summary.isCharging && !summary.isDischarging) {
       return t('battery.idle');
     }
     if (summary.isCharging) {
-      switch (summary.chargeSource) {
-        case ChargeSource.GRID:
-          statuses.push(t('battery.charging.grid'));
-          break;
-        case ChargeSource.GENERATOR:
-          statuses.push(t('battery.charging.generator'));
-          break;
-        case ChargeSource.SOLAR:
-          statuses.push(t('battery.charging.solar'));
-          break;
-      }
+      return t('battery.charging', { power: summary.chargePower ?? 0 });
     }
-    if (summary.isDischarging) {
-      statuses.push(t('battery.discharging', { power: summary.consumptionPower }));
-    }
-    const joined = statuses.join(', ');
-    if (joined.length > 1) {
-      return joined;
-    }
-    return joined;
+    return t('battery.discharging', { power: summary.consumptionPower });
   }
+
+  const getChargeSourceText = (source: ChargeSource, t: TFunction) => {
+    switch (source) {
+      case ChargeSource.GRID:
+        return t('battery.chargeSource.grid');
+      case ChargeSource.SOLAR:
+        return t('battery.chargeSource.solar');
+      case ChargeSource.GENERATOR:
+        return t('battery.chargeSource.generator');
+      case ChargeSource.RECUPERATION:
+        return t('battery.chargeSource.recuperation');
+      default:
+        return '';
+    }
+  };
 
   const rows = [];
   if (buildingSummary) {
@@ -155,6 +152,11 @@ export const BuildingCard: FC<BuildingCardProps> = ({ t, building, buildingSumma
   }
 
   if (buildingSummary?.isCharging && !buildingSummary.isOffline) {
+    rows.push({
+      icon: <FontAwesomeIcon icon='plug' />,
+      left: <>{t('battery.chargeSource.title')}: </>,
+      right: <>{getChargeSourceText(buildingSummary.chargeSource, t)}</>,
+    });
     rows.push({
       icon: <FontAwesomeIcon icon='clock' />,
       left: <>{t('timeTo.fullTitle')}: </>,

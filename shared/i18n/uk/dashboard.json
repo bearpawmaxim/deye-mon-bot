@@ -40,13 +40,16 @@
   },
   "battery": {
     "title": "Батарея",
-    "charging": {
-      "grid": "Зарядка від мережі",
-      "solar": "Зарядка від сонця",
-      "generator": "Зарядка від генератора"
+    "charging": "Заряджається (+{{power}} кВт)",
+    "chargeSource": {
+      "title": "Джерело зарядки",
+      "grid": "Мережа",
+      "solar": "Сонце",
+      "generator": "Генератор",
+      "recuperation": "Рекуперація"
     },
     "idle": "Простій",
-    "discharging": "Розряджається ({{power}} кВт)",
+    "discharging": "Розряджається (-{{power}} кВт)",
     "offline": "Не в мережі",
     "estimate": {
       "discharge": "~{{time}} залиш."

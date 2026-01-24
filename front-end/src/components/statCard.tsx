@@ -155,7 +155,7 @@ export const StatsCard: FC<StatsCardProps> = ({
             <ThemeIcon className={classes.iconBox} color={iconColor} autoContrast radius="xl" size="sm">
               {icon}
             </ThemeIcon>
-          <Title order={3} c={textColor}>{title}</Title>
+            <Title order={3} c={textColor}>{title}</Title>
           </Group>
         </Box>
         <Box
@@ -211,7 +211,7 @@ export const StatsCard: FC<StatsCardProps> = ({
               </Group>
 
               {row.right && (
-                <Text c={resolvedStatTextColor} fw={500} ta={"right"}>
+                <Text c={resolvedStatTextColor} fw={500}>
                   {row.right}
                 </Text>
               )}

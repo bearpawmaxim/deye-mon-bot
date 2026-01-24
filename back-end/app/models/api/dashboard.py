@@ -67,10 +67,11 @@ class BuildingsSummaryRequest(BaseModel):
     )
 
 class ChargeSource(str, Enum):
-    NONE      = "None"
-    GRID      = "Grid"
-    GENERATOR = "Generator"
-    SOLAR     = "Solar"
+    NONE         = "None"
+    GRID         = "Grid"
+    GENERATOR    = "Generator"
+    SOLAR        = "Solar"
+    RECUPERATION = "Recuperation"
 
 class BuildingSummaryResponse(BaseModel):
     id: PydanticObjectId
@@ -85,6 +86,7 @@ class BuildingSummaryResponse(BaseModel):
     battery_discharge_time: Optional[str] = Field(None, alias="batteryDischargeTime")
     battery_charge_time: Optional[str] = Field(None, alias="batteryChargeTime")
     charge_source: Optional[ChargeSource] = Field(ChargeSource.NONE, alias="chargeSource")
+    charge_power: Optional[float] = Field(None, alias="chargePower")
 
     model_config = ConfigDict(
         populate_by_name = True,

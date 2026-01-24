@@ -41,13 +41,16 @@
   },
   "battery": {
     "title": "Battery",
-    "charging": {
-      "grid": "Charging from grid",
-      "solar": "Charging from solar",
-      "generator": "Charging from generator"
+    "charging": "Charging (+{{power}} kW)",
+    "chargeSource": {
+      "title": "Charge source",
+      "grid": "Grid",
+      "solar": "Solar",
+      "generator": "Generator",
+      "recuperation": "Recuperation"
     },
     "idle": "Idle",
-    "discharging": "Discharging ({{power}} kW)",
+    "discharging": "Discharging (-{{power}} kW)",
     "offline": "Offline",
     "estimate": {
       "discharge": "~{{time}} left"
