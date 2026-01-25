@@ -17,6 +17,40 @@
 1. in `.env` file, set `DEBUG` to `False`
 2. execute `sudo docker compose up -d`
 
+## Docker cheatsheet ##
+
+```bash
+# Start all services
+docker compose up -d
+
+# Stop all services
+docker compose down
+
+# View logs (all / specific service)
+docker compose logs -f
+docker compose logs -f deye-mon-bot-back-end
+
+# Restart a service
+docker compose restart deye-mon-bot-back-end
+
+# Rebuild and restart a service
+docker compose up -d --build deye-mon-bot-back-end
+
+# Run a single service standalone (with dependencies)
+docker compose up -d deye-mon-bot-back-end
+
+# Run a single service without dependencies
+docker compose up -d --no-deps deye-mon-bot-grid-reporter
+
+# Shell into a running container
+docker compose exec deye-mon-bot-back-end bash
+
+# Check service status
+docker compose ps
+```
+
+**Services:** `deye-mon-bot-back-end`, `deye-mon-bot-sse-back-end`, `deye-mon-bot-front-end`, `deye-mon-bot-grid-reporter`, `deye-mon-bot-mongo`, `deye-mon-bot-rds`
+
 ### Development
 
 ## Database
