@@ -25,6 +25,7 @@ class BuildingResponse(BaseModel):
     id: Optional[PydanticObjectId] = None
     name: LocalizableValue
     color: str
+    has_bound_station: bool = Field(False, alias="hasBoundStation")
 
     model_config = ConfigDict(
         populate_by_name = True,
