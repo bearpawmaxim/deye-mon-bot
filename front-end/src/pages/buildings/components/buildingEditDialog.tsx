@@ -1,6 +1,6 @@
 import { FC, useMemo } from "react";
 import { modals } from "@mantine/modals";
-import { Button, ColorInput, Group, Loader, MultiSelect, parseThemeColor, Select, Stack, TextInput, useMantineColorScheme, useMantineTheme } from "@mantine/core";
+import { Button, Checkbox, ColorInput, Group, Loader, MultiSelect, parseThemeColor, Select, Stack, TextInput, useMantineColorScheme, useMantineTheme } from "@mantine/core";
 import { useFormHandler, useLookup } from "../../../hooks";
 import { RootState, useAppDispatch } from "../../../stores/store";
 import { buildingEditSchema, BuildingEditType, LocalizableValue, ObjectId } from "../../../schemas";
@@ -128,6 +128,26 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
           }
         },
         {
+          name: "enabled",
+          title: t("buildingEdit.enabled"),
+          render: (context) => {
+            return <Controller
+              name="enabled"
+              control={context.helpers.control}
+              render={({ field }) => (
+                <Checkbox
+                  pb="xs"
+                  label={context.title}
+                  checked={field.value || false}
+                  onChange={x => {
+                    context.helpers.setControlValue('enabled', x.currentTarget.checked, true);
+                  }}
+                />
+              )}
+            />
+          },
+        },
+        {
           name: "color",
           title: t("buildingEdit.color"),
           render: (context) => {
@@ -222,6 +242,7 @@ export function openBuildingEditDialog({ creating = false, buildingId, title }: 
     return (
       <Stack>
         {renderField('name')}
+        {renderField('enabled')}
         {renderField('color')}
         {renderField('stationId')}
         {renderField('reportUserIds')}

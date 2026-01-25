@@ -21,6 +21,7 @@ export const buildingEditSchema = v.object({
     v.array(objectIdSchema),
     v.nonEmpty('validation.reportUsersRequired'),
   ),
+  enabled: v.boolean(),
 });
 
 export type BuildingEditType = v.InferInput<typeof buildingEditSchema>;

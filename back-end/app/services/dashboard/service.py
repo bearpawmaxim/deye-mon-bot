@@ -71,9 +71,9 @@ class DashboardService(BaseService):
 
     def _process_building(self, building: Building) -> BuildingResponse:
         return BuildingResponse(
-            id    = building.id,
-            color = building.color,
-            name  = building.name,
+            id      = building.id,
+            color   = building.color,
+            name    = building.name,
         )
 
 
@@ -83,7 +83,8 @@ class DashboardService(BaseService):
         return EditBuildingResponse(
             **response.model_dump(),
             report_user_ids = [user.id for user in building.report_users],
-            station_id      = building.station.id
+            station_id      = building.station.id,
+            enabled         = building.enabled,
         )
 
 
@@ -103,6 +104,7 @@ class DashboardService(BaseService):
             building.color = request.color
             building.station = station
             building.report_users = users
+            building.enabled = request.enabled
 
             await self._dashboard.edit_building(building)
             await self.broadcast_public("buildings_updated")
@@ -122,6 +124,7 @@ class DashboardService(BaseService):
             color        = request.color,
             station      = station,
             report_users = users,
+            enabled      = request.enabled,
         )
 
         building_id = await self._dashboard.create_building(building)
@@ -138,8 +141,8 @@ class DashboardService(BaseService):
         return False
 
 
-    async def get_buildings(self) -> List[BuildingResponse]:
-        buildings = await self._dashboard.get_buildings()
+    async def get_buildings(self, all: bool = False) -> List[BuildingResponse]:
+        buildings = await self._dashboard.get_buildings(all=all)
         return [self._process_building(building) for building in buildings]
 
 

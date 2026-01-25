@@ -26,7 +26,7 @@ class IDashboardRepository(ABC):
         ...
     
     @abstractmethod
-    async def get_buildings(self, ids: List[PydanticObjectId] = None) -> List[Building]:
+    async def get_buildings(self, ids: List[PydanticObjectId] = None, all: bool = False) -> List[Building]:
         ...
 
     @abstractmethod
