@@ -131,44 +131,46 @@ export const BuildingCard: FC<BuildingCardProps> = ({ t, building, buildingSumma
       right: availabilityText,
     });
   }
-  if (buildingSummary?.batteryPercent !== undefined && buildingSummary?.batteryPercent !== null) {
-    rows.push({
-      icon: getBatteryIcon(buildingSummary),
-      left: <>{t('battery.title')}: </>,
-      right: <>
-          {!buildingSummary.isOffline && `${buildingSummary.batteryPercent}%`}
-          {buildingSummary.isOffline && t('battery.offline')}
-        </>,
-    });
-  }
-  if (buildingSummary && !buildingSummary.isOffline) {
-    const operationText = getOperationText(buildingSummary);
+  if (building.hasBoundStation) {
+    if (buildingSummary?.batteryPercent !== undefined && buildingSummary?.batteryPercent !== null) {
+      rows.push({
+        icon: getBatteryIcon(buildingSummary),
+        left: <>{t('battery.title')}: </>,
+        right: <>
+            {!buildingSummary.isOffline && `${buildingSummary.batteryPercent}%`}
+            {buildingSummary.isOffline && t('battery.offline')}
+          </>,
+      });
+    }
+    if (buildingSummary && !buildingSummary.isOffline) {
+      const operationText = getOperationText(buildingSummary);
 
-    rows.push({
-      icon: getOperationIcon(buildingSummary),
-      left: <>{t('operation.title')}: </>,
-      right: <>{operationText || t('operation.idle')}</>,
-    });
-  }
+      rows.push({
+        icon: getOperationIcon(buildingSummary),
+        left: <>{t('operation.title')}: </>,
+        right: <>{operationText || t('operation.idle')}</>,
+      });
+    }
 
-  if (buildingSummary?.isCharging && !buildingSummary.isOffline) {
-    rows.push({
-      icon: <FontAwesomeIcon icon='plug' />,
-      left: <>{t('battery.chargeSource.title')}: </>,
-      right: <>{getChargeSourceText(buildingSummary.chargeSource, t)}</>,
-    });
-    rows.push({
-      icon: <FontAwesomeIcon icon='clock' />,
-      left: <>{t('timeTo.fullTitle')}: </>,
-      right: <>{t('timeTo.fullValue', { timeToFull: buildingSummary?.batteryChargeTime })}</>,
-    });
-  }
-  if (buildingSummary?.isDischarging && !buildingSummary.isOffline) {
-    rows.push({
-      icon: <FontAwesomeIcon icon='clock' />,
-      left: <>{t('timeTo.emptyTitle')}: </>,
-      right: <>{t('timeTo.emptyValue', { timeToEmpty: buildingSummary?.batteryDischargeTime })}</>,
-    });
+    if (buildingSummary?.isCharging && !buildingSummary.isOffline) {
+      rows.push({
+        icon: <FontAwesomeIcon icon='plug' />,
+        left: <>{t('battery.chargeSource.title')}: </>,
+        right: <>{getChargeSourceText(buildingSummary.chargeSource, t)}</>,
+      });
+      rows.push({
+        icon: <FontAwesomeIcon icon='clock' />,
+        left: <>{t('timeTo.fullTitle')}: </>,
+        right: <>{t('timeTo.fullValue', { timeToFull: buildingSummary?.batteryChargeTime })}</>,
+      });
+    }
+    if (buildingSummary?.isDischarging && !buildingSummary.isOffline) {
+      rows.push({
+        icon: <FontAwesomeIcon icon='clock' />,
+        left: <>{t('timeTo.emptyTitle')}: </>,
+        right: <>{t('timeTo.emptyValue', { timeToEmpty: buildingSummary?.batteryDischargeTime })}</>,
+      });
+    }
   }
 
   const theme = useMantineTheme();

@@ -7,6 +7,7 @@ export type BuildingListItem = {
   id?: ObjectId;
   name: LocalizableValue;
   color: MantineColor;
+  hasBoundStation: boolean;
 };
 
 export type BuildingsState = BaseState & {

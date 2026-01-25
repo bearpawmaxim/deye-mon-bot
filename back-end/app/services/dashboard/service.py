@@ -73,9 +73,10 @@ class DashboardService(BaseService):
 
     def _process_building(self, building: Building) -> BuildingResponse:
         return BuildingResponse(
-            id      = building.id,
-            color   = building.color,
-            name    = building.name,
+            id                = building.id,
+            color             = building.color,
+            name              = building.name,
+            has_bound_station = building.station is not None,
         )
 
 
@@ -85,7 +86,7 @@ class DashboardService(BaseService):
         return EditBuildingResponse(
             **response.model_dump(),
             report_user_ids = [user.id for user in building.report_users],
-            station_id      = building.station.id,
+            station_id      = building.station.id if building.station else None,
             enabled         = building.enabled,
         )
 
