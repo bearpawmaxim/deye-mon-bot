@@ -52,19 +52,23 @@ class BaseDeyeClient:
     async def refresh_token(self):
         self._token = await self._get_token()
 
+    def _set_authorization_token(self, headers: dict, token: str):
+        headers["Authorization"] = f"Bearer {token or ''}"
+
     async def request(self, method: str, endpoint: str, payload: dict[str, Any]) -> dict[str, Any] | None:
         if not self._token:
             await self.refresh_token()
 
         url = f"{self._creds.base_url}{endpoint}"
-        headers = {"Authorization": f"Bearer {self._token or ''}"}
+        headers = {}
+        self._set_authorization_token(headers, self._token)
 
         for attempt in range(2):
             try:
                 async with self._session.request(method, url, json=payload, headers=headers) as resp:
                     if resp.status == 401 and attempt == 0:
                         await self.refresh_token()
-                        headers["Authorization"] = f"Bearer {self._token or ''}"
+                        self._set_authorization_token(headers, self._token)
                         continue
                     resp.raise_for_status()
                     data = await resp.json()
@@ -75,7 +79,7 @@ class BaseDeyeClient:
                     and attempt == 0
                 ):
                     await self.refresh_token()
-                    headers["Authorization"] = f"Bearer {self._token or ''}"
+                    self._set_authorization_token(headers, self._token)
                     continue
                 return data
             except Exception:

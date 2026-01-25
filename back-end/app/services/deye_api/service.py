@@ -10,11 +10,11 @@ from .models import DeyeConfig
 class DeyeApiService:
     def __init__(self, config: DeyeConfig, session: ClientSession | None = None):
         creds = DeyeCredentials(
-            base_url=config.base_url,
-            app_id=config.app_id,
-            app_secret=config.app_secret,
-            email=config.email,
-            password=config.password,
+            base_url   = config.base_url,
+            app_id     = config.app_id,
+            app_secret = config.app_secret,
+            email      = config.email,
+            password   = config.password,
         )
         self._client = BaseDeyeClient(creds, session)
 
