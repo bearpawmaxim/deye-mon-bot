@@ -8,6 +8,7 @@ import { useAppDispatch } from "../../../stores/store";
 import { modals } from "@mantine/modals";
 import { BuildingListItem } from "../../../stores/types";
 import { deleteBuilding } from "../../../stores/thunks";
+import i18n from "../../../i18n";
 
 export const EditableBuildingCard: FC<BuildingCardProps> = ({
   t,
@@ -42,7 +43,7 @@ export const EditableBuildingCard: FC<BuildingCardProps> = ({
         onClick={() => openBuildingEditDialog({
           creating: false,
           buildingId: building.id!,
-          title: `${t('buildings.editDialogTitle', { name: building.name })}`,
+          title: `${t('buildings.editDialogTitle', { name: building.name[i18n.language] })}`,
         })}
       />
       <IconButton
