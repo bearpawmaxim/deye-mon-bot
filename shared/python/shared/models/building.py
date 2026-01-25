@@ -11,6 +11,7 @@ from .user import User
 class Building(Document, LookupModel):
     name: LocalizableValue
     color: str
+    enabled: bool
 
     station: Optional[Link[Station]] = None
     report_users: List[Link[User]] = []

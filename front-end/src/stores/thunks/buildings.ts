@@ -38,6 +38,7 @@ export const saveBuildings = createAsyncThunk('buildings/saveBuildings', async (
         color: building.color,
         stationId: building.stationId,
         reportUserIds: building.reportUserIds,
+        enabled: building.enabled,
       } as BuildingEditType;
       if (building.isNew) {
         await apiClient.post('/dashboard/buildings', serverDto);

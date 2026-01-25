@@ -7,7 +7,8 @@ from app.settings import Settings
 from shared.utils.jwt_utils import decode_jwt, InvalidTokenError
 
 
-security = HTTPBearer()   
+security = HTTPBearer()
+security_optional = HTTPBearer(auto_error=False)   
 
 def get_current_jwt(
     credentials: HTTPAuthorizationCredentials = Depends(security),
@@ -66,3 +67,21 @@ def is_authenticated(claims: dict | None) -> bool:
 
 def get_identity(claims: dict | None):
     return claims.get("sub") if claims else None
+
+def get_current_jwt_optional(
+    credentials: HTTPAuthorizationCredentials | None = Depends(security_optional),
+    settings: Settings = Injected(Settings),
+):
+    """Optional JWT verification - returns None if no token provided, 
+    but validates the token if one is present."""
+    if credentials is None:
+        return None
+    
+    token = credentials.credentials
+    try:
+        return decode_jwt(token, settings.JWT_SECRET_KEY)
+    except InvalidTokenError:
+        raise HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired JWT token"
+        )

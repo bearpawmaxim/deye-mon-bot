@@ -21,4 +21,7 @@
 
 ## Database
 
-When the database changes are required to be made, always create a migration using the following command: `python.exe -m flask db migrate -m "Migration message"`
+When the database changes are required to be made, always create a migration using the following command: `beanie.exe new-migration -n <migration_name> -p migrations`
+
+Then, execute the migration using command
+`beanie.exe migrate -uri <db_uri> -db <db_name> -p migrations/ --no-use-transaction`

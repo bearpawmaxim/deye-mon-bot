@@ -12,7 +12,8 @@
     "name": "Building name",
     "color": "Building color",
     "station": "Station",
-    "reportUsers": "Report Users"
+    "reportUsers": "Report Users",
+    "enabled": "Enabled"
   },
   "dashboardEdit": {
     "dialogTitle": "Edit Dashboard",

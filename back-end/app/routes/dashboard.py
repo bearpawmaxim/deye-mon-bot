@@ -5,7 +5,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi_injector import Injected
 
 from app.services import DashboardService
-from app.utils.jwt_dependencies import jwt_required
+from app.utils.jwt_dependencies import get_current_jwt_optional, jwt_required
 from app.models.api import SaveBuildingRequest, PowerLogsRequest, PowerLogsResponse
 from app.models.api.dashboard import (
     BuildingResponse,
@@ -23,8 +23,10 @@ def register(app: FastAPI):
     @app.get("/api/dashboard/buildings")
     async def get_buildings(
         dashboard = Injected(DashboardService),
+        current_claims: dict | None = Depends(get_current_jwt_optional),
     ) -> List[BuildingResponse]:
-        return await dashboard.get_buildings()
+        all = current_claims.get("sub", False) is not None if current_claims else False
+        return await dashboard.get_buildings(all=all)
 
 
     @app.post("/api/dashboard/buildings/summary")

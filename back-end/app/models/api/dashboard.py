@@ -37,6 +37,7 @@ class SaveBuildingRequest(BuildingResponse):
     color: str = "#FFFFFF"
     station_id: Optional[PydanticObjectId] = Field(None, alias="stationId")
     report_user_ids: List[PydanticObjectId] = Field(None, alias="reportUserIds")
+    enabled: bool
 
     model_config = ConfigDict(
         populate_by_name = True,
