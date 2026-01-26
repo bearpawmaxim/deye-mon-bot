@@ -116,8 +116,9 @@ services:
 
   deye-mon-bot-grid-reporter:
     build:
-      context: .
-      dockerfile: grid-reporter/Dockerfile
+      context: grid-reporter
+      additional_contexts:
+        shared: ./shared
     image: deye-mon-bot-grid-reporter
     restart: always
     env_file: .env
@@ -125,8 +126,9 @@ services:
       CLIENTS_PATH: /app/clients.json
       STATE_PATH: /app/state.json
     volumes:
-      - ./grid-reporter/clients.json:/app/clients.json
+      - ./clients.json:/app/clients.json
       - ./grid-reporter/state.json:/app/state.json
+    stop_grace_period: 10s
     networks:
       - web_network
 

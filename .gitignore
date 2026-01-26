@@ -40,5 +40,5 @@ shared.egg-info
 mongo_dump/
 
 # grid-reporter
-grid-reporter/clients.json
+clients.json
 grid-reporter/state.json

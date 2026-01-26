@@ -46,7 +46,8 @@ class BaseDeyeClient:
                 resp.raise_for_status()
                 data = await resp.json()
                 return data.get("accessToken")
-        except Exception:
+        except Exception as ex:
+            print(f"Failed to get token: {ex}")
             return None
 
     async def refresh_token(self):

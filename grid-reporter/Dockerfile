@@ -1,11 +1,13 @@
 FROM python:3.11-slim
 
-WORKDIR /app
+WORKDIR /deye-mon-bot-grid-reporter
 
-COPY shared/python /shared/python
-COPY grid-reporter/requirements.txt ./
+COPY requirements.txt /deye-mon-bot-grid-reporter/
+COPY --from=shared ./python /shared/python
+
+RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY grid-reporter/main.py ./
+COPY . /deye-mon-bot-grid-reporter/
 
-CMD ["python", "/app/main.py"]
+CMD ["python", "/deye-mon-bot-grid-reporter/run.py"]
