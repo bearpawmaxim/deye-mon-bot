@@ -27,23 +27,3 @@ class DeyeConfig:
             f"app_secret='***', email='{self.email}', password='***', "
             f"sync_stations_on_poll={self.sync_stations_on_poll})"
         )
-
-
-class DeyeApiTokenResponse(BaseModel):
-    access_token: str = Field(alias="accessToken")
-    code: str
-    expires_in: str = Field(alias="expiresIn")
-    msg: str
-    refresh_token: str = Field(alias="refreshToken")
-    request_id: str = Field(alias="requestId")
-    scope: str
-    success: bool
-    token_type: str = Field(alias="tokenType")
-    uid: int
-
-    model_config = ConfigDict(
-        frozen=False,
-        populate_by_name=True,
-        extra='ignore',
-    )
-

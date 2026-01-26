@@ -38,3 +38,7 @@ shared.egg-info
 
 .github/
 mongo_dump/
+
+# grid-reporter
+clients.json
+grid-reporter/state.json

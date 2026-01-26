@@ -114,6 +114,24 @@ services:
       deye-mon-bot-rds:
         condition: service_healthy
 
+  deye-mon-bot-grid-reporter:
+    build:
+      context: grid-reporter
+      additional_contexts:
+        shared: ./shared
+    image: deye-mon-bot-grid-reporter
+    restart: always
+    env_file: .env
+    environment:
+      CLIENTS_PATH: /app/clients.json
+      STATE_PATH: /app/state.json
+    volumes:
+      - ./clients.json:/app/clients.json
+      - ./grid-reporter/state.json:/app/state.json
+    stop_grace_period: 10s
+    networks:
+      - web_network
+
   deye-mon-bot-front-end:
     build:
       context: front-end
