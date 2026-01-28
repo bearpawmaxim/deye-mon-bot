@@ -13,8 +13,8 @@ android {
         applicationId = "ua.pp.svitlo.power"
         minSdk = 26
         targetSdk = 35
-        versionCode = 13
-        versionName = "1.0.13"
+        versionCode = 15
+        versionName = "1.0.15"
 
         vectorDrawables {
             useSupportLibrary = true

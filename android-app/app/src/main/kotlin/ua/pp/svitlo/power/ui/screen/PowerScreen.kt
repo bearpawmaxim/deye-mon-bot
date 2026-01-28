@@ -21,6 +21,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ua.pp.svitlo.power.data.model.Building
+import ua.pp.svitlo.power.data.model.ChargeSource
 import ua.pp.svitlo.power.data.model.PowerStatus
 import ua.pp.svitlo.power.ui.components.ErrorContent
 import ua.pp.svitlo.power.ui.theme.PowerGreen
@@ -167,41 +168,55 @@ fun BuildingCard(
                 PowerStatusBadge(building.getPowerStatus())
             }
             
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            // Battery Section - компактная версия
-            BatteryIndicatorCompact(
-                batteryLevel = building.getBatteryLevel(),
-                dischargeTime = building.getDischargeTimeFormatted()
-            )
+            // Battery Section - only show if building has bound station
+            if (building.hasBoundStation == true) {
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Battery Section - компактная версия
+                BatteryIndicatorCompact(
+                    batteryLevel = building.getBatteryLevel(),
+                    dischargeTime = building.getDischargeTimeFormatted(),
+                    chargeTime = building.getChargeTimeFormatted(),
+                    chargeSource = building.chargeSource,
+                    isCharging = building.isCharging == true
+                )
+                
+                // Charge Source row
+                if (building.chargeSource != null && building.chargeSource != ChargeSource.None) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    ChargeSourceIndicator(chargeSource = building.chargeSource)
+                }
+            }
             
             Spacer(modifier = Modifier.height(8.dp))
             
-            // Stats Row - компактная версия
+            // Stats Row - Consumption and Grid Status on same line
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Consumption
-                CompactStatItem(
-                    icon = Icons.Default.Bolt,
-                    label = "Consumption",
-                    value = building.getConsumption(),
-                    iconTint = PowerYellow
-                )
+                // Consumption - only show if building has bound station
+                if (building.hasBoundStation == true) {
+                    CompactStatItem(
+                        icon = Icons.Default.Bolt,
+                        label = "Consumption",
+                        value = building.getConsumption(),
+                        iconTint = PowerYellow
+                    )
+                }
                 
-                // Grid Status
+                // Grid Status - always show if available
                 if (building.isGridAvailable != null) {
                     val hasMixedStates = building.hasMixedReporterStates == true
                     val (icon, label, iconTint) = when {
                         hasMixedStates -> Triple(
-                            Icons.Default.PowerInput,
+                            Icons.Default.ElectricalServices,
                             "Partially Available",
                             PowerOrange
                         )
                         building.isGridAvailable == true -> Triple(
-                            Icons.Default.PowerInput,
+                            Icons.Default.ElectricalServices,
                             "Available",
                             PowerGreen
                         )
@@ -227,7 +242,10 @@ fun BuildingCard(
 @Composable
 fun BatteryIndicatorCompact(
     batteryLevel: Int,
-    dischargeTime: String?
+    dischargeTime: String?,
+    chargeTime: String? = null,
+    chargeSource: ChargeSource? = null,
+    isCharging: Boolean = false
 ) {
     Column {
         Row(
@@ -241,6 +259,7 @@ fun BatteryIndicatorCompact(
             ) {
                 Icon(
                     imageVector = when {
+                        isCharging -> Icons.Default.BatteryChargingFull
                         batteryLevel >= 80 -> Icons.Default.BatteryFull
                         batteryLevel >= 20 -> Icons.Default.BatteryStd
                         else -> Icons.Default.BatteryAlert
@@ -260,8 +279,14 @@ fun BatteryIndicatorCompact(
                     fontWeight = FontWeight.Bold
                 )
                 
-                // Discharge time if available
-                if (dischargeTime != null) {
+                // Charge time if charging, otherwise discharge time
+                if (isCharging && chargeTime != null) {
+                    Text(
+                        text = "⚡ $chargeTime",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = PowerGreen
+                    )
+                } else if (dischargeTime != null) {
                     Text(
                         text = "⏱ $dischargeTime",
                         style = MaterialTheme.typography.bodySmall,
@@ -275,7 +300,7 @@ fun BatteryIndicatorCompact(
         
         // Battery progress bar
         LinearProgressIndicator(
-            progress = batteryLevel / 100f,
+            progress = { batteryLevel / 100f },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(8.dp)
@@ -291,6 +316,24 @@ fun BatteryIndicatorCompact(
             trackColor = MaterialTheme.colorScheme.surfaceVariant
         )
     }
+}
+
+@Composable
+fun ChargeSourceIndicator(chargeSource: ChargeSource) {
+    val (icon, label, color) = when (chargeSource) {
+        ChargeSource.Grid -> Triple(Icons.Default.Power, "Grid", PowerGreen)
+        ChargeSource.Generator -> Triple(Icons.Default.LocalGasStation, "Generator", PowerOrange)
+        ChargeSource.Solar -> Triple(Icons.Default.WbSunny, "Solar", PowerYellow)
+        ChargeSource.Recuperation -> Triple(Icons.Default.Autorenew, "Recuperation", MaterialTheme.colorScheme.primary)
+        ChargeSource.None -> Triple(Icons.Default.PowerOff, "None", MaterialTheme.colorScheme.outline)
+    }
+    
+    CompactStatItem(
+        icon = icon,
+        label = "Charge source",
+        value = label,
+        iconTint = color
+    )
 }
 
 @Composable

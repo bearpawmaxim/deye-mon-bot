@@ -5,30 +5,18 @@ import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.updateAll
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import ua.pp.svitlo.power.data.firebase.FirebaseConfigManager
 import ua.pp.svitlo.power.data.model.OutageScheduleResponse
-import ua.pp.svitlo.power.data.preferences.PreferencesManager
 import ua.pp.svitlo.power.data.repository.PowerRepository
 
-/**
- * Helper для быстрого обновления виджета из других частей приложения
- */
 object WidgetHelper {
     
     private val repository = PowerRepository()
     
-    /**
-     * Обновить виджет с текущими данными из приложения
-     */
     suspend fun updateWidget(context: Context) {
         withContext(Dispatchers.IO) {
             try {
-                // Получаем текущую очередь из настроек
-                val preferencesManager = PreferencesManager(context)
-                // Здесь можно получить очередь из настроек, если она там сохранена
-                // Пока используем дефолтную
-                val queue = "6.2"
-                
-                // Запускаем обновление через WorkManager
+                val queue = FirebaseConfigManager.getYasnoQueue()
                 OutagesWidgetUpdater.enqueueUpdate(context, queue)
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -36,10 +24,6 @@ object WidgetHelper {
         }
     }
     
-    /**
-     * Обновить виджет с уже загруженными данными
-     * (полезно, когда данные уже есть в OutagesScreen)
-     */
     suspend fun updateWidgetWithData(
         context: Context,
         response: OutageScheduleResponse,
@@ -56,10 +40,6 @@ object WidgetHelper {
         }
     }
     
-    /**
-     * Обрабатываем данные расписания для виджета
-     * (Дублирует логику из Worker для прямого использования)
-     */
     private fun processOutagesData(response: OutageScheduleResponse, queue: String): WidgetData {
         val today = java.time.LocalDate.now()
         val now = java.time.LocalTime.now()
@@ -93,7 +73,6 @@ object WidgetHelper {
         val upcomingSlots = mutableListOf<SlotInfo>()
         
         todaySchedule?.let { day ->
-            // Ищем текущий и следующий слот
             day.slots.forEach { slot ->
                 val status = getSlotStatus(slot, true)
                 
@@ -159,9 +138,6 @@ object WidgetHelper {
         )
     }
     
-    /**
-     * Обновить очередь в виджете
-     */
     fun updateWidgetQueue(context: Context, queue: String) {
         OutagesWidgetUpdater.updateQueue(context, queue)
     }

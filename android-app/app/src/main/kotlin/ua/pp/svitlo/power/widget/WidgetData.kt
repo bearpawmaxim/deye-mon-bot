@@ -1,5 +1,6 @@
 package ua.pp.svitlo.power.widget
 
+import ua.pp.svitlo.power.data.firebase.FirebaseConfigManager
 import ua.pp.svitlo.power.data.model.TimeSlot
 import java.time.LocalTime
 
@@ -7,7 +8,7 @@ import java.time.LocalTime
  * Data class representing widget state
  */
 data class WidgetData(
-    val queue: String = "6.2",
+    val queue: String = FirebaseConfigManager.DEFAULT_QUEUE,
     val updatedOn: String = "",
     val currentSlot: SlotInfo? = null,
     val nextSlot: SlotInfo? = null,

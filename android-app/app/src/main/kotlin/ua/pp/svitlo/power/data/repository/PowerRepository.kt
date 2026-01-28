@@ -2,6 +2,7 @@ package ua.pp.svitlo.power.data.repository
 
 import ua.pp.svitlo.power.data.api.RetrofitClient
 import ua.pp.svitlo.power.data.model.Building
+import ua.pp.svitlo.power.data.model.BuildingsSummaryRequest
 import ua.pp.svitlo.power.data.model.DashboardSettings
 import ua.pp.svitlo.power.data.model.OutageScheduleResponse
 import ua.pp.svitlo.power.data.model.PowerLogRequest
@@ -14,8 +15,20 @@ class PowerRepository {
     
     suspend fun getBuildings(): Result<List<Building>> {
         return try {
-            val response = apiService.getBuildings()
-            Result.success(response)
+            // 1. Get basic building info (id, name, color, hasBoundStation)
+            val basicBuildings = apiService.getBuildingsBasic()
+            
+            // 2. Get summary for all buildings
+            val buildingIds = basicBuildings.map { it.id }
+            val summaries = apiService.getBuildingsSummary(BuildingsSummaryRequest(buildingIds))
+            val summaryMap = summaries.associateBy { it.id }
+            
+            // 3. Merge basic info with summary
+            val buildings = basicBuildings.map { basic ->
+                Building.fromBasicAndSummary(basic, summaryMap[basic.id])
+            }
+            
+            Result.success(buildings)
         } catch (e: Exception) {
             Result.failure(e)
         }

@@ -5,35 +5,105 @@ data class BuildingName(
     val uk: String? = null
 )
 
+enum class ChargeSource {
+    None,
+    Grid,
+    Generator,
+    Solar,
+    Recuperation
+}
+
+// Response from GET /api/dashboard/buildings
+data class BuildingBasicInfo(
+    val id: String,
+    val name: BuildingName,
+    val color: String,
+    val hasBoundStation: Boolean? = null
+)
+
+// Response from POST /api/dashboard/buildings/summary
+data class BuildingSummary(
+    val id: String,
+    val isGridAvailable: Boolean? = null,
+    val gridAvailabilityPct: Int? = null,
+    val hasMixedReporterStates: Boolean? = null,
+    val isCharging: Boolean? = null,
+    val isDischarging: Boolean? = null,
+    val isOffline: Boolean? = null,
+    val batteryPercent: Double? = null,
+    val consumptionPower: String? = null,
+    val batteryDischargeTime: String? = null,
+    val batteryChargeTime: String? = null,
+    val chargeSource: ChargeSource? = null,
+    val chargePower: Double? = null
+)
+
+// Request for POST /api/dashboard/buildings/summary
+data class BuildingsSummaryRequest(
+    val buildingIds: List<String>
+)
+
 data class Building(
     val id: String,
     val name: BuildingName,
-    val batteryPercent: Double,
+    val batteryPercent: Double? = null,
     val color: String,
-    val consumptionPower: String,
-    val isCharging: Boolean,
-    val isDischarging: Boolean,
+    val consumptionPower: String? = null,
+    val isCharging: Boolean? = null,
+    val isDischarging: Boolean? = null,
     val isGridAvailable: Boolean? = null,
     val batteryDischargeTime: String? = null,
+    val batteryChargeTime: String? = null,
     val hasMixedReporterStates: Boolean? = null,
-    val isOffline: Boolean? = null
+    val isOffline: Boolean? = null,
+    val hasBoundStation: Boolean? = null,
+    val chargeSource: ChargeSource? = null,
+    val chargePower: Double? = null,
+    val gridAvailabilityPct: Int? = null
 ) {
+    companion object {
+        fun fromBasicAndSummary(basic: BuildingBasicInfo, summary: BuildingSummary?): Building {
+            return Building(
+                id = basic.id,
+                name = basic.name,
+                color = basic.color,
+                hasBoundStation = basic.hasBoundStation,
+                batteryPercent = summary?.batteryPercent,
+                consumptionPower = summary?.consumptionPower,
+                isCharging = summary?.isCharging,
+                isDischarging = summary?.isDischarging,
+                isGridAvailable = summary?.isGridAvailable,
+                batteryDischargeTime = summary?.batteryDischargeTime,
+                batteryChargeTime = summary?.batteryChargeTime,
+                hasMixedReporterStates = summary?.hasMixedReporterStates,
+                isOffline = summary?.isOffline,
+                chargeSource = summary?.chargeSource,
+                chargePower = summary?.chargePower,
+                gridAvailabilityPct = summary?.gridAvailabilityPct
+            )
+        }
+    }
+    
     fun getDisplayName(): String = name.en ?: name.uk ?: "Unknown"
     
-    fun getBatteryLevel(): Int = batteryPercent.toInt()
+    fun getBatteryLevel(): Int = batteryPercent?.toInt() ?: 0
     
     fun getPowerStatus(): PowerStatus {
         return when {
             isOffline == true -> PowerStatus.OFFLINE
-            isCharging -> PowerStatus.CHARGING
-            isDischarging -> PowerStatus.DISCHARGING
+            isCharging == true -> PowerStatus.CHARGING
+            isDischarging == true -> PowerStatus.DISCHARGING
             isGridAvailable == true -> PowerStatus.GRID_AVAILABLE
             else -> PowerStatus.IDLE
         }
     }
     
     fun getConsumption(): String {
-        return "$consumptionPower kW"
+        return "${consumptionPower ?: "0"} kW"
+    }
+    
+    fun getChargeTimeFormatted(): String? {
+        return batteryChargeTime
     }
     
     fun getDischargeTimeFormatted(): String? {

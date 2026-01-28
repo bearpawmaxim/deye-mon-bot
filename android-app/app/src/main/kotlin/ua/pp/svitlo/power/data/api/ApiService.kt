@@ -4,15 +4,20 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
-import ua.pp.svitlo.power.data.model.Building
+import ua.pp.svitlo.power.data.model.BuildingBasicInfo
+import ua.pp.svitlo.power.data.model.BuildingSummary
+import ua.pp.svitlo.power.data.model.BuildingsSummaryRequest
 import ua.pp.svitlo.power.data.model.DashboardConfig
 import ua.pp.svitlo.power.data.model.OutageScheduleResponse
 import ua.pp.svitlo.power.data.model.PowerLogRequest
 import ua.pp.svitlo.power.data.model.PowerLogResponse
 
 interface ApiService {
-    @GET("buildings/buildings")
-    suspend fun getBuildings(): List<Building>
+    @GET("dashboard/buildings")
+    suspend fun getBuildingsBasic(): List<BuildingBasicInfo>
+    
+    @POST("dashboard/buildings/summary")
+    suspend fun getBuildingsSummary(@Body request: BuildingsSummaryRequest): List<BuildingSummary>
     
     @GET("buildings/dashboardConfig")
     suspend fun getDashboardConfig(): List<DashboardConfig>

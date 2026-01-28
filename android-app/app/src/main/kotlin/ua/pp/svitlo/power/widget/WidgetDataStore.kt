@@ -7,6 +7,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
+import ua.pp.svitlo.power.data.firebase.FirebaseConfigManager
 
 /**
  * DataStore для хранения данных виджета
@@ -105,7 +106,7 @@ object WidgetDataStore {
                 } else null
                 
                 WidgetData(
-                    queue = prefs[QUEUE_KEY] ?: "6.2",
+                    queue = prefs[QUEUE_KEY] ?: FirebaseConfigManager.DEFAULT_QUEUE,
                     updatedOn = prefs[UPDATED_ON_KEY] ?: "",
                     currentSlot = currentSlot,
                     nextSlot = nextSlot,

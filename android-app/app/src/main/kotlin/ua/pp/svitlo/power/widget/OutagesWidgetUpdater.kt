@@ -6,6 +6,7 @@ import androidx.glance.appwidget.updateAll
 import androidx.work.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import ua.pp.svitlo.power.data.firebase.FirebaseConfigManager
 import ua.pp.svitlo.power.data.model.DaySchedule
 import ua.pp.svitlo.power.data.model.OutageScheduleResponse
 import ua.pp.svitlo.power.data.repository.PowerRepository
@@ -14,9 +15,6 @@ import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 
-/**
- * Worker для обновления данных виджета
- */
 class OutagesWidgetUpdateWorker(
     context: Context,
     params: WorkerParameters
@@ -26,24 +24,20 @@ class OutagesWidgetUpdateWorker(
     
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
-            // Получаем текущую очередь (можно сохранять в PreferencesManager)
-            val queue = inputData.getString(KEY_QUEUE) ?: "6.2"
+            val queue = inputData.getString(KEY_QUEUE) ?: FirebaseConfigManager.getYasnoQueue()
             
-            // Загружаем расписание
             repository.getOutagesSchedule(queue)
                 .onSuccess { response ->
                     val widgetData = processOutagesData(response, queue)
                     WidgetDataStore.saveData(applicationContext, widgetData)
                     
-                    // Обновляем все виджеты
                     OutagesWidget().updateAll(applicationContext)
                 }
                 .onFailure { error ->
-                    // В случае ошибки сохраняем информацию об ошибке
                     val errorData = WidgetData(
                         queue = queue,
                         isError = true,
-                        errorMessage = error.message ?: "Невідома помилка"
+                        errorMessage = error.message ?: "Unknown error"
                     )
                     WidgetDataStore.saveData(applicationContext, errorData)
                     OutagesWidget().updateAll(applicationContext)
@@ -55,9 +49,6 @@ class OutagesWidgetUpdateWorker(
         }
     }
     
-    /**
-     * Обрабатываем данные расписания для виджета
-     */
     private fun processOutagesData(response: OutageScheduleResponse, queue: String): WidgetData {
         val today = LocalDate.now()
         val now = LocalTime.now()
@@ -91,7 +82,6 @@ class OutagesWidgetUpdateWorker(
         val upcomingSlots = mutableListOf<SlotInfo>()
         
         todaySchedule?.let { day ->
-            // Ищем текущий и следующий слот
             day.slots.forEach { slot ->
                 val status = getSlotStatus(slot, true)
                 
@@ -171,15 +161,9 @@ class OutagesWidgetUpdateWorker(
     }
 }
 
-/**
- * Утилита для запуска обновлений виджета
- */
 object OutagesWidgetUpdater {
     
-    /**
-     * Запустить одноразовое обновление
-     */
-    fun enqueueUpdate(context: Context, queue: String = "6.2") {
+    fun enqueueUpdate(context: Context, queue: String = FirebaseConfigManager.DEFAULT_QUEUE) {
         val updateRequest = OneTimeWorkRequestBuilder<OutagesWidgetUpdateWorker>()
             .setInputData(
                 workDataOf(OutagesWidgetUpdateWorker.KEY_QUEUE to queue)
@@ -199,10 +183,7 @@ object OutagesWidgetUpdater {
             )
     }
     
-    /**
-     * Настроить периодическое обновление (каждые 30 минут)
-     */
-    fun enqueuePeriodicUpdates(context: Context, queue: String = "6.2") {
+    fun enqueuePeriodicUpdates(context: Context, queue: String = FirebaseConfigManager.DEFAULT_QUEUE) {
         val periodicRequest = PeriodicWorkRequestBuilder<OutagesWidgetUpdateWorker>(
             30, TimeUnit.MINUTES,
             15, TimeUnit.MINUTES // Flex interval
@@ -225,9 +206,6 @@ object OutagesWidgetUpdater {
             )
     }
     
-    /**
-     * Отменить все обновления
-     */
     fun cancelUpdates(context: Context) {
         WorkManager.getInstance(context).apply {
             cancelUniqueWork(OutagesWidgetUpdateWorker.WORK_NAME)
@@ -235,14 +213,8 @@ object OutagesWidgetUpdater {
         }
     }
     
-    /**
-     * Обновить очередь и перезапустить периодические обновления
-     */
     fun updateQueue(context: Context, queue: String) {
-        // Отменяем старые обновления
         cancelUpdates(context)
-        
-        // Запускаем новое обновление с новой очередью
         enqueueUpdate(context, queue)
         enqueuePeriodicUpdates(context, queue)
     }
