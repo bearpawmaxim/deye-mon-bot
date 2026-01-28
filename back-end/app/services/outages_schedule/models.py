@@ -13,6 +13,7 @@ class DayStatus(str, Enum):
     ScheduleApplies = "ScheduleApplies"
     EmergencyShutdowns = "EmergencyShutdowns"
     WaitingForSchedule = "WaitingForSchedule"
+    NoOutages = "NoOutages"
 
 
 class Slot(BaseModel):

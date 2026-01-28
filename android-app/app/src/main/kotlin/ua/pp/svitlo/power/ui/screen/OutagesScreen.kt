@@ -594,6 +594,7 @@ fun StatusBadge(status: String) {
         "ScheduleApplies" -> Triple("Active", MaterialTheme.colorScheme.primary, null)
         "WaitingForSchedule" -> Triple("Pending", MaterialTheme.colorScheme.tertiary, null)
         "EmergencyShutdowns" -> Triple("Emergency", PowerRed, Icons.Default.Warning)
+        "NoOutages" -> Triple("No Outages", PowerGreen, Icons.Default.CheckCircle)
         else -> Triple(status, MaterialTheme.colorScheme.secondary, null)
     }
     
