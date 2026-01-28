@@ -15,6 +15,7 @@ export enum DayDataStatus {
   ScheduleApplies = "ScheduleApplies",
   EmergencyShutdowns = "EmergencyShutdowns",
   WaitingForSchedule = "WaitingForSchedule",
+  NoOutages = "NoOutages",
 };
 
 export type DayData = {

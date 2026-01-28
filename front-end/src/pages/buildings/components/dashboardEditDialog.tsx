@@ -40,6 +40,8 @@ export function openDashboardEditDialog({ dashboardConfig, title }: OpenDashboar
       { value: '5.2', label: '5.2' },
       { value: '6.1', label: '6.1' },
       { value: '6.2', label: '6.2' },
+      { value: '7.1', label: '7.1' },
+      { value: '25.1', label: '25.1' },
     ]), []);
 
     const getTitleError = (
