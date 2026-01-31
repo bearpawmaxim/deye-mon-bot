@@ -190,7 +190,7 @@ const Component: FC<ComponentProps> = ({ extData, pagingInfo, loading, error }) 
           useFilters={true}
           usePagination={true}
           manualPagination={true}
-          manualFiltering={false}
+          manualFiltering={true}
           manualSorting={true}
           pagingInfo={pagingInfo}
           columns={[
@@ -213,14 +213,9 @@ const Component: FC<ComponentProps> = ({ extData, pagingInfo, loading, error }) 
             {
               id: 'grid_state',
               header: t('table.gridState'),
-              accessorKey: 'grid_state',
+              accessorKey: 'gridState',
               enableColumnFilter: true,
               enableSorting: true,
-              filterFn: (row, columnId, filterValue) => {
-                if (!filterValue) return true;
-                const cellValue = row.getValue(columnId) as boolean;
-                return String(cellValue) === filterValue;
-              },
               meta: {
                 customRender: true,
                 dataType: ColumnDataType.Boolean,

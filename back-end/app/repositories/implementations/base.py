@@ -35,7 +35,8 @@ class FilterableRepository(ABC, Generic[T]):
                 find_query = find_query.find(field == PydanticObjectId(value))
 
             elif filter_config.data_type == ColumnDataType.Boolean:
-                find_query = find_query.find(field == bool(value))
+                bool_value = str(filter_config.value).lower() in ('true')
+                find_query = find_query.find(field == bool_value)
 
         return find_query
 
