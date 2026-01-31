@@ -3,7 +3,7 @@ from typing import Generic, List, TypeVar
 from beanie import Document, PydanticObjectId
 from beanie.odm.queries.find import FindMany
 
-from app.models import SortingConfig, FilterConfig, ColumnDataType
+from app.models import SortingConfig, ColumnDataType
 from ..interfaces import DataQuery
 
 
@@ -12,30 +12,30 @@ T = TypeVar('T', bound = Document)
 class FilterableRepository(ABC, Generic[T]):
     model: type[T]
 
-    def apply_filter(
-        self,
-        find_query: FindMany[T],
-        filters: List[FilterConfig],
-    ) -> FindMany[T]:
+    def apply_filter(self, find_query, filters: list):
         for filter_config in filters:
             field = getattr(self.model, filter_config.column, None)
             if field is None:
                 continue
 
-            if filter_config.data_type == ColumnDataType.Text:
+            value = filter_config.value
+
+            if hasattr(value, "to_mongo_query"):
+                find_query = find_query.find(value.to_mongo_query(field))
+
+            elif filter_config.data_type == ColumnDataType.Text:
                 find_query = find_query.find(
-                    {field: {"$regex": filter_config.value, "$options": "i"}}
+                    {field: {"$regex": value, "$options": "i"}}
                 )
 
-            elif filter_config.data_type in (
-                ColumnDataType.Number,
-                ColumnDataType.DateTime,
-            ):
-                find_query = find_query.find(field == filter_config.value)
+            elif filter_config.data_type == ColumnDataType.Number:
+                find_query = find_query.find(field == value)
+
             elif filter_config.data_type == ColumnDataType.Id:
-                find_query = find_query.find(field == PydanticObjectId(filter_config.value))
+                find_query = find_query.find(field == PydanticObjectId(value))
+
             elif filter_config.data_type == ColumnDataType.Boolean:
-                find_query = find_query.find(field == bool(filter_config.value))
+                find_query = find_query.find(field == bool(value))
 
         return find_query
 
