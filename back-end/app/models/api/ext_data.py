@@ -3,6 +3,8 @@ from typing import Optional
 from beanie import PydanticObjectId
 from pydantic import BaseModel, Field
 
+from .api import FilterableRequest, PageableRequest, PageableResponse, SortableRequest
+
 
 class GridPowerState(BaseModel):
     state: bool
@@ -33,7 +35,7 @@ class ExtDataCreateRequest(BaseModel):
     }
 
 
-class ExtDataResponse(BaseModel):
+class ExtDataItemResponse(BaseModel):
     id: PydanticObjectId
     user_id: PydanticObjectId = Field(alias="userId")
     grid_state: bool = Field(alias="gridState")
@@ -44,10 +46,17 @@ class ExtDataResponse(BaseModel):
         "from_attributes": True,
     }
 
+class ExtDataListRequest(PageableRequest, SortableRequest, FilterableRequest):
+    pass
+
+class ExtDataListResponse(PageableResponse[ExtDataItemResponse]):
+    pass
 
 __all__ = [
     "GridPowerState",
     "GridPowerRequest",
     "ExtDataCreateRequest",
-    "ExtDataResponse"
+    "ExtDataItemResponse",
+    "ExtDataListRequest",
+    "ExtDataListResponse",
 ]

@@ -2,15 +2,19 @@ from datetime import datetime, timedelta, timezone
 from typing import List
 from beanie import PydanticObjectId
 
+from .base import BaseReadRepository
 from shared.models.ext_data import ExtData
+from ..interfaces import DataQuery
 from ..interfaces.ext_data import IExtDataRepository
 
 
-class ExtDataRepository(IExtDataRepository):
-    
-    async def get_ext_data(self) -> List[ExtData]:
-        return await ExtData.find().to_list()
-    
+class ExtDataRepository(IExtDataRepository, BaseReadRepository[ExtData]):
+
+    model = ExtData
+
+    async def get_ext_data(self, query: DataQuery = None) -> tuple[List[ExtData], int]:
+        return await self.get_data(query)
+
     async def get_ext_data_by_id(self, ext_data_id: PydanticObjectId) -> ExtData:
         return await ExtData.get(ext_data_id)
 
@@ -59,7 +63,7 @@ class ExtDataRepository(IExtDataRepository):
         ).to_list()
 
         return ext_data
-    
+
     async def get_last_ext_data_before_date(self, user_id: int, before_date: datetime):
         try:
             docs = await ExtData.find(

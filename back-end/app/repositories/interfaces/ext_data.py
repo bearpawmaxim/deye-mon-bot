@@ -4,12 +4,12 @@ from typing import List
 from beanie import PydanticObjectId
 
 from shared.models.ext_data import ExtData
-
+from .base import DataQuery
 
 class IExtDataRepository(ABC):
     
     @abstractmethod
-    async def get_ext_data(self) -> List[ExtData]:
+    async def get_ext_data(self, query: DataQuery = None) -> tuple[List[ExtData], int]:
         ...
 
     @abstractmethod

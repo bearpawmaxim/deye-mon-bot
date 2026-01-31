@@ -3,10 +3,16 @@ import apiClient from "../../utils/apiClient";
 import { ExtDataItem } from "../types";
 import { getErrorMessage } from "../../utils";
 import { ObjectId } from "../../schemas";
+import { FilterableRequest, PageableRequest, PageableResponse, SortableRequest } from "../../types";
 
-export const fetchExtData = createAsyncThunk('extData/fetchExtData', async (_, thunkAPI) => {
+export type ExtDataRequest = PageableRequest & SortableRequest & FilterableRequest;
+type ExtDataResponse = PageableResponse<ExtDataItem>;
+
+export const fetchExtData = createAsyncThunk(
+  'extData/fetchExtData',
+  async (request: ExtDataRequest, thunkAPI) => {
   try {
-    const response = await apiClient.get<Array<ExtDataItem>>('/ext-data/list');
+    const response = await apiClient.post<ExtDataResponse>('/ext-data/list', request);
     return response.data;
   } catch (error: unknown) {
     return thunkAPI.rejectWithValue(getErrorMessage(error) || 'Failed to fetch ext data');

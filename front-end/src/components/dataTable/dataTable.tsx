@@ -1,16 +1,18 @@
 import { Fragment, useCallback, useEffect } from "react";
 import { ActionsColumnMeta, BooleanColumnMeta, Cell, ColumnDef, ColumnFiltersState, flexRender,
-  getCoreRowModel, getFilteredRowModel, getSortedRowModel,
-  Header, SortingState, TableOptions, TypedColumnMeta, useReactTable
+  getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel,
+  Header, PaginationState, SortingState, TableOptions, TypedColumnMeta, useReactTable
 } from '@tanstack/react-table'
 import { Toolbar } from "./toolbar";
 import { Box, Group, Table } from "@mantine/core";
 import { HeaderCell } from "./headerCell";
 import { ActionsCell, BooleanCell } from "./cell";
 import useLocalStorage from "../../hooks/useLocalStorage";
-import { ColumnDataType } from "../../types";
+import { ColumnDataType, FilterConfig, PagingConfig, PagingInfo, SortingConfig } from "../../types";
 import { FilterCell } from "./filterCell";
 import { toLocalDateTime } from "../../utils";
+import { Paginator } from "./paginator";
+import { SortableHeaderCell } from "./sortableHeaderCell";
 
 export type DataTableColumnDef<T, TValue> = ColumnDef<T, TValue> & {
   meta?: TypedColumnMeta<T, TValue>;
@@ -18,7 +20,7 @@ export type DataTableColumnDef<T, TValue> = ColumnDef<T, TValue> & {
 
 export type DataTableProps<T> = {
   data: Array<T>;
-  fetchAction: () => void;
+  fetchAction: (paging?: PagingConfig, sorting?: SortingConfig, filters?: FilterConfig[]) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   columns: DataTableColumnDef<T, any>[];
   defSort?: SortingState;
@@ -26,7 +28,12 @@ export type DataTableProps<T> = {
   refreshKey?: number;
   hideToolbar?: boolean;
   manualSorting?: boolean;
+  manualFiltering?: boolean;
+  manualPagination?: boolean;
+  usePagination?: boolean;
   useFilters?: boolean;
+  useSorting?: boolean;
+  pagingInfo?: PagingInfo;
 };
 
 export const DataTable = <T,>({
@@ -38,7 +45,12 @@ export const DataTable = <T,>({
     refreshKey,
     hideToolbar,
     manualSorting,
+    manualFiltering,
+    manualPagination,
+    usePagination,
     useFilters,
+    useSorting,
+    pagingInfo,
   }: DataTableProps<T>) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const stableFetchAction = useCallback(fetchAction, []);
@@ -48,26 +60,74 @@ export const DataTable = <T,>({
   const getStorageKey = (type: string): string => `${tableKey}_${type}`;
   const [sorting, setSorting] = useLocalStorage<SortingState>(getStorageKey('sorting'), defSort ?? []);
   const [columnFilters, setColumnFilters] = useLocalStorage<ColumnFiltersState>(getStorageKey('filters'), []);
+  const [pagination, setPagination] = useLocalStorage<PaginationState>(getStorageKey('paging'), {
+      pageIndex: (pagingInfo?.page ?? 0),
+      pageSize: pagingInfo?.pageSize ?? 10,
+    });
+
+  const toPagingConfig = (paginationState: PaginationState): PagingConfig => ({
+    page: paginationState.pageIndex,
+    pageSize: paginationState.pageSize,
+  });
+
+  const toSortingConfig = (sortingState: SortingState): SortingConfig | undefined => {
+    if (sortingState.length > 0) {
+      return {
+        column: sortingState[0].id,
+        order: sortingState[0].desc ? 'desc' : 'asc',
+      };
+    }
+  };
+
+  const getColumnDataType = useCallback((id: string): ColumnDataType=> {
+    const dataType = columns.find(f => f.id === id)?.meta?.dataType;
+    return dataType === 'actions' ? ColumnDataType.Text : dataType ?? ColumnDataType.Text;
+  }, [columns]);
+
+  const toFilteringConfig = useCallback((filters: ColumnFiltersState): FilterConfig[] => {
+    const result: FilterConfig[] = [];
+    filters?.forEach(f => result.push({
+      column: f.id,
+      value: f.value,
+      dataType: getColumnDataType(f.id),
+    }));
+    return result;
+  }, [getColumnDataType]);
 
   const fetch = useCallback(() => {
-    stableFetchAction();
-  }, [stableFetchAction]);
+    stableFetchAction(
+      toPagingConfig(pagination),
+      toSortingConfig(sorting),
+      toFilteringConfig(columnFilters),
+    );
+  }, [stableFetchAction, pagination, sorting, toFilteringConfig, columnFilters]);
 
   useEffect(() => {
     fetch();
-  }, [fetch, refreshKey]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    pagination.pageIndex,
+    pagination.pageSize,
+    sorting,
+    columnFilters,
+    refreshKey,
+  ]);
 
   const tableOptions: TableOptions<T> = {
     data: data ?? fallbackData,
     columns: columns,
-    state: { sorting, columnFilters },
+    state: { sorting, columnFilters, pagination },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     manualSorting: manualSorting ?? false,
     getFilteredRowModel: getFilteredRowModel(),
-    manualFiltering: false,
+    manualFiltering: manualFiltering ?? false,
+    getPaginationRowModel: getPaginationRowModel(),
+    manualPagination: manualPagination ?? false,
+    rowCount: pagingInfo?.total,
   };
 
   const table = useReactTable<T>(tableOptions);
@@ -90,13 +150,14 @@ export const DataTable = <T,>({
 
   const renderCell = <T,>(cell: Cell<T, unknown>, row: T): React.ReactNode => {
     const columnDef = cell.column.columnDef;
+    const hasCustomCell = columnDef.cell != null;
     if (columnDef.meta?.dataType === 'actions') {
       const meta = columnDef.meta as ActionsColumnMeta<T, unknown>;
       return <ActionsCell<T>
         actions={meta.actions ?? []}
         row={row}
       />;
-    } else if (columnDef.meta?.dataType === ColumnDataType.Boolean) {
+    } else if (columnDef.meta?.dataType === ColumnDataType.Boolean && !hasCustomCell) {
       const meta = columnDef.meta as BooleanColumnMeta<T, unknown>;
       return <Group p={0} justify="center">
         <BooleanCell
@@ -115,7 +176,13 @@ export const DataTable = <T,>({
 
   return <Box pt="sm">
     { !hideToolbar && <Toolbar
-        totalRecords={data?.length ?? 0 }
+        usePagination={usePagination ?? false}
+        pageSize={pagingInfo?.pageSize ?? 10}
+        onPageSizeChange={v => setPagination({
+          ...pagination,
+          pageSize: v
+        })}
+        totalRecords={usePagination && pagingInfo ? pagingInfo.total : data?.length ?? 0 }
         refresh={() => fetch()}
       /> }
     <Table.ScrollContainer minWidth={'100%'}>
@@ -125,13 +192,18 @@ export const DataTable = <T,>({
             <Fragment key={headerGroup.id}>
               <Table.Tr key={`${headerGroup.id}_main`}>
                 {headerGroup.headers.map(header => (
-                  <HeaderCell<T>
-                    sorting={getSortingConfig(header)}
-                    toggleSorting={() => toggleSorting(header)}
-                    header={header}
-                    key={header.id}
-                  />
-                ))}
+                    (useSorting ?? true)
+                      ? <SortableHeaderCell<T>
+                          sorting={getSortingConfig(header)}
+                          toggleSorting={() => toggleSorting(header)}
+                          header={header}
+                          key={header.id}
+                        />
+                      : <HeaderCell<T>
+                          header={header}
+                          key={header.id}
+                        />
+                    ))}
               </Table.Tr>
               { useFilters && <Table.Tr key={`${headerGroup.id}_fltg`}>
                 {headerGroup.headers.map(header => {
@@ -160,5 +232,6 @@ export const DataTable = <T,>({
         </Table.Tbody>
       </Table>
     </Table.ScrollContainer>
+    { usePagination && <Paginator<T> table={table} recordsCount={pagingInfo?.total ?? 0} /> }
   </Box>
 }

@@ -2,9 +2,9 @@ import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { ExtDataItem } from "../../stores/types";
 import { connect } from "react-redux";
 import { RootState, useAppDispatch } from "../../stores/store";
-import { createExtData, deleteExtData, fetchExtData } from "../../stores/thunks";
+import { createExtData, deleteExtData, ExtDataRequest, fetchExtData } from "../../stores/thunks";
 import { DataTable, ErrorMessage, Page } from "../../components";
-import { ColumnDataType, LookupSchema } from "../../types";
+import { ColumnDataType, FilterConfig, LookupSchema, PagingConfig, PagingInfo, SortingConfig } from "../../types";
 import { usePageTranslation } from "../../utils";
 import { Column } from "@tanstack/react-table";
 import { Button, Group, Modal, Select, Stack, Switch, Text, Tooltip } from "@mantine/core";
@@ -12,22 +12,24 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { modals } from "@mantine/modals";
 import { DateTimePicker } from "@mantine/dates";
 import { PageHeaderButton, useHeaderContent } from "../../providers";
-import { useLookup } from "../../hooks";
+import { useLookup, useRefreshKey } from "../../hooks";
 import { ObjectId } from "../../schemas";
 
 type ComponentProps = {
   extData: ExtDataItem[];
+  pagingInfo: PagingInfo;
   loading: boolean;
   error: string | null;
 };
 
 const mapStateToProps = (state: RootState): ComponentProps => ({
-  extData: state.extData.extData,
+  extData: state.extData.items,
+  pagingInfo: state.extData.paging,
   loading: state.extData.loading,
   error: state.extData.error,
 });
 
-const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
+const Component: FC<ComponentProps> = ({ extData, pagingInfo, loading, error }) => {
   const dispatch = useAppDispatch();
   const t = usePageTranslation('extData');
   const [modalOpened, setModalOpened] = useState(false);
@@ -38,13 +40,16 @@ const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
   });
 
   const fetchData = useCallback(
-    () => dispatch(fetchExtData()),
+    (paging?: PagingConfig, sorting?: SortingConfig, filters?: FilterConfig[]) => {
+      const request: ExtDataRequest = {
+        paging: paging!,
+        sorting: sorting!,
+        filters: filters!,
+      };
+      dispatch(fetchExtData(request))
+    },
     [dispatch],
   );
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData, dispatch]);
 
   const { loading: lookupLoading, data: userLookup } = useLookup(LookupSchema.ReporterUser);
 
@@ -100,6 +105,8 @@ const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
     setModalOpened(false);
   }, []);
 
+  const { refreshKey, refresh } = useRefreshKey();
+
   const handleCreate = useCallback(() => {
     if (!formData.user_id) return;
 
@@ -123,12 +130,12 @@ const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
       .unwrap()
       .then(() => {
         handleCloseModal();
-        dispatch(fetchExtData());
+        refresh();
       })
       .catch((err) => {
         console.error('Failed to create ext data:', err);
       });
-  }, [formData, dispatch, handleCloseModal]);
+  }, [formData.user_id, formData.grid_state, formData.received_at, dispatch, handleCloseModal, refresh]);
 
   const getUserName = useCallback((userId?: ObjectId): string => {
     return userLookup?.find(f => f.value === userId)?.text ?? 'unknown';
@@ -140,18 +147,22 @@ const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
     }
     modals.openConfirmModal({
       title: t('modal.deleteConfirmTitle'),
-      children: t('modal.deleteConfirmMessage', { user: getUserName(item.userId), state: item.gridState ? t('gridState.on') : t('gridState.off') }),
+      children: t('modal.deleteConfirmMessage', {
+        user: getUserName(item.userId),
+        state: item.gridState ? t('gridState.on') : t('gridState.off')
+      }),
       labels: { confirm: t('button.delete') ?? 'Delete', cancel: t('button.cancel') ?? 'Cancel' },
       confirmProps: { color: 'red' },
       onConfirm: () => {
         dispatch(deleteExtData(item.id!))
           .unwrap()
+          .then(() => refresh())
           .catch((err) => {
             console.error('Failed to delete ext data:', err);
           });
       },
     });
-  }, [dispatch, getUserName, t]);
+  }, [dispatch, getUserName, refresh, t]);
 
   const getHeaderButtons = useCallback((): PageHeaderButton[] => [
     { text: t('button.createEvent'), icon: "add", color: "teal", onClick: handleOpenCreateModal, disabled: false },
@@ -174,17 +185,23 @@ const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
         <DataTable<ExtDataItem>
           data={extData}
           fetchAction={fetchData}
+          refreshKey={refreshKey}
           defSort={[{ id: 'received_at', desc: true }]}
           useFilters={true}
+          usePagination={true}
+          manualPagination={true}
+          manualFiltering={false}
+          manualSorting={true}
+          pagingInfo={pagingInfo}
           columns={[
               {
-                id: 'user',
+                id: 'user_id',
                 header: t('table.user'),
-                accessorKey: 'user',
+                accessorKey: 'userId',
                 enableSorting: true,
                 enableColumnFilter: true,
                 meta: {
-                  dataType: ColumnDataType.Text,
+                  dataType: ColumnDataType.Id,
                   filterOptions: {
                     customFilterCell: UserFilter,
                   },
@@ -205,7 +222,8 @@ const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
                 return String(cellValue) === filterValue;
               },
               meta: {
-                dataType: ColumnDataType.Text,
+                customRender: true,
+                dataType: ColumnDataType.Boolean,
                 filterOptions: {
                   customFilterCell: GridStateFilter,
                 },
@@ -229,7 +247,7 @@ const Component: FC<ComponentProps> = ({ extData, loading, error }) => {
               },
             },
             {
-              id: 'receivedAt',
+              id: 'received_at',
               header: t('table.receivedAt'),
               accessorKey: 'receivedAt',
               enableSorting: true,

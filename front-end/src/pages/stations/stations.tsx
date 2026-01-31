@@ -61,10 +61,6 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
 
   const fetchData = useCallback(() => dispatch(fetchStations()), [dispatch]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
   if (error) {
     return <ErrorMessage content={error} />;
   }
@@ -92,7 +88,7 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
       data={stations}
       fetchAction={fetchData}
       tableKey="stations"
-      manualSorting={true}
+      useSorting={false}
       columns={[
         {
           id: 'stationName',
@@ -124,7 +120,7 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
           id: 'lastUpdate',
           header: t('table.lastUpdated'),
           accessorKey: 'lastUpdateTime',
-          meta: {
+          meta: {  
             dataType: ColumnDataType.DateTime,
           },
         },

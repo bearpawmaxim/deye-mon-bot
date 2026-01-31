@@ -1,19 +1,20 @@
 from beanie import PydanticObjectId
 from fastapi import Body, FastAPI, Depends, HTTPException, Path, status
 from fastapi_injector import Injected
-from app.models.api import GridPowerRequest, ExtDataCreateRequest
+from app.models.api import GridPowerRequest, ExtDataCreateRequest, ExtDataListRequest
 from app.services import ExtDataService
 from app.utils.jwt_dependencies import jwt_reporter_only, jwt_required
 
 
 def register(app: FastAPI):
 
-    @app.get("/api/ext-data/list")
+    @app.post("/api/ext-data/list")
     async def get_ext_data_list(
+        body: ExtDataListRequest,
         _ = Depends(jwt_required),
         ext_data_service = Injected(ExtDataService),
     ):
-        return await ext_data_service.get_ext_data()
+        return await ext_data_service.get_ext_data(body)
 
     @app.post("/api/ext-data/grid-power")
     async def update_grid_power(

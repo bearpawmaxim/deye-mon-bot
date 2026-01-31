@@ -1,5 +1,5 @@
 import { ObjectId } from "../../schemas";
-import { BaseState } from "./base";
+import { BaseListState, BasePageableState } from "./base";
 
 export type ExtDataItem = {
   id?: ObjectId;
@@ -8,7 +8,4 @@ export type ExtDataItem = {
   receivedAt: string | null;
 };
 
-export type ExtDataState = BaseState & {
-  extData: ExtDataItem[];
-};
-
+export type ExtDataState = BaseListState<ExtDataItem> & BasePageableState;
