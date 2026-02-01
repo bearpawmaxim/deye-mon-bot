@@ -1,73 +1,55 @@
 from abc import ABC
 from typing import Generic, List, TypeVar
 from beanie import Document, PydanticObjectId
-from beanie.odm.queries.find import FindMany
+from pymongo import ASCENDING, DESCENDING
 
 from app.models import SortingConfig, ColumnDataType, FilterConfig
 from ..interfaces import DataQuery
 
+T = TypeVar("T", bound=Document)
 
-T = TypeVar('T', bound = Document)
 
 class FilterableRepository(ABC, Generic[T]):
     model: type[T]
 
-    def apply_filter(
-        self,
-        find_query: FindMany[T],
-        filters: List[FilterConfig],
-    ):
+    def build_match_stage(self, filters: List[FilterConfig]) -> dict:
+        match = {}
+
         for filter_config in filters:
             field = getattr(self.model, filter_config.column, None)
-            if field is None:
-                continue
-
-            method_name = f"{filter_config.column}_filter"
-            if hasattr(self, method_name):
-                find_query = getattr(self, method_name)(find_query, filter_config)
+            if not field:
                 continue
 
             value = filter_config.value
 
             if hasattr(value, "to_mongo_query"):
-                find_query = find_query.find(value.to_mongo_query(field))
+                match.update(value.to_mongo_query(field))
 
             elif filter_config.data_type == ColumnDataType.Text:
-                find_query = find_query.find(
-                    {field: {"$regex": value, "$options": "i"}}
-                )
+                match[field] = { "$regex": value, "$options": "i" }
 
             elif filter_config.data_type == ColumnDataType.Number:
-                find_query = find_query.find(field == value)
-
-            elif filter_config.data_type == ColumnDataType.Id:
-                find_query = find_query.find(field == PydanticObjectId(value))
+                match[field] = value
 
             elif filter_config.data_type == ColumnDataType.Boolean:
-                bool_value = str(filter_config.value).lower() in ('true')
-                find_query = find_query.find(field == bool_value)
+                match[field] = str(value).lower() == "true"
 
-        return find_query
+            elif filter_config.data_type == ColumnDataType.Id:
+                match[field] = PydanticObjectId(value)
+
+        return match
 
 
 class SortableRepository(ABC, Generic[T]):
     model: type[T]
 
-    def apply_sorting(
-        self,
-        find_query: FindMany[T],
-        sorting: SortingConfig | None,
-    ) -> FindMany[T]:
-        if sorting:
-            method_name = f"{sorting.column}_sort"
-            if hasattr(self, method_name):
-                sort_method = getattr(self, method_name)
-                find_query = sort_method(find_query, sorting.order)
-            else:
-                sort_field = getattr(self.model, sorting.column)
-                sort_direction = -sort_field if sorting.order == "desc" else sort_field
-                find_query = find_query.sort(sort_direction)
-        return find_query
+    def build_sort_stage(self, sorting: SortingConfig | None) -> dict:
+        if not sorting:
+            return {}
+
+        sort_field = sorting.column
+        direction = ASCENDING if sorting.order == "asc" else DESCENDING
+        return { sort_field: direction }
 
 
 class PageableRepository(ABC, Generic[T]):
@@ -75,18 +57,35 @@ class PageableRepository(ABC, Generic[T]):
 
     async def get_paged_data(
         self,
-        find_query: FindMany[T],
+        pipeline: list,
         page: int,
         page_size: int,
-    ) -> tuple[List[T], int]:
-        total = await find_query.count()
-        if page_size and page_size > 0:
-            skip = page * page_size
-            data = await find_query.skip(skip).limit(page_size).to_list()
+    ) -> tuple[list[T], int]:
+        facet_pipeline = pipeline + [
+            {
+                "$facet": {
+                    "data": [
+                        {"$skip": page * page_size},
+                        {"$limit": page_size},
+                    ],
+                    "total": [{"$count": "count"}],
+                }
+            }
+        ]
+
+        print(facet_pipeline.__str__().replace('\'', '"'))
+
+        result = await self.model.aggregate(facet_pipeline).to_list()
+
+        if result:
+            data = [self.model(**item) for item in result[0]["data"]]
+            total = result[0]["total"][0]["count"] if result[0]["total"] else 0
         else:
-            data = await find_query.to_list()
+            data, total = [], 0
+
         return data, total
-    
+
+
 class BaseReadRepository(
     Generic[T],
     FilterableRepository[T],
@@ -95,10 +94,27 @@ class BaseReadRepository(
 ):
     model: type[T]
 
+    def build_reference_joins(self, sorting: SortingConfig | None) -> list[dict]:
+        return []
+
     async def get_data(self, query: DataQuery) -> tuple[List[T], int]:
-        find_query = self.model.find()
-        find_query = self.apply_filter(find_query, query.filters if query.filters else [])
-        find_query = self.apply_sorting(find_query, query.sorting if query.sorting else None)
+        filters = query.filters or []
+        sorting = query.sorting
         page = query.paging.page if query.paging else 0
         page_size = query.paging.page_size if query.paging else 10
-        return await self.get_paged_data(find_query, page, page_size)
+
+        pipeline = [
+            { "$addFields": { "id": "$_id" } }
+        ]
+
+        match_stage = self.build_match_stage(filters)
+        if match_stage:
+            pipeline.append({"$match": match_stage})
+
+        pipeline += self.build_reference_joins(sorting)
+
+        sort_stage = self.build_sort_stage(sorting)
+        if sort_stage:
+            pipeline.append({"$sort": sort_stage})
+
+        return await self.get_paged_data(pipeline, page, page_size)

@@ -1,16 +1,46 @@
 from datetime import datetime, timedelta, timezone
-from typing import List
+from typing import List, Literal
 from beanie import PydanticObjectId
+from pymongo import ASCENDING, DESCENDING
 
 from .base import BaseReadRepository
 from shared.models.ext_data import ExtData
+from app.models.sorting_config import SortingConfig
 from ..interfaces import DataQuery
 from ..interfaces.ext_data import IExtDataRepository
 
 
 class ExtDataRepository(IExtDataRepository, BaseReadRepository[ExtData]):
-
     model = ExtData
+
+    def build_reference_joins(self, sorting: SortingConfig | None) -> list[dict]:
+        if sorting and sorting.column == "user_id":
+            return [
+                {
+                    "$lookup": {
+                        "from": "users",
+                        "localField": "user_id",
+                        "foreignField": "_id",
+                        "as": "user",
+                    }
+                },
+                {"$unwind": "$user"},
+            ]
+        return []
+
+
+    def build_sort_stage(self, sorting: SortingConfig | None) -> dict:
+        if not sorting:
+            return {}
+
+        if sorting.column == "user_id":
+            sort_field = "user.name"
+        else:
+            return super().build_sort_stage(sorting)
+
+        direction = ASCENDING if sorting.order == "asc" else DESCENDING
+        return {sort_field: direction}
+
 
     async def get_ext_data(self, query: DataQuery = None) -> tuple[List[ExtData], int]:
         return await self.get_data(query)
