@@ -7,12 +7,12 @@ import { useNavigate } from "react-router-dom";
 import { PageHeaderButton, useHeaderContent } from "../../providers";
 import { usePageTranslation } from "../../utils";
 import { DataTable, ErrorMessage, Page } from "../../components";
-import { ColumnDataType, LookupSchema } from "../../types";
+import { ColumnDataType, EventType, LookupSchema } from "../../types";
 import { selectMessagesChanged } from "../../stores/selectors";
 import { updateMessageState } from "../../stores/slices";
 import { modals } from "@mantine/modals";
 import { StationsCell } from "./components";
-import { useLookup } from "../../hooks";
+import { useLookup, useSubscribeEvent } from "../../hooks";
 import { Row } from "@tanstack/react-table";
 import { ObjectId } from "../../schemas";
 
@@ -98,6 +98,10 @@ const Component: FC<ComponentProps> = ({ messages, loading, error, dataChanged }
   const onMessageEnableChange = (id: ObjectId, enabled: boolean) => {
     dispatch(updateMessageState({ id, enabled }));
   };
+
+  useSubscribeEvent(EventType.MessagesUpdated, () => {
+    fetchData();
+  });
 
   if (error) {
     return <ErrorMessage content={error} />;

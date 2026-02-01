@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { createExtData, deleteExtData, ExtDataRequest, fetchExtData } from "../../stores/thunks";
 import { DataTable, ErrorMessage, Page } from "../../components";
-import { ColumnDataType, FilterConfig, LookupSchema, PagingConfig, PagingInfo, SortingConfig } from "../../types";
+import { ColumnDataType, EventType, FilterConfig, LookupSchema, PagingConfig, PagingInfo, SortingConfig } from "../../types";
 import { usePageTranslation } from "../../utils";
 import { Column } from "@tanstack/react-table";
 import { Button, Group, Modal, Select, Stack, Switch, Text, Tooltip } from "@mantine/core";
@@ -12,7 +12,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { modals } from "@mantine/modals";
 import { DateTimePicker } from "@mantine/dates";
 import { PageHeaderButton, useHeaderContent } from "../../providers";
-import { useLookup, useRefreshKey } from "../../hooks";
+import { useLookup, useRefreshKey, useSubscribeEvent } from "../../hooks";
 import { ObjectId } from "../../schemas";
 
 type ComponentProps = {
@@ -130,12 +130,11 @@ const Component: FC<ComponentProps> = ({ extData, pagingInfo, loading, error }) 
       .unwrap()
       .then(() => {
         handleCloseModal();
-        refresh();
       })
       .catch((err) => {
         console.error('Failed to create ext data:', err);
       });
-  }, [formData.user_id, formData.grid_state, formData.received_at, dispatch, handleCloseModal, refresh]);
+  }, [formData.user_id, formData.grid_state, formData.received_at, dispatch, handleCloseModal]);
 
   const getUserName = useCallback((userId?: ObjectId): string => {
     return userLookup?.find(f => f.value === userId)?.text ?? 'unknown';
@@ -174,6 +173,10 @@ const Component: FC<ComponentProps> = ({ extData, pagingInfo, loading, error }) 
     setHeaderButtons(getHeaderButtons());
     return () => setHeaderButtons([]);
   }, [setHeaderButtons, getHeaderButtons]);
+
+  useSubscribeEvent(EventType.ExtDataUpdated, () => {
+    refresh();
+  });
 
   if (error) {
     return <ErrorMessage content={error} />;

@@ -7,13 +7,14 @@ import { cancelStationsEditing, fetchStations, saveStations } from "../../stores
 import { createSelector } from "@reduxjs/toolkit";
 import { updateStationBatteryCapacity, updateStationOrder, updateStationState } from "../../stores/slices";
 import { DataTable, ErrorMessage, Page } from "../../components";
-import { ColumnDataType } from "../../types";
+import { ColumnDataType, EventType } from "../../types";
 import { ActionIcon, Anchor, Button, Group, Text, Tooltip } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { openBatteryCapacityEditDialog } from "./components";
 import { usePageTranslation } from "../../utils";
 import { useNavigate } from "react-router-dom";
 import { ObjectId } from "../../schemas";
+import { useSubscribeEvent } from "../../hooks";
 
 
 type ComponentProps = {
@@ -60,6 +61,10 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
   }, [setHeaderButtons, getHeaderButtons, changed]);  
 
   const fetchData = useCallback(() => dispatch(fetchStations()), [dispatch]);
+
+  useSubscribeEvent(EventType.StationDataUpdated, () => {
+    fetchData();
+  });
 
   if (error) {
     return <ErrorMessage content={error} />;
