@@ -1,10 +1,12 @@
-import { FC, useEffect } from "react";
+import { FC, useCallback, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../stores/store";
 import { fetchVisitStats, postVisitStats } from "../../stores/thunks";
 import { Badge, Box, em } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMediaQuery } from "@mantine/hooks";
 import { useTranslation } from "react-i18next";
+import { useSubscribeEvents } from "../../hooks";
+import { EventItem, EventType } from "../../types";
 
 export const VisitTracker: FC = () => {
   const dispatch = useAppDispatch();
@@ -13,9 +15,13 @@ export const VisitTracker: FC = () => {
 
   const { t } = useTranslation('common');
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
     dispatch(fetchVisitStats())
   }, [dispatch]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   useEffect(() => {
     const GUID_KEY = "visitor_guid";
@@ -42,6 +48,12 @@ export const VisitTracker: FC = () => {
       dispatch(postVisitStats({ type: "daily", date: today }));
     }
   }, [dispatch]);
+
+  useSubscribeEvents((event: EventItem) => {
+    if (event.type === EventType.VisitsUpdated) {
+      fetchVisitStats();
+    }
+  });
 
   return (
     <Box fz='xs'>

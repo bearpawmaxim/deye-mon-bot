@@ -1,6 +1,7 @@
 export * from './authData';
 export * from './columnDataType';
 export * from './dateRange';
+export * from './eventItem';
 export * from './keyValuePair';
 export * from './numberRange';
 export * from './valueRange';
