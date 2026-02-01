@@ -3,7 +3,7 @@ from typing import Generic, List, TypeVar
 from beanie import Document, PydanticObjectId
 from beanie.odm.queries.find import FindMany
 
-from app.models import SortingConfig, ColumnDataType
+from app.models import SortingConfig, ColumnDataType, FilterConfig
 from ..interfaces import DataQuery
 
 
@@ -12,10 +12,19 @@ T = TypeVar('T', bound = Document)
 class FilterableRepository(ABC, Generic[T]):
     model: type[T]
 
-    def apply_filter(self, find_query, filters: list):
+    def apply_filter(
+        self,
+        find_query: FindMany[T],
+        filters: List[FilterConfig],
+    ):
         for filter_config in filters:
             field = getattr(self.model, filter_config.column, None)
             if field is None:
+                continue
+
+            method_name = f"{filter_config.column}_filter"
+            if hasattr(self, method_name):
+                find_query = getattr(self, method_name)(find_query, filter_config)
                 continue
 
             value = filter_config.value
@@ -50,9 +59,14 @@ class SortableRepository(ABC, Generic[T]):
         sorting: SortingConfig | None,
     ) -> FindMany[T]:
         if sorting:
-            sort_field = getattr(self.model, sorting.column)
-            sort_direction = -sort_field if sorting.order == "desc" else sort_field
-            find_query = find_query.sort(sort_direction)
+            method_name = f"{sorting.column}_sort"
+            if hasattr(self, method_name):
+                sort_method = getattr(self, method_name)
+                find_query = sort_method(find_query, sorting.order)
+            else:
+                sort_field = getattr(self.model, sorting.column)
+                sort_direction = -sort_field if sorting.order == "desc" else sort_field
+                find_query = find_query.sort(sort_direction)
         return find_query
 
 

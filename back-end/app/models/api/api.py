@@ -1,5 +1,5 @@
-from typing import Generic, TypeVar
-from pydantic import BaseModel
+from typing import Annotated, Generic, TypeVar
+from pydantic import BaseModel, Field
 
 from ..paging_config import PagingConfig, PagingInfo
 from ..filter_config import FilterConfig
@@ -25,12 +25,18 @@ class SortableRequest(BaseModel):
 
 
 class FilterableRequest(BaseModel):
-    filters: list[FilterConfig]
+    filters: list[
+        Annotated[
+            FilterConfig,
+            Field(discriminator="data_type"),
+        ]
+    ]
 
     model_config = {
         "populate_by_name": True,
         "from_attributes": True,
     }
+
 
 T = TypeVar("T")
 

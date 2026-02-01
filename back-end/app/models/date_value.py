@@ -1,27 +1,18 @@
 from datetime import datetime, time
-from pydantic_core import core_schema
+from pydantic import BaseModel
 
 
-class DateValue:
-    def __init__(self, value: datetime):
-        self.value = value
-
-    def __repr__(self) -> str:
-        return f"DateValue({self.value!r})"
+class DateValue(BaseModel):
+    value: datetime
 
     @classmethod
-    def _parse(cls, value: str) -> "DateValue":
+    def from_string(cls, value: str) -> "DateValue":
         try:
-            dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+            date = datetime.fromisoformat(value.replace("Z", "+00:00"))
+            return cls(value = date)
         except Exception as e:
             raise ValueError("Invalid datetime format") from e
 
-        return cls(dt)
-
-    @classmethod
-    def __get_pydantic_core_schema__(cls, _source, _handler):
-        return core_schema.no_info_plain_validator_function(cls._parse)
-    
     def to_mongo_query(self, field: str) -> dict:
         start_dt = datetime.combine(self.value.date(), time.min, tzinfo=self.value.tzinfo)
         end_dt = datetime.combine(self.value.date(), time.max, tzinfo=self.value.tzinfo)
