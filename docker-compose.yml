@@ -149,10 +149,9 @@ services:
       - web_network
     labels:
       io.hass.type: "addon"
+    stop_signal: SIGQUIT
     depends_on:
       deye-mon-bot-back-end:
-        condition: service_healthy
-      deye-mon-bot-sse-back-end:
         condition: service_healthy
 
 volumes:
