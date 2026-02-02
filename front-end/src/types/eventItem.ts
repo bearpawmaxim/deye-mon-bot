@@ -8,6 +8,7 @@ export enum EventType {
   MessagesUpdated = "messages_updated",
   ChatsUpdated = "chats_updated",
   Ping = "ping",
+  Shutdown = "shutdown",
 };
 
 export type EventItem = {

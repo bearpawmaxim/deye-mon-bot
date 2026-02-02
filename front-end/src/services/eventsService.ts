@@ -1,4 +1,4 @@
-import { EventItem } from "../types";
+import { EventItem, EventType } from "../types";
 
 type Listener = (event: EventItem) => void;
 
@@ -82,6 +82,10 @@ class EventsService {
     evt.onmessage = (e) => {
       try {
         const data: EventItem = JSON.parse(e.data);
+        if (data.type === EventType.Shutdown) {
+          console.info("[Events] disconnecting due to server shutdown");
+          this.disconnect();
+        }
         this.listeners.forEach(listener => listener(data));
       } catch (err) {
         console.error("[Events] error parsing message", err);

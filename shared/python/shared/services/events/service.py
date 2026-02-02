@@ -33,6 +33,16 @@ class EventsService:
             self.transport.start_subscriber(self._handle_incoming_event)
         )
 
+    async def request_shutdown(self):
+        shutdown_event = EventItem("shutdown", None, False)
+
+        for clients in (self._public_clients, self._private_clients):
+            for q in clients:
+                try:
+                    q.put_nowait(shutdown_event)
+                except Exception:
+                    pass
+
     async def shutdown(self):
         if hasattr(self.transport, "stop"):
             await self.transport.stop()

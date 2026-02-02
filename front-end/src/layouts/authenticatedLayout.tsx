@@ -14,9 +14,10 @@ import { ProfileData } from "../stores/types";
 import { fetchProfile } from "../stores/thunks";
 import { openProfileEditDialog } from "../dialogs";
 import { authDataSelector } from "../stores/selectors";
-import { AuthData } from "../types";
+import { AuthData, EventType } from "../types";
 import { logout } from "../stores/slices";
 import { useTranslation } from "react-i18next";
+import { useSubscribeEvent } from "../hooks";
 
 type ComponentProps = {
   authData: AuthData | null;
@@ -59,6 +60,12 @@ const Component: FC<ComponentProps> = ({ authData, profile }) => {
   const onProfileEditClick = () => {
     openProfileEditDialog(t);
   };
+
+  useSubscribeEvent(EventType.Shutdown, () => {
+    setTimeout(() => {
+      window.location.reload();
+    }, 5000);
+  });
 
   return (
     <AppShell

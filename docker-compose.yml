@@ -68,6 +68,8 @@ services:
         condition: service_completed_successfully
       deye-mon-bot-rds:
         condition: service_healthy
+    stop_signal: SIGINT
+    stop_grace_period: 15s
 
   deye-mon-bot-migrate:
     image: deye-mon-bot-api
@@ -113,6 +115,8 @@ services:
     depends_on:
       deye-mon-bot-rds:
         condition: service_healthy
+    stop_signal: SIGINT
+    stop_grace_period: 15s
 
   deye-mon-bot-grid-reporter:
     build:
