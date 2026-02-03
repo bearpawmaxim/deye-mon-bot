@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 import logging
 import sys
-import time
+from uvicorn.logging import DefaultFormatter
 from fastapi import FastAPI
 from app.settings import Settings
 from app.routes import register_routes
@@ -9,12 +9,13 @@ from shared.services import EventsService
 from shared.services.events.models import EventsServiceConfig
 from shared.utils.signals import register_chained_signal_handlers
 
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(DefaultFormatter("%(levelprefix)s %(message)s", use_colors=True))
+
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(message)s",
-    stream=sys.stdout
+    handlers=[handler]
 )
-logging.Formatter.converter = time.gmtime
 
 async def make_shutdown_handler(events: EventsService):
     async def shutdown(signum: int):

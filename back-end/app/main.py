@@ -1,7 +1,7 @@
 
 import logging
 import sys
-import time
+from uvicorn.logging import DefaultFormatter
 from fastapi import FastAPI
 
 from app.settings import Settings
@@ -9,12 +9,13 @@ from app.middlewares import LanguageMiddleware
 from .lifespan import lifespan
 
 
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(DefaultFormatter("%(levelprefix)s %(message)s", use_colors=True))
+
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(message)s",
-    stream=sys.stdout
+    handlers=[handler]
 )
-logging.Formatter.converter = time.gmtime
 
 
 def create_app(settings: Settings) -> FastAPI:
