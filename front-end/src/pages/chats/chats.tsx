@@ -6,8 +6,9 @@ import { approveChatRequest, disallowChat, fetchAllowedChats, fetchChatRequests,
 import { DataTable, ErrorMessage, Page } from "../../components";
 import { Title } from "@mantine/core";
 import { usePageTranslation } from "../../utils";
-import { ColumnDataType } from "../../types";
+import { ColumnDataType, EventType } from "../../types";
 import { ObjectId } from "../../schemas";
+import { useSubscribeEvent } from "../../hooks";
 
 type ComponentProps = {
   allowedChats: AllowedChatListItem[];
@@ -52,6 +53,11 @@ const Component: FC<ComponentProps> = ({ allowedChats, chatRequests, loading, er
   const disallowClick = (id: ObjectId) => {
     dispatch(disallowChat(id));
   }
+
+  useSubscribeEvent(EventType.ChatsUpdated, () => {
+    fetchChats();
+    fetchRequests();
+  });
 
   if (error) {
     return <ErrorMessage content={error} />;

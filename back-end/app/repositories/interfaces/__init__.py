@@ -1,3 +1,4 @@
+from .base import DataQuery
 from .users import IUsersRepository
 from .visits_counter import IVisitsCounterRepository
 from .messages import IMessagesRepository
@@ -10,7 +11,7 @@ from .ext_data import IExtDataRepository
 from .dashboard import IDashboardRepository
 
 
-__all__ = [IBotsRepository, IUsersRepository, IMessagesRepository, ILookupsRepository,
-           LookupDefinition, IStationsRepository, IStationsDataRepository,
-           IVisitsCounterRepository, IChatsRepository, IExtDataRepository,
-           IDashboardRepository]
+__all__ = [DataQuery, IBotsRepository, IUsersRepository, IMessagesRepository,
+           ILookupsRepository, LookupDefinition, IStationsRepository, 
+           IStationsDataRepository, IVisitsCounterRepository, IChatsRepository,
+           IExtDataRepository, IDashboardRepository]

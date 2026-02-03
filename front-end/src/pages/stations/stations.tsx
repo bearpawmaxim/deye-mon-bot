@@ -7,13 +7,14 @@ import { cancelStationsEditing, fetchStations, saveStations } from "../../stores
 import { createSelector } from "@reduxjs/toolkit";
 import { updateStationBatteryCapacity, updateStationOrder, updateStationState } from "../../stores/slices";
 import { DataTable, ErrorMessage, Page } from "../../components";
-import { ColumnDataType } from "../../types";
+import { ColumnDataType, EventType } from "../../types";
 import { ActionIcon, Anchor, Button, Group, Text, Tooltip } from "@mantine/core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { openBatteryCapacityEditDialog } from "./components";
 import { usePageTranslation } from "../../utils";
 import { useNavigate } from "react-router-dom";
 import { ObjectId } from "../../schemas";
+import { useSubscribeEvent } from "../../hooks";
 
 
 type ComponentProps = {
@@ -61,9 +62,9 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
 
   const fetchData = useCallback(() => dispatch(fetchStations()), [dispatch]);
 
-  useEffect(() => {
+  useSubscribeEvent(EventType.StationDataUpdated, () => {
     fetchData();
-  }, [fetchData]);
+  });
 
   if (error) {
     return <ErrorMessage content={error} />;
@@ -92,7 +93,7 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
       data={stations}
       fetchAction={fetchData}
       tableKey="stations"
-      manualSorting={true}
+      useSorting={false}
       columns={[
         {
           id: 'stationName',
@@ -124,7 +125,7 @@ const Component: FC<ComponentProps> = ({ stations, maxOrder, changed, loading, e
           id: 'lastUpdate',
           header: t('table.lastUpdated'),
           accessorKey: 'lastUpdateTime',
-          meta: {
+          meta: {  
             dataType: ColumnDataType.DateTime,
           },
         },

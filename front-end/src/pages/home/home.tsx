@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo } from "react"
+import { FC, useCallback, useEffect, useMemo } from "react"
 import { StationDataItem } from "../../stores/types";
 import { RootState, useAppDispatch } from "../../stores/store";
 import { StationChartCard } from "./components";
@@ -10,9 +10,10 @@ import useLocalStorage from "../../hooks/useLocalStorage";
 import { initGA, trackPageView } from "../../utils/analytics";
 import { usePageTranslation } from "../../utils";
 import { TFunction } from "i18next";
-import { DateRange } from "../../types";
+import { DateRange, EventType } from "../../types";
 import dayjs from "dayjs";
 import DateRangePicker from "../../components/dateRangePicker";
+import { useSubscribeEvent } from "../../hooks";
 
 type ComponentProps = {
   stationsData: Array<StationDataItem>;
@@ -48,14 +49,18 @@ const Component: FC<ComponentProps> = ({ stationsData, loading, error }) => {
   const intervalOptions = useMemo(() => buildIntervalOptions(t), [t]);
   const isCustomRange = useMemo(() => dataInterval === 'custom', [dataInterval]);
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
     const action = isCustomRange && customRange.from && customRange.to
       ? () => dispatch(fetchStationsData({ value: null, startDate: customRange.from!, endDate: customRange.to!, }))
       : () => dispatch(fetchStationsData({ value: parseInt(dataInterval), startDate: null, endDate: null, }));
     action();
-    const interval = setInterval(() => action, 30000);
+  }, [customRange.from, customRange.to, dataInterval, dispatch, isCustomRange]);
+
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(() => fetchData, 30000);
     return () => clearInterval(interval);
-  }, [dispatch, dataInterval, isCustomRange, customRange.from, customRange.to]);
+  }, [fetchData]);
 
   // Google Analytics
   useEffect(() => {
@@ -79,6 +84,10 @@ const Component: FC<ComponentProps> = ({ stationsData, loading, error }) => {
       setCustomRange(range);
     }
   };
+
+  useSubscribeEvent(EventType.StationDataUpdated, () => {
+    fetchData();
+  });
 
   if (error) {
     return <ErrorMessage content={error} />;

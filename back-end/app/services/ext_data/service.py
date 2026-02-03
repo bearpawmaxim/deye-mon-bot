@@ -6,9 +6,9 @@ from injector import inject
 from shared.models.ext_data import ExtData
 from shared.models.user import User
 from ..base import BaseService
-from app.models.api import ExtDataResponse
+from app.models.api import ExtDataItemResponse, ExtDataListRequest, ExtDataListResponse
 from shared.services.events.service import EventsService
-from app.repositories import IExtDataRepository, IUsersRepository
+from app.repositories import DataQuery, IExtDataRepository, IUsersRepository
 
 
 @inject
@@ -25,7 +25,7 @@ class ExtDataService(BaseService):
 
 
     def _process_ext_data(self, ext_data: ExtData):
-        return ExtDataResponse(
+        return ExtDataItemResponse(
             id          = ext_data.id,
             grid_state  = ext_data.grid_state,
             user_id     = ext_data.user_id,
@@ -59,13 +59,25 @@ class ExtDataService(BaseService):
         return None
 
 
-    async def get_ext_data(self) -> List[ExtDataResponse]:
-        ext_data = await self._ext_data.get_ext_data()
+    async def get_ext_data(self, request: ExtDataListRequest) -> ExtDataListResponse:
+        query = DataQuery(
+            filters = request.filters or [],
+            sorting = request.sorting,
+            paging  = request.paging,
+        )
+        ext_data, total = await self._ext_data.get_ext_data(query)
 
-        return [self._process_ext_data(ext_data_item) for ext_data_item in ext_data]
-    
+        return ExtDataListResponse(
+            data=[self._process_ext_data(item) for item in ext_data],
+            paging={
+                "page": request.paging.page,
+                "pageSize": request.paging.page_size,
+                "total": total,
+            }
+        )
 
-    async def get_by_id(self, ext_data_id: PydanticObjectId) -> ExtDataResponse:
+
+    async def get_by_id(self, ext_data_id: PydanticObjectId) -> ExtDataItemResponse:
         ext_data = await self._ext_data.get_ext_data_by_id(ext_data_id)
 
         if ext_data is None:

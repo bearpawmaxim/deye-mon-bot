@@ -1,3 +1,4 @@
+import asyncio
 import json
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.responses import StreamingResponse
@@ -44,14 +45,24 @@ def register(app: FastAPI, service: EventsService, settings: Settings):
                         break
 
                     if event.private and not is_auth:
-                        break
+                        continue
 
                     if user:
                         event.user = user
 
                     yield f"data: {json.dumps(event.to_dict())}\n\n"
 
+                    if event.type == "shutdown":
+                        await asyncio.sleep(0)
+                        break
             finally:
                 service.remove_client(q)
 
-        return StreamingResponse(event_generator(), media_type="text/event-stream")
+        return StreamingResponse(
+            event_generator(),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "X-Accel-Buffering": "no",
+            },
+        )

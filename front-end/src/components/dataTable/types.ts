@@ -29,6 +29,11 @@ declare module '@tanstack/react-table' {
       actions?: Array<ActionDefinition<TData>>;
     }
 
+  interface IdColumnMeta<TData extends RowData, TValue>
+    extends ColumnMeta<TData, TValue> {
+      dataType: ColumnDataType.Id;
+    }
+
   interface NumberColumnMetaFilterOptions<TData extends RowData, TValue> 
     extends ColumnMetaFilterOptions<TData, TValue> {
       min?: number;
@@ -55,6 +60,7 @@ declare module '@tanstack/react-table' {
     extends ColumnMeta<TData, TValue, ColumnMetaFilterOptions<TData, TValue>> {
       dataType: ColumnDataType.Boolean;
       readOnly?: boolean;
+      customRender?: boolean;
       checkedChange?: (row: TData, state: boolean) => void;
     }
 
@@ -63,7 +69,8 @@ declare module '@tanstack/react-table' {
     DateTimeColumnMeta<TData, TValue> |
     TextColumnMeta<TData, TValue> |
     NumberColumnMeta<TData, TValue> |
-    BooleanColumnMeta<TData, TValue>;
+    BooleanColumnMeta<TData, TValue> |
+    IdColumnMeta<TData, TValue>;
 }
 
 export type DataTableColumnDataType = ColumnDataType | 'actions';

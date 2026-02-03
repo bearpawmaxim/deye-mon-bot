@@ -1,3 +1,4 @@
+import asyncio
 import json
 from fastapi import FastAPI, Depends
 from fastapi_injector import Injected
@@ -31,14 +32,24 @@ def register(app: FastAPI):
                         break
 
                     if event.private and not is_auth:
-                        break
+                        continue
 
                     if user:
                         event.user = user
 
                     yield f"data: {json.dumps(event.to_dict())}\n\n"
-
+                    
+                    if event.type == "shutdown":
+                        await asyncio.sleep(0)
+                        break
             finally:
                 events.remove_client(q)
 
-        return StreamingResponse(event_generator(), media_type="text/event-stream")
+        return StreamingResponse(
+            event_generator(),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "X-Accel-Buffering": "no",
+            },
+        )

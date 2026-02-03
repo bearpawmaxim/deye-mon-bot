@@ -1,3 +1,6 @@
+import asyncio
+import os
+import signal
 from fastapi import FastAPI
 from injector import Injector
 from contextlib import asynccontextmanager
@@ -10,6 +13,7 @@ from app.services import AuthorizationService, BeanieInitializer, BotsService, T
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from shared.services.events.service import EventsService
+from shared.utils.signals import register_chained_signal_handlers
 
 
 async def create_user(settings: Settings, injector: Injector):
@@ -25,6 +29,10 @@ async def setup_bots(injector: Injector):
     for bot in bots:
         await telegram_service.add_bot(bot.id, bot.token, bot.hook_enabled)
 
+async def make_shutdown_handler(events: EventsService):
+    async def shutdown(signum: int):
+        await events.request_shutdown()
+    return shutdown
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -52,6 +60,10 @@ async def lifespan(app: FastAPI):
 
     await setup_bots(injector)
     await create_user(settings, injector)
+
+    register_chained_signal_handlers(
+        handler=await make_shutdown_handler(events)
+    )
 
     yield
 

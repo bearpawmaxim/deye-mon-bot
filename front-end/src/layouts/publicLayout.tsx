@@ -8,6 +8,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import iconDark from "../assets/icon_dark_with_text.png";
 import iconLight from "../assets/icon_light_with_text.png";
 import { usePageTranslation } from "../utils";
+import { useSubscribeEvent } from "../hooks";
+import { EventType } from "../types";
 
 type PublicLayoutProps = {
   children: ReactNode;
@@ -39,6 +41,12 @@ export const PublicLayout: FC<PublicLayoutProps> = ({ children }) => {
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, []);
+
+  useSubscribeEvent(EventType.Shutdown, () => {
+    setTimeout(() => {
+      window.location.reload();
+    }, 5000);
+  });
 
   const t = usePageTranslation('common');
 

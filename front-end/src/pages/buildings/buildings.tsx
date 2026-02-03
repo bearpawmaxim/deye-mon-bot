@@ -15,9 +15,10 @@ import { PageHeaderButton, useHeaderContent } from "../../providers";
 import { BuildingEditType } from "../../schemas";
 import { authDataSelector, createSelectEdittedBuildings } from "../../stores/selectors";
 import { initGA, trackPageView } from "../../utils/analytics";
-import { useLocalizedEffect } from "../../hooks";
+import { useLocalizedEffect, useSubscribeEvents } from "../../hooks";
 import { usePageTranslation } from "../../utils";
 import i18n from "../../i18n";
+import { EventItem, EventType } from "../../types";
 
 type ComponentProps = {
   loadingConfig: boolean;
@@ -88,8 +89,8 @@ const Component: FC<ComponentProps> = ({
     fetchData();
   }, [fetchData]);
 
-  const fetchSummary = useCallback(() => {
-    if (buildings && buildings.length > 0 && buildingsSummary.length === 0 && !buildngsSummaryError) {
+  const fetchSummary = useCallback((force: boolean = false) => {
+    if (buildings && buildings.length > 0 && buildingsSummary.length === 0 && !buildngsSummaryError || force) {
       const buildingIds = buildings.map(m => m.id!);
       dispatch(fetchBuildingsSummary(buildingIds));
     }
@@ -145,6 +146,24 @@ const Component: FC<ComponentProps> = ({
   const dashboardTitle = useMemo(() => {
     return dashboardConfig?.title[i18n.language] ?? dashboardConfig?.title['en'] ?? '<not set>'
   }, [dashboardConfig?.title]);
+
+  useSubscribeEvents((event: EventItem) => {
+    switch (event.type) {
+      case EventType.BuildingsUpdated:
+      case EventType.DashboardConfigUpdated:
+        fetchData();
+        fetchSummary(true);
+        fetchOutages();
+        break;
+      case EventType.ExtDataUpdated:
+      case EventType.StationDataUpdated:
+        fetchSummary(true);
+        break;
+      case EventType.OutagesUpdated:
+        fetchOutages();
+        break;
+    }
+  });
 
   return (
     <>

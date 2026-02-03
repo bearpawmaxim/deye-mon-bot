@@ -1,12 +1,17 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ExtDataItem, ExtDataState } from "../types";
 import { createExtData, deleteExtData, fetchExtData } from "../thunks";
-import { ObjectId } from "../../schemas";
+import { PageableResponse } from "../../types";
 
 const initialState: ExtDataState = {
-  extData: [],
+  items: [],
   loading: false,
   error: null,
+  paging: {
+    page: 0,
+    pageSize: 10,
+    total: 0,
+  },
 };
 
 export const extDataSlice = createSlice({
@@ -21,8 +26,9 @@ export const extDataSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchExtData.fulfilled, (state, action: PayloadAction<Array<ExtDataItem>>) => {
-        state.extData = action.payload;
+      .addCase(fetchExtData.fulfilled, (state, { payload }: PayloadAction<PageableResponse<ExtDataItem>>) => {
+        state.items = payload.data;
+        state.paging = payload.paging;
         state.loading = false;
       })
       .addCase(fetchExtData.rejected, (state, action: PayloadAction<unknown>) => {
@@ -44,8 +50,7 @@ export const extDataSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(deleteExtData.fulfilled, (state, action: PayloadAction<ObjectId>) => {
-        state.extData = state.extData.filter(item => item.id !== action.payload);
+      .addCase(deleteExtData.fulfilled, (state) => {
         state.loading = false;
       })
       .addCase(deleteExtData.rejected, (state, action: PayloadAction<unknown>) => {
@@ -56,4 +61,3 @@ export const extDataSlice = createSlice({
 });
 
 export const extDataReducer = extDataSlice.reducer;
-
