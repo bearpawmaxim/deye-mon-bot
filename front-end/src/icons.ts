@@ -56,6 +56,8 @@ import {
   faArrowTrendUp,
   faPause,
   faPlug,
+  faChevronLeft,
+  faChevronRight,
 } from '@fortawesome/free-solid-svg-icons';
 
 library.add([
@@ -84,6 +86,8 @@ library.add([
   faSave,
   faCancel,
   faCheck,
+  faChevronLeft,
+  faChevronRight,
   faBuilding,
   faExclamationCircle,
   faSearch,

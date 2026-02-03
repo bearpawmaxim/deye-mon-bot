@@ -74,7 +74,7 @@
     "outagesScheduleQueueRequired": "Черга розкладу відключень є обов'язковою."
   },
   "powerLogs": {
-    "dialogTitle": "Статистика мережі: {{name}}",
+    "dialogTitle": "Статистика мережі",
     "customFilterTitle": "Довільний",
     "totalGridOnTitle": "Всього наявності",
     "totalGridOffTitle": "Всього відсутності",
