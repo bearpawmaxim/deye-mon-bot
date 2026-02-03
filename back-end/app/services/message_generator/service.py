@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta, timezone
 from typing import List
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -18,13 +19,16 @@ from .requests import (
 from .template_method import TemplateMethod, TemplateMethodMode
 
 
+logger = logging.getLogger(__name__)
+
+
 @inject
 class MessageGeneratorService(IMessageGeneratorService):
     def _try_get_timezone(self, timezone: str):
         try:
             return ZoneInfo(timezone)
         except ZoneInfoNotFoundError:
-            print(f'Cannot get timezone {timezone}, falling back to UTC')
+            logger.warning(f'Cannot get timezone {timezone}, falling back to UTC')
             return ZoneInfo('utc')
 
     def __init__(
@@ -121,12 +125,12 @@ class MessageGeneratorService(IMessageGeneratorService):
         stations = sorted(message.stations, key=lambda s: s.order)
 
         if not any(station.enabled for station in stations):
-            print(f"All stations for message '{message.name}' are disabled")
+            logger.info(f"All stations for message '{message.name}' are disabled")
             return None
 
         message_station = await self._populate_stations_data(template_data, stations, force)
         if len(stations) == 1 and message_station is None:
-            print(f"The station for message '{message.name}' is disabled")
+            logger.info(f"The station for message '{message.name}' is disabled")
             return None
 
         context = TemplateRequestContext()
