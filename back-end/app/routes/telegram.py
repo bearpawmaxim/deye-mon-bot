@@ -1,7 +1,11 @@
+import logging
 from beanie import PydanticObjectId
 from fastapi import FastAPI, Request
 from fastapi_injector import Injected
 from app.services import MessageProcessorService
+
+
+logger = logging.getLogger(__name__)
 
 
 def register(app: FastAPI):
@@ -21,6 +25,6 @@ def register(app: FastAPI):
             data = await request.json()
             await message_processor.handle_incoming_message(bot_id, data)
         except Exception as e:
-            print(f"Error processing request: {e}")
+            logger.error(f"Error processing request: {e}")
         finally:
             return {"ok": True}

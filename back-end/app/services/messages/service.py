@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from contextlib import redirect_stdout
 from datetime import datetime
 import io
@@ -20,6 +21,9 @@ from shared.services.events.service import EventsService
 from ..telegram import TelegramService
 from ..base import BaseService
 from ..interfaces import IMessageGeneratorService
+
+
+logger = logging.getLogger(__name__)
 
 
 @inject
@@ -44,7 +48,7 @@ class MessagesService(BaseService):
             bot_info = await self._telegram.get_bot_info(bot_id)
             return bot_info.username
         except:
-            print(f'Cannot get bot info for bot {bot_id}')
+            logger.error(f'Cannot get bot info for bot {bot_id}')
             return 'Invalid bot identifier'
 
 
@@ -53,7 +57,7 @@ class MessagesService(BaseService):
             chat_info = await self._telegram.get_chat_info(channel_id, bot_id)
             return chat_info.title
         except:
-            print(f'Cannot get channel info for channel {channel_id}')
+            logger.error(f'Cannot get channel info for channel {channel_id}')
             return 'Invalid channel identifier'
 
 

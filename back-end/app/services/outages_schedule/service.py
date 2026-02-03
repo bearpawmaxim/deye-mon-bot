@@ -1,3 +1,4 @@
+import logging
 from injector import inject
 from pydantic import ValidationError
 from datetime import datetime, timezone
@@ -6,6 +7,9 @@ import aiohttp
 from app.services.base import BaseService
 from shared.services.events.service import EventsService
 from .models import SchedulesResponse, DayStatus
+
+
+logger = logging.getLogger(__name__)
 
 
 @inject
@@ -35,7 +39,7 @@ class OutagesScheduleService(BaseService):
         try:
             async with self._session.get(yasno_url, headers=headers, timeout=10) as resp:
                 if resp.status != 200:
-                    print(f"Failed to fetch YASNO data. Status: {resp.status}")
+                    logger.warning(f"Failed to fetch YASNO data. Status: {resp.status}")
                     return None
 
                 data = await resp.json()
@@ -69,21 +73,21 @@ class OutagesScheduleService(BaseService):
             await self.broadcast_public("outages_updated")
 
         except aiohttp.ClientConnectionError as e:
-            print(f"YASNO connection error: {e}")
+            logger.error(f"YASNO connection error: {e}")
             return None
 
         except aiohttp.ClientTimeout:
-            print("Timeout while requesting YASNO API")
+            logger.error("Timeout while requesting YASNO API")
             return None
 
         except aiohttp.ClientError as e:
-            print(f"YASNO request error: {e}")
+            logger.error(f"YASNO request error: {e}")
             return None
 
         except ValidationError as ve:
-            print(f"Validation error: {ve}")
+            logger.error(f"Validation error: {ve}")
             return None
 
         except Exception as e:
-            print(f"Internal error in outage schedule update: {e}")
+            logger.error(f"Internal error in outage schedule update: {e}")
             return None

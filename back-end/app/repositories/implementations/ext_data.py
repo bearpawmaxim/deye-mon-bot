@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta, timezone
 from typing import List, Literal
 from beanie import PydanticObjectId
@@ -8,6 +9,9 @@ from shared.models.ext_data import ExtData
 from app.models.sorting_config import SortingConfig
 from ..interfaces import DataQuery
 from ..interfaces.ext_data import IExtDataRepository
+
+
+logger = logging.getLogger(__name__)
 
 
 class ExtDataRepository(IExtDataRepository, BaseReadRepository[ExtData]):
@@ -104,12 +108,12 @@ class ExtDataRepository(IExtDataRepository, BaseReadRepository[ExtData]):
             ).limit(1).to_list()
             return docs[0] if docs else None
         except Exception as e:
-            print(f'Error getting last ext data before date: {e}')
+            logger.error(f'Error getting last ext data before date: {e}')
             return None
 
     async def delete_old_data(self, keep_days: int):
         timeout = datetime.now(timezone.utc) - timedelta(days = keep_days)
-        print(f"removing ext data older than {timeout}")
+        logger.info(f"removing ext data older than {timeout}")
 
         await ExtData.find(
             ExtData.received_at < timeout

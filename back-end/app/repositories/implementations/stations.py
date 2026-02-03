@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timezone
 import traceback
 from typing import List
@@ -7,6 +8,9 @@ from beanie import PydanticObjectId
 from ..interfaces.stations import IStationsRepository
 from shared.models.station import Station
 from app.models.deye import DeyeStation
+
+
+logger = logging.getLogger(__name__)
 
 
 class StationsRepository(IStationsRepository):
@@ -81,5 +85,4 @@ class StationsRepository(IStationsRepository):
                 await existing_station.save()
 
         except Exception as e:
-            print(f"Error inserting station:")
-            traceback.print_exc()
+            logger.error(f"Error inserting station:", exc_info=True)

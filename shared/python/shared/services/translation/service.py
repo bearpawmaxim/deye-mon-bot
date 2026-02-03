@@ -1,8 +1,12 @@
 import json
+import logging
 from pathlib import Path
 from typing import Dict, Any
 
 from shared import current_language
+
+
+logger = logging.getLogger(__name__)
 
 
 class TranslationService:
@@ -20,7 +24,7 @@ class TranslationService:
             self.i18n[lang] = {}
 
             for file in lang_dir.glob("*.json"):
-                print(f"Loading translations: {lang}/{file.name}")
+                logger.info(f"Loading translations: {lang}/{file.name}")
                 namespace = file.stem
                 self.i18n[lang][namespace] = json.loads(
                     file.read_text(encoding="utf-8")
