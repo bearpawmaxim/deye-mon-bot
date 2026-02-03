@@ -1,3 +1,4 @@
+import logging
 from typing import List
 from injector import inject
 
@@ -8,6 +9,9 @@ from app.settings import Settings
 from shared.utils.key_generation import generate_api_token, generate_password_reset_token
 from shared.utils.jwt_utils import create_access_token
 from ..base import BaseService
+
+
+logger = logging.getLogger(__name__)
 
 
 @inject
@@ -55,14 +59,14 @@ class UsersService(BaseService):
             )
             return str(user.id), None
         except Exception as e:
-            print(f"Error updating user: {e}")
+            logger.error(f"Error updating user: {e}")
             return None, None
 
     async def delete_user(self, user_id: str):
         try:
             return await self._users_repository.delete_user(user_id)
         except Exception as e:
-            print(f"Error deleting user: {e}")
+            logger.error(f"Error deleting user: {e}")
             return False
 
     async def create_reporter_token(self, user_id: str) -> str:

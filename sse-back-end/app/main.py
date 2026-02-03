@@ -1,10 +1,21 @@
 from contextlib import asynccontextmanager
+import logging
+import sys
+from uvicorn.logging import DefaultFormatter
 from fastapi import FastAPI
 from app.settings import Settings
 from app.routes import register_routes
 from shared.services import EventsService
 from shared.services.events.models import EventsServiceConfig
 from shared.utils.signals import register_chained_signal_handlers
+
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(DefaultFormatter("%(levelprefix)s %(message)s", use_colors=True))
+
+logging.basicConfig(
+    level=logging.INFO,
+    handlers=[handler]
+)
 
 async def make_shutdown_handler(events: EventsService):
     async def shutdown(signum: int):
@@ -25,8 +36,8 @@ async def lifespan(app: FastAPI):
 
 def create_app(settings: Settings = None):
     app = FastAPI(
-        title = "Deye Monitor Bot SSE",
-        version = "1.0.0",
+        title = "SvitloPower SSE",
+        version = "1.1.6",
         debug = settings.DEBUG,
         lifespan = lifespan,
     )

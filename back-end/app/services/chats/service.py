@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from typing import List
 from beanie import PydanticObjectId
 from injector import inject
@@ -10,6 +11,9 @@ from shared.models.chat_request import ChatRequest
 from shared.services.events.service import EventsService
 from ..base import BaseService
 from ..telegram import TelegramService
+
+
+logger = logging.getLogger(__name__)
 
 
 @inject
@@ -29,7 +33,7 @@ class ChatsService(BaseService):
             bot_info = await self._telegram.get_bot_info(bot_id)
             return bot_info.username
         except:
-            print(f"Cannot get bot info for bot {bot_id}")
+            logger.error(f"Cannot get bot info for bot {bot_id}")
             return "Invalid bot identifier"
 
     async def _get_chat_name(self, chat_id: str, bot_id: str):
@@ -37,7 +41,7 @@ class ChatsService(BaseService):
             chat_info = await self._telegram.get_chat_info(chat_id, bot_id)
             return chat_info.username if chat_info.username is not None else chat_info.title
         except:
-            print(f"Cannot get chat info for chat {chat_id}")
+            logger.error(f"Cannot get chat info for chat {chat_id}")
             return "Invalid chat identifier"
 
     async def _get_chat_and_bot_names(self, chat_id: str, bot_id: PydanticObjectId) -> tuple[str, str]:

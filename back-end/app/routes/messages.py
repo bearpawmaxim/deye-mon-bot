@@ -1,3 +1,4 @@
+import logging
 from typing import List
 from beanie import PydanticObjectId
 from fastapi import FastAPI, Depends, HTTPException, Body
@@ -19,6 +20,9 @@ from app.services import (
 from app.utils.jwt_dependencies import jwt_required
 
 
+logger = logging.getLogger(__name__)
+
+
 def register(app: FastAPI):
 
     def _get_channel_name(telegram: TelegramService, channel_id: str, bot_id: str):
@@ -26,7 +30,7 @@ def register(app: FastAPI):
             chat_info = telegram.get_chat_info(channel_id, bot_id)
             return chat_info.title
         except Exception as e:
-            print(f'Cannot get channel info for channel {channel_id}: {str(e)}')
+            logger.error(f'Cannot get channel info for channel {channel_id}: {str(e)}')
             return 'Invalid channel identifier'
 
 

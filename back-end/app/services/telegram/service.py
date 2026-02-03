@@ -1,9 +1,13 @@
+import logging
 from beanie import PydanticObjectId
 from injector import inject
 import aiohttp
 from aiohttp import ClientSession
 
 from .models import TelegramChatInfo, TelegramConfig, TelegramUserInfo
+
+
+logger = logging.getLogger(__name__)
 
 
 @inject
@@ -45,9 +49,9 @@ class TelegramService:
                 js = await resp.json()
                 return js.get("ok") and js.get("result")
         except aiohttp.ClientResponseError as err:
-            print(f"HTTP error occurred during webhook registration: {err}")
+            logger.error(f"HTTP error occurred during webhook registration: {err}")
         except Exception as err:
-            print(f"Other error during webhook registration: {err}")
+            logger.error(f"Other error during webhook registration: {err}")
         return None
 
     async def unregister_hook(self, bot_token: str):
@@ -59,9 +63,9 @@ class TelegramService:
                 js = await resp.json()
                 return js.get("ok") and js.get("result")
         except aiohttp.ClientResponseError as err:
-            print(f"HTTP error occurred during webhook removal: {err}")
+            logger.error(f"HTTP error occurred during webhook removal: {err}")
         except Exception as err:
-            print(f"Other error during webhook removal: {err}")
+            logger.error(f"Other error during webhook removal: {err}")
         return None
 
     async def send_message(self, bot_id: PydanticObjectId, chat_id, text: str):
@@ -78,9 +82,9 @@ class TelegramService:
             async with self._session.post(url, data=data) as resp:
                 resp.raise_for_status()
         except aiohttp.ClientResponseError as err:
-            print(f"HTTP error occurred while sending the message: {err}")
+            logger.error(f"HTTP error occurred while sending the message: {err}")
         except Exception as err:
-            print(f"Other error while sending the message: {err}")
+            logger.error(f"Other error while sending the message: {err}")
             return None
 
     async def get_bot_info(self, bot_id: PydanticObjectId):
@@ -95,9 +99,9 @@ class TelegramService:
             if js.get("ok") and js.get("result"):
                 return TelegramUserInfo.from_json(js["result"])
         except aiohttp.ClientResponseError as err:
-            print(f"HTTP error occurred during bot info retrieval: {err}")
+            logger.error(f"HTTP error occurred during bot info retrieval: {err}")
         except Exception as err:
-            print(f"Other error during bot info retrieval: {err}")
+            logger.error(f"Other error during bot info retrieval: {err}")
         return None
 
     async def get_chat_info(self, chat_id, bot_id: PydanticObjectId):
@@ -114,7 +118,7 @@ class TelegramService:
             if js.get("ok") and js.get("result"):
                 return TelegramChatInfo.from_json(js["result"])
         except aiohttp.ClientResponseError as err:
-            print(f"HTTP error occurred during chat info retrieval: {err}")
+            logger.error(f"HTTP error occurred during chat info retrieval: {err}")
         except Exception as err:
-            print(f"Other error during chat info retrieval: {err}")
+            logger.error(f"Other error during chat info retrieval: {err}")
         return None

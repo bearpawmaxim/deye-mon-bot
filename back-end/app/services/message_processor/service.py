@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timezone
 from beanie import PydanticObjectId
 from injector import inject
@@ -7,6 +8,9 @@ from ..interfaces import IMessageGeneratorService
 from ..telegram import TelegramService
 from shared.services.events.service import EventsService
 from ..base import BaseService
+
+
+logger = logging.getLogger(__name__)
 
 
 @inject
@@ -34,7 +38,7 @@ class MessageProcessorService(BaseService):
             await self._messages.set_last_sent(message.id)
             message.last_sent_time = datetime.now(timezone.utc)
         except Exception as e:
-            print(f"Error sending message: {e}")
+            logger.error(f"Error sending message: {e}")
 
 
     async def periodic_send(self):
@@ -48,14 +52,14 @@ class MessageProcessorService(BaseService):
                 if info.should_send and info.next_send_time <= datetime.now(timezone.utc):
                     await self._send_message(message, info.message)
             except Exception as e:
-                print(f"Error sending message '{message.name}': {e}")
+                logger.error(f"Error sending message '{message.name}': {e}")
 
 
     async def handle_incoming_message(self, bot_id: PydanticObjectId, message):
         if 'message' in message:
             chat_id = message["message"]["chat"]["id"]
             if not (await self._bots.get_is_hook_enabled(bot_id)):
-                print(f'hook processing is disabled for bot {bot_id}')
+                logger.info(f'hook processing is disabled for bot {bot_id}')
                 return
             if (await self._chats.get_is_chat_allowed(chat_id, bot_id)):
                 text = message['message']['text']
@@ -63,4 +67,4 @@ class MessageProcessorService(BaseService):
             else:
                 await self._chats.add_chat_request(chat_id, bot_id)
                 self.broadcast_private("chats_updated")
-                print(f'request from not allowed chat {chat_id}')
+                logger.warning(f'request from not allowed chat {chat_id}')

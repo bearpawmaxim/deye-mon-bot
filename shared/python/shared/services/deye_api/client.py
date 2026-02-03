@@ -1,8 +1,12 @@
 import hashlib
+import logging
 from dataclasses import dataclass
 from typing import Any
 import aiohttp
 from aiohttp import ClientSession
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -47,7 +51,7 @@ class BaseDeyeClient:
                 data = await resp.json()
                 return data.get("accessToken")
         except Exception as ex:
-            print(f"Failed to get token: {ex}")
+            logger.error(f"Failed to get token: {ex}")
             return None
 
     async def refresh_token(self):

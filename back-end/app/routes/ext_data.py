@@ -1,9 +1,13 @@
+import logging
 from beanie import PydanticObjectId
 from fastapi import Body, FastAPI, Depends, HTTPException, Path, status
 from fastapi_injector import Injected
 from app.models.api import GridPowerRequest, ExtDataCreateRequest, ExtDataListRequest
 from app.services import ExtDataService
 from app.utils.jwt_dependencies import jwt_reporter_only, jwt_required
+
+
+logger = logging.getLogger(__name__)
 
 
 def register(app: FastAPI):
@@ -39,7 +43,7 @@ def register(app: FastAPI):
             return {"status": "ok"}
 
         except Exception as e:
-            print(f"Error updating grid power: {e}")
+            logger.error(f"Error updating grid power: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Internal server error"
@@ -66,7 +70,7 @@ def register(app: FastAPI):
 
             return { "status": "ok", "id": data_id }
         except Exception as e:
-            print(f"Error creating ext data: {e}")
+            logger.error(f"Error creating ext data: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Internal server error",
@@ -91,7 +95,7 @@ def register(app: FastAPI):
             return {"status": "ok"}
 
         except Exception as e:
-            print(f"Error deleting ext data: {e}")
+            logger.error(f"Error deleting ext data: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Internal server error",
@@ -123,7 +127,7 @@ def register(app: FastAPI):
             return result
 
         except Exception as e:
-            print(f"Error getting ext data by id: {e}")
+            logger.error(f"Error getting ext data by id: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Internal server error",

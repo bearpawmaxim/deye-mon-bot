@@ -1,6 +1,10 @@
 import os
+import logging
 from importlib import import_module
 import inspect
+
+
+logger = logging.getLogger(__name__)
 
 
 def load_and_register_modules(base_path: str, package: str, register_method: str, *args, **kwargs):
@@ -14,7 +18,7 @@ def load_and_register_modules(base_path: str, package: str, register_method: str
             module = import_module(f'{package}.{module_name}')
 
             if not hasattr(module, register_method):
-                print(f'no attr {register_method} in {module_name}')
+                logger.warning(f'no attr {register_method} in {module_name}')
                 continue
 
             func = getattr(module, register_method)
@@ -36,4 +40,4 @@ def load_and_register_modules(base_path: str, package: str, register_method: str
             func(*accepted_positional, **accepted_kwargs)
 
         except Exception as e:
-            print(f"Error in {module_name}: {e}")
+            logger.error(f"Error in {module_name}: {e}")

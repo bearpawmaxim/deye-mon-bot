@@ -1,9 +1,13 @@
+import logging
 from injector import inject
 from aiohttp import ClientSession
 
 from shared.services.deye_api import BaseDeyeClient, DeyeCredentials
 from app.models.deye import DeyeStationList, DeyeStationData
 from .models import DeyeConfig
+
+
+logger = logging.getLogger(__name__)
 
 
 @inject
@@ -30,13 +34,13 @@ class DeyeApiService:
     async def get_station_list(self) -> DeyeStationList | None:
         data = await self._client.get_station_list()
         if data is None or not data.get("success", False):
-            print(f"API error: {data.get('msg') if data else 'No data'}")
+            logger.error(f"API error: {data.get('msg') if data else 'No data'}")
             return None
         return DeyeStationList.model_validate(data)
 
     async def get_station_data(self, station_id: int) -> DeyeStationData | None:
         data = await self._client.get_station_data(station_id)
         if data is None or not data.get("success", False):
-            print(f"API error: {data.get('msg') if data else 'No data'}")
+            logger.error(f"API error: {data.get('msg') if data else 'No data'}")
             return None
         return DeyeStationData.model_validate(data)

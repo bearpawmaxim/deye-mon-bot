@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timezone
 from typing import List
 
@@ -8,6 +9,9 @@ from shared.models.station import Station
 
 from ..interfaces.messages import IMessagesRepository
 from shared.models.message import Message
+
+
+logger = logging.getLogger(__name__)
 
 
 class MessagesRepository(IMessagesRepository):
@@ -39,7 +43,7 @@ class MessagesRepository(IMessagesRepository):
             if hasattr(message, key):
                 setattr(message, key, value)
             else:
-                print(f"No attr {key} in Message")
+                logger.warning(f"No attr {key} in Message")
 
         return await message.insert()
 
@@ -57,7 +61,7 @@ class MessagesRepository(IMessagesRepository):
             if hasattr(message, key):
                 setattr(message, key, value)
             else:
-                print(f"No attr {key} in Message")
+                logger.warning(f"No attr {key} in Message")
         await message.save()
         return message
 

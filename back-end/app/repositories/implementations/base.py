@@ -1,3 +1,4 @@
+import logging
 from abc import ABC
 from typing import Generic, List, TypeVar
 from beanie import Document, PydanticObjectId
@@ -5,6 +6,10 @@ from pymongo import ASCENDING, DESCENDING
 
 from app.models import SortingConfig, ColumnDataType, FilterConfig
 from ..interfaces import DataQuery
+
+
+logger = logging.getLogger(__name__)
+
 
 T = TypeVar("T", bound=Document)
 
@@ -72,8 +77,6 @@ class PageableRepository(ABC, Generic[T]):
                 }
             }
         ]
-
-        print(facet_pipeline.__str__().replace('\'', '"'))
 
         result = await self.model.aggregate(facet_pipeline).to_list()
 

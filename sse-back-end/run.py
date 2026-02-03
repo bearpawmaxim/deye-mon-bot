@@ -9,8 +9,6 @@ settings: Settings = get_settings()
 
 app: FastAPI = create_app(settings)
 
-print(settings.model_dump())
-
 if __name__ == "__main__":
     uvicorn.run(
         "run:app",

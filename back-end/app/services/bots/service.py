@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from typing import List
 from beanie import PydanticObjectId
 from injector import inject
@@ -9,6 +10,9 @@ from app.models.api import BotResponse, CreateBotRequest, UpdateBotRequest
 from shared.models.bot import Bot
 from shared.services import EventsService
 from app.services.base import BaseService
+
+
+logger = logging.getLogger(__name__)
 
 
 @inject
@@ -37,7 +41,7 @@ class BotsService(BaseService):
             try:
                 bot_name = (await self._telegram.get_bot_info(bot.id)).username
             except Exception as e:
-                print(f"Cannot get bot info for bot {bot.id}: {str(e)}")
+                logger.error(f"Cannot get bot info for bot {bot.id}: {str(e)}")
             return BotResponse(
                 id           = bot.id,
                 name         = bot_name,
@@ -59,7 +63,7 @@ class BotsService(BaseService):
 
 
     async def create_bot(self, dto: CreateBotRequest):
-        print(dto.model_dump())
+        logger.debug(dto.model_dump())
         bot = await self._bots.create_bot(dto.model_dump())
         if bot.enabled:
             await self._telegram.add_bot(bot.id, bot.token, bot.hook_enabled)

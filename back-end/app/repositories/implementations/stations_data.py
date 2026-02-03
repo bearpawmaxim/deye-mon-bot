@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta, timezone
 import traceback
 from typing import List, Optional, get_origin, get_args
@@ -10,6 +11,9 @@ from app.models import AssumedStationStatus, StationStatisticData
 from ..interfaces.stations_data import IStationsDataRepository
 from shared.models import Station, StationData
 from app.models.deye import DeyeStationData
+
+
+logger = logging.getLogger(__name__)
 
 
 @inject
@@ -49,8 +53,7 @@ class StationsDataRepository(IStationsDataRepository):
                 )
                 await new_record.insert()
         except Exception as e:
-            print(f"Error updating station data:")
-            traceback.print_exc()
+            logger.error(f"Error updating station data:", exc_info=True)
 
     async def get_full_station_data(self, station_id: PydanticObjectId, last_seconds: int) -> List[StationData]:
         try:
@@ -65,7 +68,7 @@ class StationsDataRepository(IStationsDataRepository):
             )
             return stations
         except Exception as e:
-            print(f"Error fetching station data: {e}")
+            logger.error(f"Error fetching station data: {e}")
             return []
         
     async def get_full_station_data_range(
@@ -98,7 +101,7 @@ class StationsDataRepository(IStationsDataRepository):
             return stations
 
         except Exception as e:
-            print(f"Error fetching station data range: {e}")
+            logger.error(f"Error fetching station data range: {e}")
             return []
 
 
@@ -199,12 +202,12 @@ class StationsDataRepository(IStationsDataRepository):
             return StationStatisticData(previous, current)
 
         except Exception as e:
-            print(f"Error fetching station data tuple: {e}")
+            logger.error(f"Error fetching station data tuple: {e}")
             return None
 
     async def delete_old_data(self, keep_days: int):
         timeout = datetime.now(timezone.utc) - timedelta(days = keep_days)
-        print(f"removing stations data older than {timeout}")
+        logger.info(f"removing stations data older than {timeout}")
 
         await StationData.find(
             StationData.last_update_time < timeout

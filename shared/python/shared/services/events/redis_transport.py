@@ -1,9 +1,13 @@
 import json
 import asyncio
+import logging
 from redis.asyncio import Redis, ConnectionError, TimeoutError
 
 from .events_transport import EventsTransport
 from .models import EventItem
+
+
+logger = logging.getLogger(__name__)
 
 
 class RedisTransport(EventsTransport):
@@ -62,7 +66,7 @@ class RedisTransport(EventsTransport):
                 raise ConnectionError("Redis pubsub listener ended unexpectedly")
 
             except (ConnectionError, TimeoutError) as e:
-                print(f"[RedisTransport] Lost connection: {e}. Reconnecting in {backoff:.1f}s...")
+                logger.warning(f"[RedisTransport] Lost connection: {e}. Reconnecting in {backoff:.1f}s...")
 
                 await asyncio.sleep(backoff)
 
@@ -71,7 +75,7 @@ class RedisTransport(EventsTransport):
                 backoff = min(backoff * 2, 10)
 
             except Exception as e:
-                print(f"[RedisTransport] Subscriber error: {e}. Recovering in 1s...")
+                logger.error(f"[RedisTransport] Subscriber error: {e}. Recovering in 1s...")
                 await asyncio.sleep(1)
                 backoff = 1
 
