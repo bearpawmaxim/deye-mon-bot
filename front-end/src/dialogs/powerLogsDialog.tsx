@@ -12,6 +12,7 @@ import { formatDateTime, formatDuration, getThisWeekDates } from "../utils";
 import DateRangePicker from "../components/dateRangePicker";
 import { DateRange } from "../types";
 import i18n from "../i18n";
+import { useMediaQuery } from "@mantine/hooks";
 
 
 type OpenPowerLogsDialogOptions = {
@@ -90,6 +91,7 @@ export function openPowerLogsDialog({ buildingId: initialBuildingId, buildingNam
     const dispatch = useAppDispatch();
     const { loading, error, data } = useAppSelector(state => state.powerLogs);
     const buildings = useAppSelector(state => state.buildings.items);
+    const isMobile = useMediaQuery('(max-width: 48em)');
 
     const { colorScheme } = useMantineColorScheme();
     const [dateFilter, setDateFilter] = useState<DateFilter>('today');
@@ -189,6 +191,14 @@ export function openPowerLogsDialog({ buildingId: initialBuildingId, buildingNam
       };
     }, [paddedPeriods, dateFilter, currentTime]);
 
+    const formatLogTime = useCallback((dateStr: string) => {
+      const full = formatDateTime(dateStr);
+      if (isMobile && (dateFilter === 'today' || dateFilter === 'yesterday')) {
+        return full.split(' ')[1] || full;
+      }
+      return full;
+    }, [isMobile, dateFilter]);
+
     const rows = useMemo(() => {
       if (!paddedPeriods.length) {
         return [];
@@ -209,19 +219,19 @@ export function openPowerLogsDialog({ buildingId: initialBuildingId, buildingNam
 
         return (
           <Table.Tr key={index} bg={bgColor}>
-            <Table.Td>{formatDateTime(period.startTime)}</Table.Td>
+            <Table.Td>{formatLogTime(period.startTime)}</Table.Td>
             <Table.Td>
               {isOngoing ? (
                 <Group gap="xs" wrap="nowrap">
-                  <Text fw={600} style={{ animation: 'fadeIn 0.5s ease-in' }}>
-                    {formatDateTime(currentTime.toISOString())}
+                  <Text fw={600} style={{ animation: 'fadeIn 0.5s ease-in' }} fz={isMobile ? 'xs' : undefined}>
+                    {formatLogTime(currentTime.toISOString())}
                   </Text>
                   <Text c={textColor} fw={700} style={{ animation: 'pulse 2s ease-in-out infinite', fontSize: '1.2em' }}>
                     ●
                   </Text>
                 </Group>
               ) : (
-                <Text>{formatDateTime(period.endTime)}</Text>
+                <Text fz={isMobile ? 'xs' : undefined}>{formatLogTime(period.endTime)}</Text>
               )}
             </Table.Td>
             <Table.Td>
@@ -234,10 +244,12 @@ export function openPowerLogsDialog({ buildingId: initialBuildingId, buildingNam
                     <FontAwesomeIcon icon="slash" color={textColor} />
                   </span>
                 )}
-                <Text fw={600} c={textColor}>
-                  {period.isAvailable ? t('powerLogs.table.gridOnState') : t('powerLogs.table.gridOffState')}
-                  {isOngoing && ` (${t('time.now').toLocaleLowerCase()})`}
-                </Text>
+                {!isMobile && (
+                  <Text fw={600} c={textColor}>
+                    {period.isAvailable ? t('powerLogs.table.gridOnState') : t('powerLogs.table.gridOffState')}
+                    {isOngoing && ` (${t('time.now').toLocaleLowerCase()})`}
+                  </Text>
+                )}
               </Group>
             </Table.Td>
             <Table.Td>
@@ -246,7 +258,7 @@ export function openPowerLogsDialog({ buildingId: initialBuildingId, buildingNam
           </Table.Tr>
         );
       });
-    }, [paddedPeriods, colorScheme, dateFilter, currentTime, getColorScheme]);
+    }, [paddedPeriods, colorScheme, dateFilter, currentTime, getColorScheme, isMobile, formatLogTime, t]);
 
     const handleClose = () => id && modals.close(id);
     const handleNext = () => {
@@ -340,7 +352,16 @@ export function openPowerLogsDialog({ buildingId: initialBuildingId, buildingNam
               </Group>
             </Stack>
 
-            <Table stickyHeader stickyHeaderOffset={60} striped highlightOnHover withTableBorder>
+            <Table
+              stickyHeader
+              stickyHeaderOffset={60}
+              striped
+              highlightOnHover
+              withTableBorder
+              horizontalSpacing={isMobile ? "xs" : "md"}
+              verticalSpacing={isMobile ? "xs" : "md"}
+              fz={isMobile ? "xs" : "sm"}
+            >
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th>{t('powerLogs.table.startTime')}</Table.Th>
