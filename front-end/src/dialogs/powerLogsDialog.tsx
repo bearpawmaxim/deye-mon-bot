@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { modals } from "@mantine/modals";
-import { Button, Group, Stack, Table, Text, SegmentedControl, Loader, Center, useMantineColorScheme, ScrollArea, ActionIcon } from "@mantine/core";
+import { Button, Group, Stack, Table, Text, SegmentedControl, Loader, Center, useMantineColorScheme, ScrollArea, ActionIcon, Tooltip } from "@mantine/core";
 import { useAppDispatch, useAppSelector } from "../stores/store";
 import { fetchPowerLogs } from "../stores/thunks";
 import { clearPowerLogs } from "../stores/slices";
@@ -217,6 +217,13 @@ export function openPowerLogsDialog({ buildingId: initialBuildingId, buildingNam
         const bgColor = period.isAvailable ? colors.availableBg : colors.unavailableBg;
         const textColor = period.isAvailable ? colors.availableColor : colors.unavailableColor;
 
+        const stateText = (
+          <>
+            {period.isAvailable ? t('powerLogs.table.gridOnState') : t('powerLogs.table.gridOffState')}
+            {isOngoing && ` (${t('time.now').toLocaleLowerCase()})`}
+          </>
+        );
+
         return (
           <Table.Tr key={index} bg={bgColor}>
             <Table.Td>{formatLogTime(period.startTime)}</Table.Td>
@@ -236,18 +243,19 @@ export function openPowerLogsDialog({ buildingId: initialBuildingId, buildingNam
             </Table.Td>
             <Table.Td>
               <Group gap="xs">
-                {period.isAvailable ? (
-                  <FontAwesomeIcon icon="lightbulb" color={textColor} />
-                ) : (
-                  <span className="fa-layers fa-fw">
+                <Tooltip label={stateText} disabled={!isMobile} withArrow>
+                  {period.isAvailable ? (
                     <FontAwesomeIcon icon="lightbulb" color={textColor} />
-                    <FontAwesomeIcon icon="slash" color={textColor} />
-                  </span>
-                )}
+                  ) : (
+                    <span className="fa-layers fa-fw">
+                      <FontAwesomeIcon icon="lightbulb" color={textColor} />
+                      <FontAwesomeIcon icon="slash" color={textColor} />
+                    </span>
+                  )}
+                </Tooltip>
                 {!isMobile && (
                   <Text fw={600} c={textColor}>
-                    {period.isAvailable ? t('powerLogs.table.gridOnState') : t('powerLogs.table.gridOffState')}
-                    {isOngoing && ` (${t('time.now').toLocaleLowerCase()})`}
+                    {stateText}
                   </Text>
                 )}
               </Group>
