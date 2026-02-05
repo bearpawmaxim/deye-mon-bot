@@ -1,10 +1,11 @@
-import { FC, useCallback, useEffect, useMemo } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef } from "react";
 import {
   Container,
   Title,
   Stack,
   Group,
 } from "@mantine/core";
+import { useDocumentVisibility } from "@mantine/hooks";
 import { RootState, useAppDispatch, useAppSelector } from "../../stores/store";
 import { fetchBuildings, fetchBuildingsSummary, fetchDashboardConfig, fetchOutagesSchedule, saveBuildings, saveDashboardConfig } from "../../stores/thunks";
 import { BuildingsView, openDashboardEditDialog, PlannedOutages } from "./components";
@@ -165,20 +166,38 @@ const Component: FC<ComponentProps> = ({
     }
   });
 
+  const visibility = useDocumentVisibility();
+  const prevVisibility = useRef(visibility);
+  const lastUpdateRef = useRef(Date.now());
+
+  useEffect(() => {
+    if (prevVisibility.current !== 'visible' && visibility === 'visible') {
+      const now = Date.now();
+      const fiveMinutes = 5 * 60 * 1000;
+      if (now - lastUpdateRef.current > fiveMinutes) {
+        fetchData();
+        fetchSummary(true);
+        fetchOutages();
+        lastUpdateRef.current = now;
+      }
+    }
+    prevVisibility.current = visibility;
+  }, [visibility, fetchData, fetchSummary, fetchOutages]);
+
   return (
     <>
       <Container size={"xl"} mih='100%'>
         <Stack gap={48} justify="space-between">
           <Group justify="center">
-            { !loadingConfig && <Title pt='sm' order={1} ta="center" c="blue">
-                {dashboardTitle}
-              </Title> }
-            { isAuthenticated && <IconButton
-                icon='edit'
-                color='blue'
-                text={t('dashboardEdit.dialogTitle')}
-                onClick={onEditDashboardClick}
-              /> }
+            {!loadingConfig && <Title pt='sm' order={1} ta="center" c="blue">
+              {dashboardTitle}
+            </Title>}
+            {isAuthenticated && <IconButton
+              icon='edit'
+              color='blue'
+              text={t('dashboardEdit.dialogTitle')}
+              onClick={onEditDashboardClick}
+            />}
           </Group>
 
           <BuildingsView
@@ -190,14 +209,14 @@ const Component: FC<ComponentProps> = ({
             buildingsSummary={buildingsSummary}
           />
 
-          { dashboardConfig?.enableOutagesSchedule && <PlannedOutages
-              t={t}
-              outageQueue={dashboardConfig.outagesScheduleQueue}
-              data={outagesSchedule}
-              loading={loadingOutagesSchedule}
-              error={outagesScheduleError}
-              onRefresh={fetchOutages}
-            /> }
+          {dashboardConfig?.enableOutagesSchedule && <PlannedOutages
+            t={t}
+            outageQueue={dashboardConfig.outagesScheduleQueue}
+            data={outagesSchedule}
+            loading={loadingOutagesSchedule}
+            error={outagesScheduleError}
+            onRefresh={fetchOutages}
+          />}
         </Stack>
       </Container>
     </>
