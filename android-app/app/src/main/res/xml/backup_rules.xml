@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<full-backup-content>
-    <!--
-    TODO: Add rules to control what data should be backed up
-    See https://developer.android.com/guide/topics/data/autobackup
-    -->
-</full-backup-content>
-
